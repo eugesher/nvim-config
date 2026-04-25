@@ -24,4 +24,19 @@ fi
 echo "Installing config: $SRC -> $DEST"
 cp -r "$SRC" "$DEST"
 
+# Create the cspell user dictionary OUTSIDE the nvim config tree so it
+# survives future reinstalls (this script replaces $DEST wholesale).
+# Guarded with a file-existence check so we never overwrite a populated
+# dictionary on reinstall.
+CSPELL_DIR="$HOME/.config/cspell"
+CSPELL_USER_DICT="$CSPELL_DIR/user-words.txt"
+mkdir -p "$CSPELL_DIR"
+if [[ ! -e "$CSPELL_USER_DICT" ]]; then
+  touch "$CSPELL_USER_DICT"
+  echo "Created empty cspell user dictionary: $CSPELL_USER_DICT"
+else
+  echo "Kept existing cspell user dictionary: $CSPELL_USER_DICT"
+fi
+
 echo "Done. Launch nvim to let lazy.nvim install plugins."
+echo "Note: cspell must be installed separately (npm install -g cspell)."

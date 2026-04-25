@@ -1,0 +1,29 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "dictionaryDefinitions": [
+    {
+      "name": "user-words",
+      "path": "~/.config/cspell/user-words.txt",
+      "addWords": true
+    }
+  ],
+  "dictionaries": ["user-words"],
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**",
+    "build/**",
+    "out/**",
+    "coverage/**",
+    ".next/**",
+    ".nuxt/**",
+    ".git/**",
+    "*.lock",
+    "package-lock.json",
+    "yarn.lock",
+    "pnpm-lock.yaml",
+    "*.min.js",
+    "*.min.css",
+    "*.map"
+  ]
+}
