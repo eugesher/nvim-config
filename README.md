@@ -124,7 +124,7 @@ nvim/
         ├── formatting.lua        -- conform.nvim: Prettier (TS/JS/JSON/YAML/HTML/CSS/MD), stylua
         ├── telescope.lua         -- Fuzzy finder: files, grep, buffers, symbols, help, diagnostics
         ├── spell.lua             -- cspell via none-ls + davidmh/cspell.nvim (code-aware spell check)
-        └── ui.lua                -- catppuccin (mocha), lualine statusline, nvim-tree file explorer
+        └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer
 ```
 
 ## Key mappings
@@ -152,13 +152,47 @@ The leader key is `<Space>`.
 
 | Key | Action | Description |
 |-----|--------|-------------|
-| `<leader>e` | Toggle file explorer (nvim-tree) | Opens or closes the side-panel file tree |
+| `<leader>e` | Toggle file explorer (neo-tree) | Opens or closes the side-panel file tree |
 | `<leader>ff` | Find files | Fuzzy-searches file names in the project root |
 | `<leader>fg` | Live grep across project | Full-text search via ripgrep; results update as you type |
 | `<leader>fb` | Open buffers | Lists and switches between currently open buffers |
 | `<leader>fs` | Document symbols (LSP) | Shows all LSP symbols (functions, classes, variables) in the current file |
 | `<leader>fd` | Diagnostics list | Lists all LSP diagnostics (errors, warnings) across the project |
 | `<leader>fh` | Search Neovim help tags | Fuzzy-searches Neovim's built-in help documentation |
+
+### File explorer (neo-tree)
+
+The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/neo-tree.nvim) (filesystem source). It auto-shows git status, LSP diagnostics, and file-type icons. Inside the tree, press `?` for the full keymap help — the most common defaults:
+
+| Key (inside tree) | Action | Description |
+|-------------------|--------|-------------|
+| `<CR>` / `o` | Open | Opens the file under the cursor in the previous window |
+| `s` | Open in horizontal split | |
+| `S` | Open in vertical split | |
+| `t` | Open in new tab | |
+| `a` | Add file or directory | Append `/` to the prompt to create a directory |
+| `A` | Add directory | |
+| `d` | Delete | Trash-aware delete with confirmation |
+| `r` | Rename | |
+| `c` / `x` / `p` | Copy / cut / paste | Inside-tree clipboard ops between directories |
+| `m` | Move | |
+| `y` | Copy filename | |
+| `H` | Toggle hidden files | Dotfiles are hidden by default |
+| `R` | Refresh | |
+| `[g` / `]g` | Previous / next git-modified file | |
+| `i` | Show file details | Size, mtime, permissions popup |
+| `q` | Close tree window | |
+| `?` | Show keymap help | |
+
+Behaviour:
+
+- **Hidden files**: dotfiles **and** `.gitignore`-listed files are hidden by default. Toggle with `H` inside the tree.
+- **Width**: ~20% of terminal width on startup (between 30 columns and 25% of total — sized once at config time, not auto-resized on `:resize`).
+- **Last-window close**: Neovim quits when neo-tree is the only remaining window.
+- **`netrw` replacement**: opening a directory (`:edit src/`) routes to neo-tree instead of netrw.
+- **Live FS updates**: external changes (git pulls, codegen) refresh the tree automatically via `libuv` watchers.
+
+> Migrated from `nvim-tree.lua`. The global `<leader>e` toggle is unchanged. In-tree keys now follow neo-tree's defaults (e.g. `s` / `S` for splits instead of `<C-x>` / `<C-v>`); use `?` inside the tree for a complete reference.
 
 ### LSP (any file with an attached language server)
 

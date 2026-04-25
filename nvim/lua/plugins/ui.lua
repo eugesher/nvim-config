@@ -14,17 +14,19 @@ return {
           mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
         },
         custom_highlights = function(colors)
+          -- Carry forward the previous file-tree look:
+          --   files / icons / symlinks → text colour
+          --   directories / root       → lavender
+          -- (Re-mapped from NvimTree* groups to their Neo-tree equivalents.)
           return {
-            NvimTreeNormal = { fg = colors.text },
-            NvimTreeExecFile = { fg = colors.text },
-            NvimTreeSpecialFile = { fg = colors.text },
-            NvimTreeImageFile = { fg = colors.text },
-            NvimTreeSymlink = { fg = colors.text },
-            NvimTreeFolderName = { fg = colors.lavender },
-            NvimTreeOpenedFolderName = { fg = colors.lavender },
-            NvimTreeEmptyFolderName = { fg = colors.lavender },
-            NvimTreeFolderIcon = { fg = colors.lavender },
-            NvimTreeRootFolder = { fg = colors.lavender },
+            NeoTreeNormal = { fg = colors.text },
+            NeoTreeNormalNC = { fg = colors.text },
+            NeoTreeFileName = { fg = colors.text },
+            NeoTreeFileIcon = { fg = colors.text },
+            NeoTreeSymbolicLinkTarget = { fg = colors.text },
+            NeoTreeDirectoryName = { fg = colors.lavender },
+            NeoTreeDirectoryIcon = { fg = colors.lavender },
+            NeoTreeRootName = { fg = colors.lavender },
           }
         end,
       })
@@ -49,25 +51,50 @@ return {
 
   -- File tree
   {
-    "nvim-tree/nvim-tree.lua",
-    dependencies = { "nvim-tree/nvim-web-devicons" },
+    "nvim-neo-tree/neo-tree.nvim",
+    branch = "v3.x",
+    dependencies = {
+      "nvim-lua/plenary.nvim",
+      "nvim-tree/nvim-web-devicons", -- a separate plugin from nvim-tree.lua: just the icon set
+      "MunifTanjim/nui.nvim",
+    },
     config = function()
-      require("nvim-tree").setup({
-        view = {
-          width = {
-            min = function()
-              return math.floor(vim.go.columns * 0.10)
-            end,
-            max = function()
-              return math.floor(vim.go.columns * 0.25)
-            end,
-            padding = 2,
-          },
+      require("neo-tree").setup({
+        -- Close Neovim when Neo-tree is the only window left in the tab.
+        close_if_last_window = true,
+        -- Rounded borders on rename / new-file popups, matches the rest of the UI.
+        popup_border_style = "rounded",
+        -- Both default to true in Neo-tree v3; stated explicitly so a future
+        -- bump to a version with different defaults won't silently change UX.
+        enable_git_status = true,
+        enable_diagnostics = true,
+
+        window = {
+          position = "left",
+          -- nvim-tree dynamically resized between 10% and 25% of the screen
+          -- with a content-fit. Neo-tree has no equivalent auto-fit, so we
+          -- snapshot a sensible static width inside that range at startup.
+          width = math.max(30, math.floor(vim.go.columns * 0.20)),
         },
-        filters = { dotfiles = true },
-        git = { enable = true },
+
+        filesystem = {
+          filtered_items = {
+            visible = false, -- start hidden — toggle in-tree with `H`
+            -- Mirrors the previous nvim-tree settings:
+            --   filters.dotfiles    = true → hide_dotfiles    = true
+            --   filters.git_ignored = true → hide_gitignored  = true (also Neo-tree default)
+            hide_dotfiles = true,
+            hide_gitignored = true,
+          },
+          -- Live-update the tree when files change on disk (git pulls, codegen, etc.).
+          use_libuv_file_watcher = true,
+          -- Replace netrw entirely so `:edit some-dir/` opens Neo-tree, not netrw.
+          hijack_netrw_behavior = "open_default",
+        },
       })
-      vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle the file explorer" })
+
+      -- Global keymap — preserved verbatim from the previous nvim-tree setup.
+      vim.keymap.set("n", "<leader>e", ":Neotree toggle<CR>", { desc = "Toggle the file explorer" })
     end,
   },
 }
