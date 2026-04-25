@@ -53,7 +53,17 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons" },
     config = function()
       require("nvim-tree").setup({
-        view = { width = 35 },
+        view = {
+          width = {
+            min = function()
+              return math.floor(vim.go.columns * 0.10)
+            end,
+            max = function()
+              return math.floor(vim.go.columns * 0.25)
+            end,
+            padding = 2,
+          },
+        },
         filters = { dotfiles = true },
         git = { enable = true },
       })
