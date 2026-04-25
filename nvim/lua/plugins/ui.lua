@@ -54,7 +54,7 @@ return {
     config = function()
       require("nvim-tree").setup({
         view = { width = 35 },
-        filters = { dotfiles = false },
+        filters = { dotfiles = true },
         git = { enable = true },
       })
       vim.keymap.set("n", "<leader>e", ":NvimTreeToggle<CR>", { desc = "Toggle the file explorer" })
