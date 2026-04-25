@@ -1,7 +1,8 @@
 # Neovim Configuration — Node.js / TypeScript Development
 
 A minimal but fully functional Neovim setup for Node.js / TypeScript development
-with LSP, Treesitter, autocompletion, formatting, and fuzzy finding.
+with LSP, Treesitter, autocompletion, formatting, fuzzy finding, and code-aware
+spell checking via `cspell`.
 
 ## Prerequisites
 
@@ -39,13 +40,14 @@ rm "fd_${VERSION}_amd64.deb"
 Install after Node.js is set up:
 
 ```bash
-npm install -g neovim tree-sitter-cli
+npm install -g neovim tree-sitter-cli cspell
 ```
 
 | Package | Why |
 |---------|-----|
 | `neovim` | Enables the Neovim Node.js provider (required for some plugins) |
 | `tree-sitter-cli` | Compiles Treesitter parsers from source when pre-built binaries are unavailable |
+| `cspell` | Spell-checker CLI invoked by `none-ls` + `cspell.nvim` for code-aware spell checking |
 
 ## Installation
 
@@ -56,7 +58,9 @@ Use the provided script for a one-step install:
 ```
 
 The script backs up any existing `~/.config/nvim` to `~/.config/nvim.backup.<timestamp>`,
-then copies this configuration in its place.
+then copies this configuration in its place. It also creates the cspell user
+dictionary at `~/.config/cspell/user-words.txt` (outside the nvim config tree
+so it survives reinstalls). An existing dictionary is never overwritten.
 
 ### Manual installation
 
@@ -104,19 +108,22 @@ Navigate to `prettier` and `stylua`, press `i` on each.
 ```
 nvim/
 ├── init.lua                      -- Entry point; sets leader key, loads config modules
+├── cspell.json                   -- cspell config: language=en, user-words path, ignore patterns
 ├── lazy-lock.json                -- Pinned plugin versions
 └── lua/
     ├── lazy-bootstrap.lua        -- Installs lazy.nvim on first run; loads plugin specs
     ├── config/
     │   ├── options.lua           -- Core editor options (indent, search, clipboard, undo)
     │   ├── keymaps.lua           -- Global keymaps (splits, scroll, save, visual paste)
-    │   └── autocmds.lua          -- Yank highlight, trailing-whitespace trim, cursor restore
+    │   ├── autocmds.lua          -- Yank highlight, trailing-whitespace trim, cursor restore
+    │   └── spell-filter.lua      -- Treesitter filter: cspell hints only on identifier definitions
     └── plugins/
         ├── lsp.lua               -- Mason + nvim-lspconfig (ts_ls, eslint, lua_ls, jsonls, yamlls)
         ├── completion.lua        -- nvim-cmp + LuaSnip + friendly-snippets
         ├── treesitter.lua        -- Syntax highlighting, smart indent, incremental selection
         ├── formatting.lua        -- conform.nvim: Prettier (TS/JS/JSON/YAML/HTML/CSS/MD), stylua
         ├── telescope.lua         -- Fuzzy finder: files, grep, buffers, symbols, help, diagnostics
+        ├── spell.lua             -- cspell via none-ls + davidmh/cspell.nvim (code-aware spell check)
         └── ui.lua                -- catppuccin (mocha), lualine statusline, nvim-tree file explorer
 ```
 
@@ -184,6 +191,26 @@ The leader key is `<Space>`.
 | `<CR>` | Start selection / expand to next syntax node | Begins a visual selection at the cursor or extends it to the surrounding syntax node |
 | `<BS>` | Shrink selection to previous node | Reduces the selection back to the previous (inner) syntax node |
 
+### Spell checking (cspell)
+
+Spell errors are surfaced as **HINT-level** diagnostics, so they never inflate
+the error or warning counts in the status line. They are reported by `cspell`
+via `none-ls` and reuse the standard diagnostic keymaps:
+
+| Key | Action | Description |
+|-----|--------|-------------|
+| `<leader>ca` | Code action | Includes "Add word to user dictionary", "Add word to cspell.json", and "Use suggestion: …" entries on a flagged word |
+| `[d` / `]d` | Previous / next diagnostic | Spell errors are diagnostics, so the standard jumps work |
+| `<leader>d` | Show diagnostic in floating window | Displays the cspell message for the current line |
+
+Highlights:
+
+- **Language**: English only (`"language": "en"` in `nvim/cspell.json`).
+- **Identifiers**: cspell natively splits camelCase / PascalCase / snake_case / SCREAMING_SNAKE_CASE before checking, so identifiers are spell-checked without extra parsing.
+- **User dictionary**: `~/.config/cspell/user-words.txt` (kept outside `~/.config/nvim/` so `install.sh` cannot wipe it).
+- **Project overrides**: a `cspell.json` at the project root (or any parent directory above the current file) takes precedence over the one shipped with this config.
+- **Definitions-only filter**: in TypeScript / JavaScript files, spell warnings on identifier *usages* (call expressions, member accesses, import specifiers, type references) are suppressed; warnings remain at *definition* sites (declarations, parameters, class/interface/type/enum names, class properties). Fix the name once at its declaration and let LSP rename propagate it.
+
 ## Troubleshooting
 
 - **LSP not attaching** — run `:LspInfo`. For `ts_ls`, the file must be inside a project with a `package.json` or `tsconfig.json`.
@@ -191,4 +218,6 @@ The leader key is `<Space>`.
 - **Plugin errors on startup** — run `:Lazy sync` to reinstall all plugins.
 - **Icons show as empty boxes** — your terminal is not using a Nerd Font.
 - **ESLint not fixing on save** — verify `eslint` is installed (`:Mason`) and there is a valid ESLint config in the project root.
+- **No spell-check diagnostics** — confirm `cspell --version` works in your shell. If not, `npm install -g cspell`. The plugin loads on `BufReadPre` / `BufNewFile`, so a freshly installed `cspell` is picked up after the next file open or `:e!`.
+- **`Add to user dictionary` does nothing** — the dictionary file is `~/.config/cspell/user-words.txt`. Re-run `./install.sh` (or `mkdir -p ~/.config/cspell && touch ~/.config/cspell/user-words.txt`) and reopen the buffer.
 - **General diagnosis** — `:checkhealth` reports everything Neovim can see.
