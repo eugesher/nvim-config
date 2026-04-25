@@ -60,8 +60,11 @@ return {
     },
     config = function()
       require("neo-tree").setup({
-        -- Close Neovim when Neo-tree is the only window left in the tab.
-        close_if_last_window = true,
+        -- Keep Neo-tree open when it becomes the last window in the tab —
+        -- closing the active file (`:q`, `ZZ`, `<leader>q`) should drop the
+        -- cursor back onto the tree, not exit Neovim. Use `:qa` (or close
+        -- the tree first) to actually quit.
+        close_if_last_window = false,
         -- Rounded borders on rename / new-file popups, matches the rest of the UI.
         popup_border_style = "rounded",
         -- Both default to true in Neo-tree v3; stated explicitly so a future

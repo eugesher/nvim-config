@@ -136,7 +136,7 @@ The leader key is `<Space>`.
 | Key | Action | Description |
 |-----|--------|-------------|
 | `<leader>w` | Save file | Writes the current buffer to disk (`:w`) |
-| `<leader>q` | Close buffer | Removes the current buffer from the buffer list (`:bd`) |
+| `<leader>q` | Close buffer | Runs `:bdelete` and, if neo-tree is open in the current tab, hands focus to the tree so the editor area never sits on a stray `[No Name]` buffer |
 | `<leader>nh` | Clear search highlight | Clears the `hlsearch` highlight after a search |
 | `<C-d>` / `<C-u>` | Half-page scroll, cursor re-centred | Scrolls half a page and keeps the cursor at the screen centre |
 | `<A-j>` / `<A-k>` | Move selected lines down / up (Visual mode) | Shifts the selected block one line down or up with auto-reindent |
@@ -166,20 +166,21 @@ The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/
 
 | Key (inside tree) | Action | Description |
 |-------------------|--------|-------------|
-| `<CR>` / `o` | Open | Opens the file under the cursor in the previous window |
-| `s` | Open in horizontal split | |
-| `S` | Open in vertical split | |
+| `<CR>` | Open | Opens the file under the cursor in the previous window |
+| `s` | Open in vertical split | |
+| `S` | Open in horizontal split | |
 | `t` | Open in new tab | |
+| `<Space>` | Toggle directory | Expands or collapses the directory under the cursor |
 | `a` | Add file or directory | Append `/` to the prompt to create a directory |
 | `A` | Add directory | |
-| `d` | Delete | Trash-aware delete with confirmation |
+| `d` | Delete | Confirms before deleting |
 | `r` | Rename | |
-| `c` / `x` / `p` | Copy / cut / paste | Inside-tree clipboard ops between directories |
-| `m` | Move | |
-| `y` | Copy filename | |
+| `y` / `x` / `p` | Copy / cut / paste to internal clipboard | Inside-tree clipboard between directories |
+| `c` / `m` | Copy-to / move-to | Prompts for the destination path |
 | `H` | Toggle hidden files | Dotfiles are hidden by default |
 | `R` | Refresh | |
 | `[g` / `]g` | Previous / next git-modified file | |
+| `o` | "Order by" submenu | Sort by name (`on`), type (`ot`), modified (`om`), size (`os`), git status (`og`), created (`oc`), diagnostics (`od`) |
 | `i` | Show file details | Size, mtime, permissions popup |
 | `q` | Close tree window | |
 | `?` | Show keymap help | |
@@ -187,8 +188,8 @@ The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/
 Behaviour:
 
 - **Hidden files**: dotfiles **and** `.gitignore`-listed files are hidden by default. Toggle with `H` inside the tree.
-- **Width**: ~20% of terminal width on startup (between 30 columns and 25% of total — sized once at config time, not auto-resized on `:resize`).
-- **Last-window close**: Neovim quits when neo-tree is the only remaining window.
+- **Width**: ~20% of terminal width on startup (clamped to a 30-column minimum — sized once at config time, not auto-resized on `:resize`).
+- **Closing files keeps the tree**: `close_if_last_window` is **off**, so `:q` / `:q!` / `ZZ` close the file window and leave the cursor on the tree instead of exiting Neovim. Use `:qa` (or close the tree first) when you actually want to quit.
 - **`netrw` replacement**: opening a directory (`:edit src/`) routes to neo-tree instead of netrw.
 - **Live FS updates**: external changes (git pulls, codegen) refresh the tree automatically via `libuv` watchers.
 
