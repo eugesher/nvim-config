@@ -43,11 +43,11 @@ return {
       "DBUILastQueryInfo",
     },
     keys = {
-      { "<leader>Du", "<cmd>DBUIToggle<CR>",        desc = "Database: toggle UI" },
-      { "<leader>Df", "<cmd>DBUIFindBuffer<CR>",    desc = "Database: find query buffer" },
-      { "<leader>Dr", "<cmd>DBUIRenameBuffer<CR>",  desc = "Database: rename query buffer" },
-      { "<leader>Da", "<cmd>DBUIAddConnection<CR>", desc = "Database: add connection" },
-      { "<leader>Dq", "<cmd>DBUILastQueryInfo<CR>", desc = "Database: last query info" },
+      { "<leader>dbu", "<cmd>DBUIToggle<CR>",        desc = "Database: toggle UI" },
+      { "<leader>dbf", "<cmd>DBUIFindBuffer<CR>",    desc = "Database: find query buffer" },
+      { "<leader>dbr", "<cmd>DBUIRenameBuffer<CR>",  desc = "Database: rename query buffer" },
+      { "<leader>dba", "<cmd>DBUIAddConnection<CR>", desc = "Database: add connection" },
+      { "<leader>dbq", "<cmd>DBUILastQueryInfo<CR>", desc = "Database: last query info" },
     },
     init = function()
       -- Persist saved connections / scratch queries / bookmarks under

@@ -242,7 +242,7 @@ SQL Server, etc.) via Vim adapters — see the upstream README.
 
 #### Adding a connection for the first time
 
-1. Press `<leader>Du` to open the sidebar.
+1. Press `<leader>dbu` to open the sidebar.
 2. Press `A` (or run `:DBUIAddConnection`) and paste a connection URL:
    - PostgreSQL: `postgresql://user:pass@localhost:5432/dbname`
    - MySQL / MariaDB: `mysql://user:pass@localhost:3306/dbname`
@@ -270,16 +270,18 @@ directory if you want to migrate to another machine.
 
 #### Keymaps
 
-Database commands live under the `<leader>D` namespace (capital D) to avoid
-the timeout-len conflict with `<leader>d` (LSP "show diagnostic").
+Database commands live under the `<leader>db` namespace ("**d**ata**b**ase").
+Note that this introduces a small `timeoutlen` wait after `<leader>d` (the LSP
+"show diagnostic" keymap) while Neovim decides whether the next key starts a
+`db…` chord.
 
-| Key          | Action                            | Description                                                |
-| ------------ | --------------------------------- | ---------------------------------------------------------- |
-| `<leader>Du` | Toggle DBUI sidebar               | Opens / closes the database explorer                       |
-| `<leader>Df` | Find query buffer                 | Jump to an existing query buffer                           |
-| `<leader>Dr` | Rename current query buffer       | Rename a `*.sql` scratch buffer                            |
-| `<leader>Da` | Add a new connection              | Same as pressing `A` inside the sidebar                    |
-| `<leader>Dq` | Show last query info              | Run-time, row count, error if any                          |
+| Key           | Action                            | Description                                                |
+| ------------- | --------------------------------- | ---------------------------------------------------------- |
+| `<leader>dbu` | Toggle DBUI sidebar               | Opens / closes the database explorer                       |
+| `<leader>dbf` | Find query buffer                 | Jump to an existing query buffer                           |
+| `<leader>dbr` | Rename current query buffer       | Rename a `*.sql` scratch buffer                            |
+| `<leader>dba` | Add a new connection              | Same as pressing `A` inside the sidebar                    |
+| `<leader>dbq` | Show last query info              | Run-time, row count, error if any                          |
 
 Inside a query buffer (`*.sql` opened from DBUI):
 
