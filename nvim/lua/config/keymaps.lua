@@ -19,8 +19,26 @@ keymap("n", "<leader>nh", ":nohlsearch<CR>", { desc = "Clear search highlight" }
 -- Save the current file
 keymap("n", "<leader>w", ":w<CR>", { desc = "Save file" })
 
--- Close the current buffer
-keymap("n", "<leader>q", ":bd<CR>", { desc = "Close buffer" })
+-- Close the current buffer.
+-- If the Neo-tree file explorer is open in this tab, hand focus to it after
+-- deleting the buffer so the editor area isn't left as a [No Name] window.
+-- Inside Neo-tree itself, this is a no-op (use `q` or `<leader>e` instead).
+keymap("n", "<leader>q", function()
+  if vim.bo.filetype == "neo-tree" then
+    return
+  end
+  local tree_win
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "neo-tree" then
+      tree_win = win
+      break
+    end
+  end
+  vim.cmd("bdelete")
+  if tree_win and vim.api.nvim_win_is_valid(tree_win) then
+    vim.api.nvim_set_current_win(tree_win)
+  end
+end, { desc = "Close buffer (focus file tree if open)" })
 
 -- Paste over selection without overwriting the unnamed register
 keymap("v", "p", '"_dP', { desc = "Paste without yanking replaced text" })
