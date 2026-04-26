@@ -124,6 +124,7 @@ nvim/
         ├── formatting.lua        -- conform.nvim: Prettier (TS/JS/JSON/YAML/HTML/CSS/MD), stylua
         ├── telescope.lua         -- Fuzzy finder: files, grep, buffers, symbols, help, diagnostics
         ├── spell.lua             -- cspell via none-ls + davidmh/cspell.nvim (code-aware spell check)
+        ├── dadbod.lua            -- vim-dadbod + dadbod-ui + dadbod-completion (database client)
         └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer
 ```
 
@@ -225,6 +226,81 @@ Behavior:
 | ------ | -------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `<CR>` | Start selection / expand to next syntax node | Begins a visual selection at the cursor or extends it to the surrounding syntax node |
 | `<BS>` | Shrink selection to previous node            | Reduces the selection back to the previous (inner) syntax node                       |
+
+### Database client (vim-dadbod)
+
+A SQL client built on [`tpope/vim-dadbod`](https://github.com/tpope/vim-dadbod),
+[`vim-dadbod-ui`](https://github.com/kristijanhusak/vim-dadbod-ui) (sidebar +
+query buffers + result panes), and
+[`vim-dadbod-completion`](https://github.com/kristijanhusak/vim-dadbod-completion)
+(schema- and table-aware completion wired into nvim-cmp). Useful for poking at
+the databases behind a NestJS / Node.js project without leaving the editor.
+
+Supported drivers (commonly paired with NestJS): **PostgreSQL**, **MySQL /
+MariaDB**, **SQLite**. vim-dadbod itself supports many more (Redis, MongoDB,
+SQL Server, etc.) via Vim adapters — see the upstream README.
+
+#### Adding a connection for the first time
+
+1. Press `<leader>dbu` to open the sidebar.
+2. Press `A` (or run `:DBUIAddConnection`) and paste a connection URL:
+   - PostgreSQL: `postgresql://user:pass@localhost:5432/dbname`
+   - MySQL / MariaDB: `mysql://user:pass@localhost:3306/dbname`
+   - SQLite: `sqlite:./dev.db`
+3. Give the connection a name. It is saved to disk and re-appears in the
+   sidebar on every launch.
+
+For credentials you don't want on disk, export an environment variable and
+reference it in the URL field:
+
+```bash
+export DATABASE_URL="postgresql://user:pass@localhost:5432/dbname"
+```
+
+then save the connection as `$DATABASE_URL`.
+
+#### Persistence and backup
+
+Connections, scratch queries, and bookmarks live under
+`vim.fn.stdpath("data") .. "/db_ui"` (typically
+`~/.local/share/nvim/db_ui/`). The path is **outside** `~/.config/nvim/` on
+purpose — `install.sh` replaces the nvim config directory wholesale on every
+run, so storing connections there would destroy them. Back up the `db_ui`
+directory if you want to migrate to another machine.
+
+#### Keymaps
+
+Database commands live under the `<leader>db` namespace ("**d**ata**b**ase").
+Note that this introduces a small `timeoutlen` wait after `<leader>d` (the LSP
+"show diagnostic" keymap) while Neovim decides whether the next key starts a
+`db…` chord.
+
+| Key           | Action                            | Description                                                |
+| ------------- | --------------------------------- | ---------------------------------------------------------- |
+| `<leader>dbu` | Toggle DBUI sidebar               | Opens / closes the database explorer                       |
+| `<leader>dbf` | Find query buffer                 | Jump to an existing query buffer                           |
+| `<leader>dbr` | Rename current query buffer       | Rename a `*.sql` scratch buffer                            |
+| `<leader>dba` | Add a new connection              | Same as pressing `A` inside the sidebar                    |
+| `<leader>dbq` | Show last query info              | Run-time, row count, error if any                          |
+
+Inside a query buffer (`*.sql` opened from DBUI):
+
+| Key            | Action                                         |
+| -------------- | ---------------------------------------------- |
+| `<leader>S`    | Execute the buffer (or visual selection)       |
+| `<leader>W`    | Save the query as a named bookmark             |
+| `<leader>E`    | Edit a bind variable                           |
+
+These are dadbod-ui's own defaults — see `:help dadbod-ui` for the full list.
+
+#### SQL completion
+
+`vim-dadbod-completion` is registered as a **buffer-local** nvim-cmp source on
+the `sql`, `mysql`, and `plsql` filetypes only — it does not appear in the
+completion menu in TypeScript / Lua / etc. Triggers are the same as the rest
+of nvim-cmp (`<C-Space>`, `<Tab>` / `<S-Tab>`, `<CR>` to confirm). Connect to a
+database via the sidebar first; the completion source needs an active
+connection to pull schemas and table / column names.
 
 ### Spell checking (cspell)
 
