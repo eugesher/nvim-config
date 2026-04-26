@@ -13,22 +13,18 @@ return {
         color_overrides = {
           mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
         },
-        custom_highlights = function(colors)
-          -- Carry forward the previous file-tree look:
-          --   files / icons / symlinks → text colour
-          --   directories / root       → lavender
-          -- (Re-mapped from NvimTree* groups to their Neo-tree equivalents.)
-          return {
-            NeoTreeNormal = { fg = colors.text },
-            NeoTreeNormalNC = { fg = colors.text },
-            NeoTreeFileName = { fg = colors.text },
-            NeoTreeFileIcon = { fg = colors.text },
-            NeoTreeSymbolicLinkTarget = { fg = colors.text },
-            NeoTreeDirectoryName = { fg = colors.lavender },
-            NeoTreeDirectoryIcon = { fg = colors.lavender },
-            NeoTreeRootName = { fg = colors.lavender },
-          }
-        end,
+        -- custom_highlights = function(colors)
+        --   return {
+        --     NeoTreeNormal = { fg = colors.text },
+        --     NeoTreeNormalNC = { fg = colors.text },
+        --     NeoTreeFileName = { fg = colors.text },
+        --     NeoTreeFileIcon = { fg = colors.text },
+        --     NeoTreeSymbolicLinkTarget = { fg = colors.text },
+        --     NeoTreeDirectoryName = { fg = colors.lavender },
+        --     NeoTreeDirectoryIcon = { fg = colors.lavender },
+        --     NeoTreeRootName = { fg = colors.lavender },
+        --   }
+        -- end,
       })
       vim.cmd.colorscheme("catppuccin")
     end,
@@ -74,18 +70,12 @@ return {
 
         window = {
           position = "left",
-          -- nvim-tree dynamically resized between 10% and 25% of the screen
-          -- with a content-fit. Neo-tree has no equivalent auto-fit, so we
-          -- snapshot a sensible static width inside that range at startup.
-          width = math.max(30, math.floor(vim.go.columns * 0.20)),
+          width = math.floor(vim.go.columns * 0.2),
         },
 
         filesystem = {
           filtered_items = {
             visible = false, -- start hidden — toggle in-tree with `H`
-            -- Mirrors the previous nvim-tree settings:
-            --   filters.dotfiles    = true → hide_dotfiles    = true
-            --   filters.git_ignored = true → hide_gitignored  = true (also Neo-tree default)
             hide_dotfiles = true,
             hide_gitignored = true,
           },
