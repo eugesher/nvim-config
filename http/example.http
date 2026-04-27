@@ -1,0 +1,22 @@
+@baseUrl = {{baseUrl}}
+
+### Health check
+# @name health
+GET {{baseUrl}}/health
+Accept: application/json
+
+### Login and capture token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+### Use token from login response
+# @name profile
+GET {{baseUrl}}/profile
+Authorization: Bearer {{login.response.body.$.token}}
+Accept: application/json

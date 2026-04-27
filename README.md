@@ -40,14 +40,16 @@ rm "fd_${VERSION}_amd64.deb"
 Install after Node.js is set up:
 
 ```bash
-npm install -g neovim tree-sitter-cli cspell
+npm install -g neovim tree-sitter-cli@0.24.7 cspell
 ```
 
-| Package           | Why                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| `neovim`          | Enables the Neovim Node.js provider (required for some plugins)                      |
-| `tree-sitter-cli` | Compiles Treesitter parsers from source when pre-built binaries are unavailable      |
-| `cspell`          | Spell-checker CLI invoked by `none-ls` + `cspell.nvim` for code-aware spell checking |
+| Package                  | Why                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `neovim`                 | Enables the Neovim Node.js provider (required for some plugins)                      |
+| `tree-sitter-cli@0.24.7` | Compiles Treesitter parsers from source when pre-built binaries are unavailable      |
+| `cspell`                 | Spell-checker CLI invoked by `none-ls` + `cspell.nvim` for code-aware spell checking |
+
+> **Why `tree-sitter-cli` is pinned:** versions `0.25.x+` ship a binary built against GLIBC 2.39 (Ubuntu 24.04). On Ubuntu 22.04 (GLIBC 2.35) `tree-sitter` fails with `version 'GLIBC_2.39' not found` whenever a parser needs local compilation (notably kulala's `kulala_http`). On Ubuntu 24.04 / newer macOS you can drop the `@0.24.7` pin, or install the latest via `cargo install tree-sitter-cli` to compile against the system's libc.
 
 ## Installation
 
@@ -125,6 +127,7 @@ nvim/
         ├── telescope.lua         -- Fuzzy finder: files, grep, buffers, symbols, help, diagnostics
         ├── spell.lua             -- cspell via none-ls + davidmh/cspell.nvim (code-aware spell check)
         ├── dadbod.lua            -- vim-dadbod + dadbod-ui + dadbod-completion (database client)
+        ├── kulala.lua            -- kulala.nvim HTTP client (.http / .rest files)
         └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer
 ```
 
@@ -301,6 +304,89 @@ completion menu in TypeScript / Lua / etc. Triggers are the same as the rest
 of nvim-cmp (`<C-Space>`, `<Tab>` / `<S-Tab>`, `<CR>` to confirm). Connect to a
 database via the sidebar first; the completion source needs an active
 connection to pull schemas and table / column names.
+
+### HTTP client (kulala.nvim)
+
+[`kulala.nvim`](https://github.com/mistweaverco/kulala.nvim) is a JetBrains-style
+REST client: write requests in plain `.http` / `.rest` files, run them from a
+Neovim buffer, and inspect the response in a split. Useful for poking at the
+NestJS / Node.js APIs the rest of this config is geared toward without leaving
+the editor or maintaining a parallel Postman / Insomnia workspace. Files are
+parsed with the Treesitter `http` grammar (added to
+[treesitter.lua](nvim/lua/plugins/treesitter.lua)), so syntax highlighting and
+parsing match the spec.
+
+The plugin loads only on the `http` and `rest` filetypes; the `<leader>h`
+namespace is registered through a buffer-local `FileType` autocmd, so it does
+**not** leak into TypeScript / Lua / etc.
+
+#### Keymaps
+
+HTTP commands live under the `<leader>h` namespace ("**h**ttp") and only attach
+inside `.http` / `.rest` buffers.
+
+| Key          | Mode | Description                                         |
+| ------------ | ---- | --------------------------------------------------- |
+| `<leader>hh` | n    | Run the request under the cursor                    |
+| `<leader>ha` | n    | Run every request in the current file               |
+| `<leader>hn` | n    | Jump to the next request                            |
+| `<leader>hp` | n    | Jump to the previous request                        |
+| `<leader>he` | n    | Select / switch the active environment              |
+| `<leader>hc` | n    | Copy the current request as a `curl` command        |
+| `<leader>hb` | n    | Show response body                                  |
+| `<leader>hH` | n    | Show response headers                               |
+| `<leader>hs` | n    | Show response headers + body                        |
+| `<leader>hx` | n    | Close the response window                           |
+| `<leader>hi` | n    | Inspect the current request (dry-run, no network)   |
+| `<leader>hS` | n    | Open a scratchpad (temporary `.http` buffer)        |
+
+#### Environment files
+
+Environment variables (`{{baseUrl}}`, `{{username}}`, `{{password}}`, …) live
+in two JSON files alongside your `.http` files. kulala walks upward from the
+request file to find them.
+
+| File                            | Purpose                                                            | Tracked in git? |
+| ------------------------------- | ------------------------------------------------------------------ | --------------- |
+| `http-client.env.json`          | Public values: base URLs, non-secret usernames, environment names  | **Yes**         |
+| `http-client.private.env.json`  | Secrets: passwords, tokens, API keys                               | **No**          |
+
+The repository ships templates at [`http/`](http/) along with an example
+request file. The `http/.gitignore` excludes `http-client.private.env.json` and
+any stray `*.env` so credentials are never committed by accident — keep that
+discipline in any project where you check the public env file in.
+
+Pick the active environment with `<leader>he` (or set the default in the
+plugin spec via `default_env`). Available environments are the top-level keys
+of the JSON files (`dev`, `staging`, `prod`).
+
+#### Quick start
+
+1. Copy [`http/`](http/) into a project (or open the example in place):
+   ```bash
+   cp -r http/ ~/path/to/project/
+   ```
+2. Open `http/example.http` in Neovim. The buffer is detected as `filetype=http`
+   and kulala loads automatically.
+3. Place the cursor inside the `### Health check` block and press `<leader>hh`.
+   The response body opens in a horizontal split.
+4. Press `<leader>he` to switch from `dev` (default) to `staging` or `prod`,
+   then re-run the request — `{{baseUrl}}` and `{{username}}` are resolved
+   from the matching environment.
+5. Run the `### Login and capture token` request, then the `### Use token from
+   login response` request — the second one references
+   `{{login.response.body.$.token}}`, which kulala resolves from the previous
+   response.
+
+#### External dependencies
+
+Both are optional but recommended for prettier responses; kulala falls back to
+the raw payload when the binary is missing.
+
+| Tool       | Why                              | macOS              | Ubuntu / Debian             |
+| ---------- | -------------------------------- | ------------------ | --------------------------- |
+| `jq`       | Pretty-print JSON responses      | `brew install jq`  | `sudo apt install jq`       |
+| `xmllint`  | Pretty-print XML / SOAP / RSS    | `brew install libxml2` (ships `xmllint`) | `sudo apt install libxml2-utils` |
 
 ### Spell checking (cspell)
 
