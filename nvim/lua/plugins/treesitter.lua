@@ -22,6 +22,7 @@ return {
         "markdown_inline",
         "dockerfile",
         "gitignore",
+        "http", -- kulala.nvim parses .http / .rest requests via this grammar
       },
 
       -- Improved syntax highlighting
