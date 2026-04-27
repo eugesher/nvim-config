@@ -40,14 +40,16 @@ rm "fd_${VERSION}_amd64.deb"
 Install after Node.js is set up:
 
 ```bash
-npm install -g neovim tree-sitter-cli cspell
+npm install -g neovim tree-sitter-cli@0.24.7 cspell
 ```
 
-| Package           | Why                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------ |
-| `neovim`          | Enables the Neovim Node.js provider (required for some plugins)                      |
-| `tree-sitter-cli` | Compiles Treesitter parsers from source when pre-built binaries are unavailable      |
-| `cspell`          | Spell-checker CLI invoked by `none-ls` + `cspell.nvim` for code-aware spell checking |
+| Package                  | Why                                                                                  |
+| ------------------------ | ------------------------------------------------------------------------------------ |
+| `neovim`                 | Enables the Neovim Node.js provider (required for some plugins)                      |
+| `tree-sitter-cli@0.24.7` | Compiles Treesitter parsers from source when pre-built binaries are unavailable      |
+| `cspell`                 | Spell-checker CLI invoked by `none-ls` + `cspell.nvim` for code-aware spell checking |
+
+> **Why `tree-sitter-cli` is pinned:** versions `0.25.x+` ship a binary built against GLIBC 2.39 (Ubuntu 24.04). On Ubuntu 22.04 (GLIBC 2.35) `tree-sitter` fails with `version 'GLIBC_2.39' not found` whenever a parser needs local compilation (notably kulala's `kulala_http`). On Ubuntu 24.04 / newer macOS you can drop the `@0.24.7` pin, or install the latest via `cargo install tree-sitter-cli` to compile against the system's libc.
 
 ## Installation
 

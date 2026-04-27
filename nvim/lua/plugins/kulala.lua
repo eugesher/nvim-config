@@ -63,6 +63,11 @@ return {
       desc = "Register buffer-local kulala.nvim keymaps",
       callback = function(args)
         local kulala = require("kulala")
+        -- show_body / show_headers / show_headers_body live on kulala.ui;
+        -- the top-level module re-exports most of the public API but not
+        -- those view-switching helpers, so bind them off the UI module
+        -- directly. (Verified against kulala.nvim init.lua + ui/init.lua.)
+        local kulala_ui = require("kulala.ui")
         local map = function(lhs, rhs, desc)
           vim.keymap.set("n", lhs, rhs, { buffer = args.buf, desc = desc })
         end
@@ -73,9 +78,9 @@ return {
         map("<leader>hp", kulala.jump_prev, "HTTP: jump to previous request")
         map("<leader>he", kulala.set_selected_env, "HTTP: select environment")
         map("<leader>hc", kulala.copy, "HTTP: copy request as curl")
-        map("<leader>hb", kulala.show_body, "HTTP: show response body")
-        map("<leader>hH", kulala.show_headers, "HTTP: show response headers")
-        map("<leader>hs", kulala.show_headers_body, "HTTP: show headers + body")
+        map("<leader>hb", kulala_ui.show_body, "HTTP: show response body")
+        map("<leader>hH", kulala_ui.show_headers, "HTTP: show response headers")
+        map("<leader>hs", kulala_ui.show_headers_body, "HTTP: show headers + body")
         map("<leader>hx", kulala.close, "HTTP: close response window")
         map("<leader>hi", kulala.inspect, "HTTP: inspect request (dry-run)")
         map("<leader>hS", kulala.scratchpad, "HTTP: open scratchpad buffer")
