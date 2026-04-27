@@ -30,6 +30,9 @@ return {
     -- with one that uses Neovim's built-in treesitter directly
     local putils = require("telescope.previewers.utils")
     putils.ts_highlighter = function(bufnr, ft)
+      if type(ft) ~= "string" or ft == "" then
+        return false
+      end
       local lang = vim.treesitter.language.get_lang(ft)
       if not lang then
         return false

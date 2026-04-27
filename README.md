@@ -23,7 +23,7 @@ spell checking via `cspell`.
 
 | Dependency | Why                                                                                  | Install                                                                                                  |
 | ---------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **fd**     | Faster file finding in Telescope and snacks picker (falls back to `find` without it) | Download the latest `.deb` from [github.com/sharkdp/fd/releases](https://github.com/sharkdp/fd/releases) |
+| **fd**     | Faster file finding in Telescope (falls back to `find` without it)                   | Download the latest `.deb` from [github.com/sharkdp/fd/releases](https://github.com/sharkdp/fd/releases) |
 
 Install `fd` from GitHub releases (the `apt` package is outdated):
 
@@ -126,9 +126,11 @@ nvim/
         ├── formatting.lua        -- conform.nvim: Prettier (TS/JS/JSON/YAML/HTML/CSS/MD), stylua
         ├── telescope.lua         -- Fuzzy finder: files, grep, buffers, symbols, help, diagnostics
         ├── spell.lua             -- cspell via none-ls + davidmh/cspell.nvim (code-aware spell check)
+        ├── gitsigns.lua          -- gitsigns.nvim sign-column git change indicators
+        ├── lazygit.lua           -- snacks.nvim, lazygit module only (Snacks.lazygit() bound to <leader>gg)
         ├── dadbod.lua            -- vim-dadbod + dadbod-ui + dadbod-completion (database client)
         ├── kulala.lua            -- kulala.nvim HTTP client (.http / .rest files)
-        └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer
+        └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer (pulls in nvim-web-devicons)
 ```
 
 ## Key mappings
@@ -151,6 +153,12 @@ The leader key is `<Space>`.
 | Key                             | Action              | Description                                       |
 | ------------------------------- | ------------------- | ------------------------------------------------- |
 | `<C-h>` `<C-j>` `<C-k>` `<C-l>` | Move between splits | Focuses the left / down / up / right split window |
+
+### Git
+
+| Key          | Action       | Description                                                          |
+| ------------ | ------------ | -------------------------------------------------------------------- |
+| `<leader>gg` | Open lazygit | Floating-window lazygit via `Snacks.lazygit()` (requires `lazygit`)  |
 
 ### File tree & Telescope
 
@@ -192,7 +200,7 @@ The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/
 Behavior:
 
 - **Hidden files**: dotfiles **and** `.gitignore`-listed files are hidden by default. Toggle with `H` inside the tree.
-- **Width**: ~20% of terminal width on startup (clamped to a 30-column minimum — sized once at config time, not auto-resized on `:resize`).
+- **Width**: ~20% of terminal width on startup (`math.floor(vim.go.columns * 0.2)` — sized once at config time, not auto-resized on `:resize`).
 - **Closing files keeps the tree**: `close_if_last_window` is **off**, so `:q` / `:q!` / `ZZ` close the file window and leave the cursor on the tree instead of exiting Neovim. Use `:qa` (or close the tree first) when you actually want to quit.
 - **`netrw` replacement**: opening a directory (`:edit src/`) routes to neo-tree instead of netrw.
 - **Live FS updates**: external changes (git pulls, codegen) refresh the tree automatically via `libuv` watchers.
@@ -388,6 +396,13 @@ the raw payload when the binary is missing.
 | `jq`       | Pretty-print JSON responses      | `brew install jq`  | `sudo apt install jq`       |
 | `xmllint`  | Pretty-print XML / SOAP / RSS    | `brew install libxml2` (ships `xmllint`) | `sudo apt install libxml2-utils` |
 
+### Git integration
+
+Two complementary plugins:
+
+- **[`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim)** (loads on `BufReadPost`) — adds add / change / delete markers to the sign column for any file under git. Only the sign glyphs are customised; gitsigns ships its own commands (`:Gitsigns next_hunk`, `:Gitsigns preview_hunk`, `:Gitsigns blame_line`, etc.) which you can run directly or bind to your own keys.
+- **[`snacks.nvim`](https://github.com/folke/snacks.nvim)** (loads eagerly) — only the `lazygit` module is enabled. `<leader>gg` opens [`lazygit`](https://github.com/jesseduffield/lazygit) in a floating window with the colorscheme auto-derived from the active Neovim theme. Requires the `lazygit` binary on `PATH` (see Prerequisites).
+
 ### Spell checking (cspell)
 
 Spell errors are surfaced as **HINT-level** diagnostics, so they never inflate
@@ -414,7 +429,7 @@ Highlights:
 - **Formatters not running** — install `prettier` and `stylua` via `:Mason`.
 - **Plugin errors on startup** — run `:Lazy sync` to reinstall all plugins.
 - **Icons show as empty boxes** — your terminal is not using a Nerd Font.
-- **ESLint not fixing on save** — verify `eslint` is installed (`:Mason`) and there is a valid ESLint config in the project root.
+- **ESLint not reporting** — verify `eslint` is installed (`:Mason`) and there is a valid ESLint config in the project root. ESLint diagnostics show up via `<leader>d` / `[d` / `]d`; this config does **not** auto-run `EslintFixAll` on save (Prettier-related rules are silenced at the server level since `conform.nvim` already runs Prettier). Use `<leader>ca` on an ESLint diagnostic to invoke `EslintFixAll` manually.
 - **No spell-check diagnostics** — confirm `cspell --version` works in your shell. If not, `npm install -g cspell`. The plugin loads on `BufReadPre` / `BufNewFile`, so a freshly installed `cspell` is picked up after the next file open or `:e!`.
 - **`Add to user dictionary` does nothing** — the dictionary file is `~/.config/cspell/user-words.txt`. Re-run `./install.sh` (or `mkdir -p ~/.config/cspell && touch ~/.config/cspell/user-words.txt`) and reopen the buffer.
 - **General diagnosis** — `:checkhealth` reports everything Neovim can see.
