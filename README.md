@@ -183,6 +183,7 @@ The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/
 | `S`               | Open in horizontal split                 |                                                                                                                       |
 | `t`               | Open in new tab                          |                                                                                                                       |
 | `<Space>`         | Toggle directory                         | Expands or collapses the directory under the cursor                                                                   |
+| `<leader><Space>` | Toggle directory (chord)                 | Same action as `<Space>`, but fires immediately on the second keystroke instead of waiting out `timeoutlen`           |
 | `a`               | Add file or directory                    | Append `/` to the prompt to create a directory                                                                        |
 | `A`               | Add directory                            |                                                                                                                       |
 | `d`               | Delete                                   | Confirms before deleting                                                                                              |
