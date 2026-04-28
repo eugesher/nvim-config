@@ -71,6 +71,9 @@ return {
         window = {
           position = "left",
           width = math.floor(vim.go.columns * 0.2),
+          mappings = {
+            ["<leader><space>"] = "toggle_node",
+          },
         },
 
         filesystem = {
