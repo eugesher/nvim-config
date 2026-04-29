@@ -1,6 +1,8 @@
 -- ~/.config/nvim/lua/plugins/ui.lua
 -- Visual layer: colorscheme, status line, file explorer.
 
+local settings = require("config.user-settings")
+
 return {
   -- Colorscheme
   {
@@ -9,7 +11,7 @@ return {
     priority = 1000, -- Load before other plugins so they can use the palette
     config = function()
       require("catppuccin").setup({
-        flavour = "mocha", -- Variants: latte, frappe, macchiato, mocha
+        flavour = settings.colorscheme.flavour, -- Variants: latte, frappe, macchiato, mocha
         color_overrides = {
           mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
         },
@@ -69,8 +71,8 @@ return {
         enable_diagnostics = true,
 
         window = {
-          position = "left",
-          width = math.floor(vim.go.columns * 0.2),
+          position = settings.neo_tree.position,
+          width = settings.neo_tree.window_width,
           mappings = {
             ["<leader><space>"] = "toggle_node",
           },
@@ -79,8 +81,8 @@ return {
         filesystem = {
           filtered_items = {
             visible = false, -- start hidden — toggle in-tree with `H`
-            hide_dotfiles = true,
-            hide_gitignored = true,
+            hide_dotfiles = settings.neo_tree.hide_dotfiles,
+            hide_gitignored = settings.neo_tree.hide_gitignored,
           },
           -- Live-update the tree when files change on disk (git pulls, codegen, etc.).
           use_libuv_file_watcher = true,

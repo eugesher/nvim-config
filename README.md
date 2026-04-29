@@ -115,6 +115,7 @@ nvim/
 └── lua/
     ├── lazy-bootstrap.lua        -- Installs lazy.nvim on first run; loads plugin specs
     ├── config/
+    │   ├── user-settings.lua     -- Single source of truth for user-tunable values (read by plugin specs)
     │   ├── options.lua           -- Core editor options (indent, search, clipboard, undo)
     │   ├── keymaps.lua           -- Global keymaps (splits, scroll, save, visual paste)
     │   ├── autocmds.lua          -- Yank highlight, trailing-whitespace trim, cursor restore
@@ -132,6 +133,17 @@ nvim/
         ├── kulala.lua            -- kulala.nvim HTTP client (.http / .rest files)
         └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer (pulls in nvim-web-devicons)
 ```
+
+## Customizing the setup
+
+Common preferences (theme, indent width, file-tree dimensions, format-on-save
+timeout, dadbod sidebar position, HTTP default environment, LSP feature toggles)
+are centralised in **`nvim/lua/config/user-settings.lua`**. Edit that file
+instead of touching individual plugin specs — every value is the single source
+of truth and is read at config-eval time by the relevant plugin.
+
+After changing a setting, restart Neovim (or run `:source $MYVIMRC` followed by
+`:Lazy reload <plugin>` for the affected plugin) to propagate the new value.
 
 ## Key mappings
 

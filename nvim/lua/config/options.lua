@@ -1,6 +1,7 @@
 -- ~/.config/nvim/lua/config/options.lua
 -- Core editor options.
 
+local settings = require("config.user-settings")
 local opt = vim.opt
 
 -- Line numbers: absolute + relative.
@@ -9,9 +10,9 @@ local opt = vim.opt
 opt.number = true
 opt.relativenumber = false
 
--- Indentation: 2 spaces (standard for Node.js / TypeScript)
-opt.tabstop = 2 -- Width of a tab character
-opt.shiftwidth = 2 -- Width of an auto-indent step
+-- Indentation: width sourced from user-settings (default 2 — standard for Node.js / TypeScript)
+opt.tabstop = settings.editor.indent_width -- Width of a tab character
+opt.shiftwidth = settings.editor.indent_width -- Width of an auto-indent step
 opt.expandtab = true -- Convert tabs to spaces
 opt.smartindent = true -- Context-aware auto-indent
 

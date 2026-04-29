@@ -21,6 +21,8 @@
 --   * Optional system tools `jq` and `xmllint` are wired up as response
 --     formatters — they are graceful no-ops if the binary is missing.
 
+local settings = require("config.user-settings")
+
 return {
   "mistweaverco/kulala.nvim",
   version = "*", -- Pin to the latest stable release tag
@@ -35,7 +37,7 @@ return {
     split_direction = "horizontal",
     display_mode = "split",
     default_view = "body",
-    default_env = "dev",
+    default_env = settings.http.default_env,
     icons = {
       inlay = {
         loading = "⏳",

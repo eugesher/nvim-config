@@ -10,6 +10,8 @@
 -- mason-lspconfig v2 automatically calls `vim.lsp.enable()` on installed
 -- servers, so we don't need to enable them by hand.
 
+local settings = require("config.user-settings")
+
 return {
   -- Mason: installs and manages LSP servers, linters, formatters, DAP adapters
   {
@@ -124,32 +126,36 @@ return {
       -- conform.nvim already runs Prettier on save, so the ESLint rule is a
       -- duplicate source of truth. In workspace mode (nvim .) the server also
       -- fails to clear these diagnostics after formatting, which surfaces as
-      -- a persistent "Delete `␊`" error.
-      vim.lsp.config(
-        "eslint",
-        {
-          settings = {
-            rulesCustomizations = { { rule = "prettier/prettier", severity = "off" } },
+      -- a persistent "Delete `␊`" error. Severity is user-configurable via
+      -- settings.lsp.eslint_prettier_rule_severity ("off" by default).
+      vim.lsp.config("eslint", {
+        settings = {
+          rulesCustomizations = {
+            { rule = "prettier/prettier", severity = settings.lsp.eslint_prettier_rule_severity },
           },
-        }
-      )
+        },
+      })
 
-      -- ts_ls — TypeScript / JavaScript language server
+      -- ts_ls — TypeScript / JavaScript language server.
+      -- Inline parameter / type hints (Neovim 0.10+). Each sub-toggle is
+      -- read directly from settings.lsp.ts_inlay_hints — the keys mirror the
+      -- LSP server's settings shape so there is no translation layer.
       vim.lsp.config("ts_ls", {
         settings = {
           typescript = {
             inlayHints = {
-              -- Inline type / parameter hints (Neovim 0.10+)
-              includeInlayParameterNameHints = "all",
-              includeInlayFunctionParameterTypeHints = true,
-              includeInlayVariableTypeHints = true,
+              includeInlayParameterNameHints = settings.lsp.ts_inlay_hints.parameter_names,
+              includeInlayFunctionParameterTypeHints = settings.lsp.ts_inlay_hints.function_parameter_types,
+              includeInlayVariableTypeHints = settings.lsp.ts_inlay_hints.variable_types,
             },
           },
         },
       })
 
-      -- JSON — enable schema validation
-      vim.lsp.config("jsonls", { settings = { json = { validate = { enable = true } } } })
+      -- JSON — schema validation toggle (settings.lsp.jsonls_schema_validation).
+      vim.lsp.config("jsonls", {
+        settings = { json = { validate = { enable = settings.lsp.jsonls_schema_validation } } },
+      })
 
       -- YAML — drop nvim-lspconfig's default compound filetypes
       -- (yaml.docker-compose, yaml.gitlab, yaml.helm-values). Without dedicated
