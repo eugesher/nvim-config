@@ -23,6 +23,8 @@
 --   * Saved connections persist to `g:db_ui_save_location` (see below) so they
 --     survive across Neovim restarts and live outside this repo.
 
+local settings = require("config.user-settings")
+
 return {
   {
     "kristijanhusak/vim-dadbod-ui",
@@ -68,8 +70,8 @@ return {
       -- Show row count in the result panel header.
       vim.g.db_ui_show_database_icon = 1
       vim.g.db_ui_force_echo_notifications = 0
-      vim.g.db_ui_win_position = "left"
-      vim.g.db_ui_winwidth = 35
+      vim.g.db_ui_win_position = settings.dadbod.win_position
+      vim.g.db_ui_winwidth = settings.dadbod.winwidth
     end,
   },
 

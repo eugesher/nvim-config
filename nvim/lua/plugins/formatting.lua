@@ -2,6 +2,8 @@
 -- conform.nvim: a lightweight formatter runner. Install Prettier and stylua
 -- via :Mason (or configure mason-tool-installer) before using.
 
+local settings = require("config.user-settings")
+
 return {
   "stevearc/conform.nvim",
   event = "BufWritePre", -- Load before the first write
@@ -33,7 +35,7 @@ return {
 
       -- Format on save
       format_on_save = {
-        timeout_ms = 3000, -- Max wait time (ms)
+        timeout_ms = settings.formatting.format_on_save_timeout_ms,
         lsp_fallback = true, -- Fall back to the LSP formatter if none is configured
       },
     })
