@@ -3,6 +3,9 @@
 
 local settings = require("config.user-settings")
 
+-- Module-scope so the catppuccin and lualine specs below share one source.
+local black = "#000000"
+
 return {
   -- Colorscheme
   {
@@ -12,21 +15,32 @@ return {
     config = function()
       require("catppuccin").setup({
         flavour = settings.colorscheme.flavour, -- Variants: latte, frappe, macchiato, mocha
-        color_overrides = {
-          mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
-        },
-        -- custom_highlights = function(colors)
-        --   return {
-        --     NeoTreeNormal = { fg = colors.text },
-        --     NeoTreeNormalNC = { fg = colors.text },
-        --     NeoTreeFileName = { fg = colors.text },
-        --     NeoTreeFileIcon = { fg = colors.text },
-        --     NeoTreeSymbolicLinkTarget = { fg = colors.text },
-        --     NeoTreeDirectoryName = { fg = colors.lavender },
-        --     NeoTreeDirectoryIcon = { fg = colors.lavender },
-        --     NeoTreeRootName = { fg = colors.lavender },
-        --   }
-        -- end,
+        -- Per-group overrides (not `color_overrides`) so `CursorLine` can stay
+        -- separable from `Normal` — palette-level edits coupled them together.
+        custom_highlights = function(colors)
+          local cursor_bg = colors.crust
+
+          return {
+            -- Editor surfaces.
+            Normal = { bg = black },
+            NormalNC = { bg = black },
+            SignColumn = { bg = black },
+            LineNr = { bg = black },
+            CursorLineNr = { bg = black },
+            CursorLine = { bg = cursor_bg },
+            StatusLine = { bg = black },
+            StatusLineNC = { bg = black },
+
+            -- Neo-tree surfaces. Neo-tree's built-in `winhighlight` already
+            -- remaps these, so defining the groups is enough. `CursorLine` is
+            -- the exception — appended in the event handler below.
+            NeoTreeNormal = { bg = black },
+            NeoTreeNormalNC = { bg = black },
+            NeoTreeEndOfBuffer = { bg = black },
+            NeoTreeCursorLine = { bg = cursor_bg },
+            NeoTreeWinSeparator = { bg = black },
+          }
+        end,
       })
       vim.cmd.colorscheme("catppuccin")
     end,
@@ -37,9 +51,22 @@ return {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" },
     config = function()
+      -- Theme required as a table (not the `"catppuccin-mocha"` string) so
+      -- per-section colours can be edited. Black out `b`/`c` (mirrored to
+      -- `y`/`x`); leave `a` on its catppuccin blue.
+      local theme = require("lualine.themes.catppuccin-mocha")
+      for _, mode in pairs(theme) do
+        if mode.b then
+          mode.b.bg = black
+        end
+        if mode.c then
+          mode.c.bg = black
+        end
+      end
+
       require("lualine").setup({
         options = {
-          theme = "catppuccin-mocha",
+          theme = theme,
           component_separators = { left = "│", right = "│" },
           section_separators = { left = "", right = "" },
         },
@@ -73,9 +100,6 @@ return {
         window = {
           position = settings.neo_tree.position,
           width = settings.neo_tree.window_width,
-          mappings = {
-            ["<leader><space>"] = "toggle_node",
-          },
         },
 
         filesystem = {
@@ -91,6 +115,22 @@ return {
         },
 
         event_handlers = {
+          {
+            -- Neo-tree's built-in `winhighlight` doesn't include `CursorLine`;
+            -- append the remap so the tree gets a visible cursor row.
+            -- Appended (not assigned) to preserve neo-tree's own `Normal`/
+            -- `NormalNC`/`EndOfBuffer` remaps.
+            event = "neo_tree_buffer_enter",
+            handler = function()
+              vim.wo.cursorline = true
+              vim.wo.cursorlineopt = "both"
+              local current = vim.wo.winhighlight
+              local addition = "CursorLine:NeoTreeCursorLine"
+              if not current:find(addition, 1, true) then
+                vim.wo.winhighlight = current == "" and addition or current .. "," .. addition
+              end
+            end,
+          },
           {
             -- After Neo-tree opens as a sidebar, drop the throwaway `[No Name]`
             -- buffer Neovim creates at startup. Without this, `nvim .` and
