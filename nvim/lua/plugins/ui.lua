@@ -3,6 +3,9 @@
 
 local settings = require("config.user-settings")
 
+-- Module-scope so the catppuccin and lualine specs below share one source.
+local black = "#000000"
+
 return {
   -- Colorscheme
   {
@@ -12,39 +15,30 @@ return {
     config = function()
       require("catppuccin").setup({
         flavour = settings.colorscheme.flavour, -- Variants: latte, frappe, macchiato, mocha
-        -- Pure-black look applied per highlight group instead of via
-        -- `color_overrides`. The previous palette-level approach (overriding
-        -- `surface0`/`base`/`mantle`/`crust` to `#000000`) painted multiple
-        -- derived groups at once — including `CursorLine`, which then matched
-        -- `Normal` and rendered the cursor line invisible. Editing the
-        -- highlight groups directly keeps each visual concern independent.
-        custom_highlights = function()
-          local bg = "#000000"
-          local cursor_bg = "#11111b" -- canonical Mocha `crust` — slightly off-black, kept visible against `bg`
+        -- Per-group overrides (not `color_overrides`) so `CursorLine` can stay
+        -- separable from `Normal` — palette-level edits coupled them together.
+        custom_highlights = function(colors)
+          local cursor_bg = colors.crust
 
           return {
             -- Editor surfaces.
-            Normal = { bg = bg },
-            NormalNC = { bg = bg },
-            SignColumn = { bg = bg },
-            LineNr = { bg = bg },
-            CursorLineNr = { bg = bg },
+            Normal = { bg = black },
+            NormalNC = { bg = black },
+            SignColumn = { bg = black },
+            LineNr = { bg = black },
+            CursorLineNr = { bg = black },
             CursorLine = { bg = cursor_bg },
-            StatusLine = { bg = bg },
-            StatusLineNC = { bg = bg },
+            StatusLine = { bg = black },
+            StatusLineNC = { bg = black },
 
             -- Neo-tree surfaces. Neo-tree's built-in `winhighlight` already
-            -- remaps `Normal`/`NormalNC`/`EndOfBuffer` (etc.) to its own
-            -- `NeoTree*` groups on the tree window, so defining these groups
-            -- here is enough to recolour the panel — no extra wiring needed.
-            -- `CursorLine` is the exception: neo-tree does NOT include it in
-            -- its winhighlight, so the `neo_tree_buffer_enter` handler below
-            -- appends the `CursorLine:NeoTreeCursorLine` remap manually.
-            NeoTreeNormal = { bg = bg },
-            NeoTreeNormalNC = { bg = bg },
-            NeoTreeEndOfBuffer = { bg = bg },
+            -- remaps these, so defining the groups is enough. `CursorLine` is
+            -- the exception — appended in the event handler below.
+            NeoTreeNormal = { bg = black },
+            NeoTreeNormalNC = { bg = black },
+            NeoTreeEndOfBuffer = { bg = black },
             NeoTreeCursorLine = { bg = cursor_bg },
-            NeoTreeWinSeparator = { bg = bg },
+            NeoTreeWinSeparator = { bg = black },
           }
         end,
       })
@@ -57,9 +51,22 @@ return {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" },
     config = function()
+      -- Theme required as a table (not the `"catppuccin-mocha"` string) so
+      -- per-section colours can be edited. Black out `b`/`c` (mirrored to
+      -- `y`/`x`); leave `a` on its catppuccin blue.
+      local theme = require("lualine.themes.catppuccin-mocha")
+      for _, mode in pairs(theme) do
+        if mode.b then
+          mode.b.bg = black
+        end
+        if mode.c then
+          mode.c.bg = black
+        end
+      end
+
       require("lualine").setup({
         options = {
-          theme = "catppuccin-mocha",
+          theme = theme,
           component_separators = { left = "│", right = "│" },
           section_separators = { left = "", right = "" },
         },
@@ -109,15 +116,10 @@ return {
 
         event_handlers = {
           {
-            -- Full-width cursor line in the tree. neo-tree's built-in
-            -- `winhighlight` does not include `CursorLine`, so we append a
-            -- `CursorLine:NeoTreeCursorLine` remap here. That keeps the tree's
-            -- cursor-line styling separable from the editor's, even though
-            -- both currently share the same `#11111b` background (defined in
-            -- `custom_highlights` above). Appending — rather than assigning —
-            -- preserves neo-tree's own `Normal`/`NormalNC`/`EndOfBuffer`
-            -- remaps; firing on every buffer-enter keeps the highlight valid
-            -- across panel resize and focus changes.
+            -- Neo-tree's built-in `winhighlight` doesn't include `CursorLine`;
+            -- append the remap so the tree gets a visible cursor row.
+            -- Appended (not assigned) to preserve neo-tree's own `Normal`/
+            -- `NormalNC`/`EndOfBuffer` remaps.
             event = "neo_tree_buffer_enter",
             handler = function()
               vim.wo.cursorline = true
