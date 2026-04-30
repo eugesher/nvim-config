@@ -15,18 +15,15 @@ return {
         color_overrides = {
           mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
         },
-        -- custom_highlights = function(colors)
-        --   return {
-        --     NeoTreeNormal = { fg = colors.text },
-        --     NeoTreeNormalNC = { fg = colors.text },
-        --     NeoTreeFileName = { fg = colors.text },
-        --     NeoTreeFileIcon = { fg = colors.text },
-        --     NeoTreeSymbolicLinkTarget = { fg = colors.text },
-        --     NeoTreeDirectoryName = { fg = colors.lavender },
-        --     NeoTreeDirectoryIcon = { fg = colors.lavender },
-        --     NeoTreeRootName = { fg = colors.lavender },
-        --   }
-        -- end,
+        custom_highlights = function(colors)
+          return {
+            -- Visible cursor-line background scoped to the neo-tree window via
+            -- `winhighlight` (see the `neo_tree_buffer_enter` handler below).
+            -- The default `CursorLine` uses `surface0`, which is overridden
+            -- above to pure black and therefore invisible against `base`.
+            NeoTreeCursorLine = { bg = colors.surface1 },
+          }
+        end,
       })
       vim.cmd.colorscheme("catppuccin")
     end,
@@ -73,9 +70,6 @@ return {
         window = {
           position = settings.neo_tree.position,
           width = settings.neo_tree.window_width,
-          mappings = {
-            ["<leader><space>"] = "toggle_node",
-          },
         },
 
         filesystem = {
@@ -91,6 +85,27 @@ return {
         },
 
         event_handlers = {
+          {
+            -- Full-width cursor line in the tree. `cursorline` is on globally,
+            -- but the catppuccin override above paints `surface0` (the default
+            -- `CursorLine` background) the same colour as `base`, making the
+            -- highlight invisible. Remapping `CursorLine` → `NeoTreeCursorLine`
+            -- via `winhighlight` scopes a visible colour to this one window
+            -- without touching cursorline appearance in editor buffers. The
+            -- value is appended (not assigned) so neo-tree's own
+            -- `Normal`/`NormalNC` remappings stay intact, and the firing on
+            -- every buffer-enter survives panel resize and focus changes.
+            event = "neo_tree_buffer_enter",
+            handler = function()
+              vim.wo.cursorline = true
+              vim.wo.cursorlineopt = "both"
+              local current = vim.wo.winhighlight
+              local addition = "CursorLine:NeoTreeCursorLine"
+              if not current:find(addition, 1, true) then
+                vim.wo.winhighlight = current == "" and addition or current .. "," .. addition
+              end
+            end,
+          },
           {
             -- After Neo-tree opens as a sidebar, drop the throwaway `[No Name]`
             -- buffer Neovim creates at startup. Without this, `nvim .` and

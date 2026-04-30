@@ -195,7 +195,6 @@ The file tree on the left is [`neo-tree.nvim`](https://github.com/nvim-neo-tree/
 | `S`               | Open in horizontal split                 |                                                                                                                       |
 | `t`               | Open in new tab                          |                                                                                                                       |
 | `<Space>`         | Toggle directory                         | Expands or collapses the directory under the cursor                                                                   |
-| `<leader><Space>` | Toggle directory (chord)                 | Same action as `<Space>`, but fires immediately on the second keystroke instead of waiting out `timeoutlen`           |
 | `a`               | Add file or directory                    | Append `/` to the prompt to create a directory                                                                        |
 | `A`               | Add directory                            |                                                                                                                       |
 | `d`               | Delete                                   | Confirms before deleting                                                                                              |
@@ -214,6 +213,7 @@ Behavior:
 
 - **Hidden files**: dotfiles **and** `.gitignore`-listed files are hidden by default. Toggle with `H` inside the tree.
 - **Width**: ~20% of terminal width on startup (`math.floor(vim.go.columns * 0.2)` — sized once at config time, not auto-resized on `:resize`).
+- **Cursor row**: highlighted across the full panel width via a window-scoped `CursorLine` → `NeoTreeCursorLine` remap, so editor buffers keep their default cursorline appearance.
 - **Closing files keeps the tree**: `close_if_last_window` is **off**, so `:q` / `:q!` / `ZZ` close the file window and leave the cursor on the tree instead of exiting Neovim. Use `:qa` (or close the tree first) when you actually want to quit.
 - **`netrw` replacement**: opening a directory (`:edit src/`) routes to neo-tree instead of netrw.
 - **Live FS updates**: external changes (git pulls, codegen) refresh the tree automatically via `libuv` watchers.
