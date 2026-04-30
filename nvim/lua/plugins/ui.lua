@@ -12,16 +12,39 @@ return {
     config = function()
       require("catppuccin").setup({
         flavour = settings.colorscheme.flavour, -- Variants: latte, frappe, macchiato, mocha
-        color_overrides = {
-          mocha = { surface0 = "#000000", base = "#000000", mantle = "#000000", crust = "#000000" },
-        },
-        custom_highlights = function(colors)
+        -- Pure-black look applied per highlight group instead of via
+        -- `color_overrides`. The previous palette-level approach (overriding
+        -- `surface0`/`base`/`mantle`/`crust` to `#000000`) painted multiple
+        -- derived groups at once — including `CursorLine`, which then matched
+        -- `Normal` and rendered the cursor line invisible. Editing the
+        -- highlight groups directly keeps each visual concern independent.
+        custom_highlights = function()
+          local bg = "#000000"
+          local cursor_bg = "#11111b" -- canonical Mocha `crust` — slightly off-black, kept visible against `bg`
+
           return {
-            -- Visible cursor-line background scoped to the neo-tree window via
-            -- `winhighlight` (see the `neo_tree_buffer_enter` handler below).
-            -- The default `CursorLine` uses `surface0`, which is overridden
-            -- above to pure black and therefore invisible against `base`.
-            NeoTreeCursorLine = { bg = colors.surface1 },
+            -- Editor surfaces.
+            Normal = { bg = bg },
+            NormalNC = { bg = bg },
+            SignColumn = { bg = bg },
+            LineNr = { bg = bg },
+            CursorLineNr = { bg = bg },
+            CursorLine = { bg = cursor_bg },
+            StatusLine = { bg = bg },
+            StatusLineNC = { bg = bg },
+
+            -- Neo-tree surfaces. Neo-tree's built-in `winhighlight` already
+            -- remaps `Normal`/`NormalNC`/`EndOfBuffer` (etc.) to its own
+            -- `NeoTree*` groups on the tree window, so defining these groups
+            -- here is enough to recolour the panel — no extra wiring needed.
+            -- `CursorLine` is the exception: neo-tree does NOT include it in
+            -- its winhighlight, so the `neo_tree_buffer_enter` handler below
+            -- appends the `CursorLine:NeoTreeCursorLine` remap manually.
+            NeoTreeNormal = { bg = bg },
+            NeoTreeNormalNC = { bg = bg },
+            NeoTreeEndOfBuffer = { bg = bg },
+            NeoTreeCursorLine = { bg = cursor_bg },
+            NeoTreeWinSeparator = { bg = bg },
           }
         end,
       })
@@ -86,15 +109,15 @@ return {
 
         event_handlers = {
           {
-            -- Full-width cursor line in the tree. `cursorline` is on globally,
-            -- but the catppuccin override above paints `surface0` (the default
-            -- `CursorLine` background) the same colour as `base`, making the
-            -- highlight invisible. Remapping `CursorLine` → `NeoTreeCursorLine`
-            -- via `winhighlight` scopes a visible colour to this one window
-            -- without touching cursorline appearance in editor buffers. The
-            -- value is appended (not assigned) so neo-tree's own
-            -- `Normal`/`NormalNC` remappings stay intact, and the firing on
-            -- every buffer-enter survives panel resize and focus changes.
+            -- Full-width cursor line in the tree. neo-tree's built-in
+            -- `winhighlight` does not include `CursorLine`, so we append a
+            -- `CursorLine:NeoTreeCursorLine` remap here. That keeps the tree's
+            -- cursor-line styling separable from the editor's, even though
+            -- both currently share the same `#11111b` background (defined in
+            -- `custom_highlights` above). Appending — rather than assigning —
+            -- preserves neo-tree's own `Normal`/`NormalNC`/`EndOfBuffer`
+            -- remaps; firing on every buffer-enter keeps the highlight valid
+            -- across panel resize and focus changes.
             event = "neo_tree_buffer_enter",
             handler = function()
               vim.wo.cursorline = true
