@@ -52,7 +52,10 @@ return {
   dependencies = {
     "nvim-tree/nvim-web-devicons",
     "famiu/bufdelete.nvim",
-    "catppuccin",
+    -- Canonical GitHub slug — lazy.nvim resolves dependencies by URL, not by
+    -- the `name = "catppuccin"` alias set in `ui.lua`. Using the short alias
+    -- here silently fails to load catppuccin in time for our `config()`.
+    "catppuccin/nvim",
   },
   config = function()
     require("bufferline").setup({
@@ -93,9 +96,14 @@ return {
         separator_style = settings.bufferline.separator_style,
         indicator = { style = "underline" },
       },
-      -- Palette-aware highlights from catppuccin. Returns an empty table on
-      -- non-catppuccin themes, so swapping colorschemes won't error out.
-      highlights = require("catppuccin.groups.integrations.bufferline").get(),
+      -- Palette-aware highlights from catppuccin. Wrapped in pcall so a
+      -- colorscheme swap (or the integration module being moved/renamed in a
+      -- future catppuccin release) degrades gracefully to bufferline's
+      -- defaults instead of an error during `config()`.
+      highlights = (function()
+        local ok, integration = pcall(require, "catppuccin.groups.integrations.bufferline")
+        return ok and integration.get() or {}
+      end)(),
     })
 
     -- Buffer keymaps. Live under the `<leader>b` namespace ("**b**uffer")
