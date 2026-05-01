@@ -115,9 +115,11 @@ return {
 
     map("]b", "<cmd>BufferLineCycleNext<CR>", "Buffer: next")
     map("[b", "<cmd>BufferLineCyclePrev<CR>", "Buffer: previous")
-    map("<leader>bd", function()
+    local function delete_current_buffer()
       safe_buffer_delete(vim.api.nvim_get_current_buf(), false)
-    end, "Buffer: delete (safe)")
+    end
+    map("<leader>bd", delete_current_buffer, "Buffer: delete (safe)")
+    map("<leader>q", delete_current_buffer, "Buffer: delete (safe)")
     map("<leader>bp", "<cmd>BufferLinePick<CR>", "Buffer: pick")
     map("<leader>b>", "<cmd>BufferLineMoveNext<CR>", "Buffer: move right")
     map("<leader>b<", "<cmd>BufferLineMovePrev<CR>", "Buffer: move left")
