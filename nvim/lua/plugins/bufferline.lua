@@ -43,6 +43,14 @@ local function safe_buffer_delete(bufnr, force)
     force = true
   end
   bufdelete.bufdelete(bufnr, force)
+
+  -- Scenario C of the fallback-buf feature: when there were no other listed
+  -- buffers, bufdelete drops the window onto a fresh [No Name]. Replace it
+  -- with the configured fallback file (TODO.md / README.md / …) so the user
+  -- never has to stare at an empty buffer.
+  if vim.api.nvim_buf_get_name(0) == "" then
+    require("config.fallback-buf").open_fallback_file()
+  end
 end
 
 return {
