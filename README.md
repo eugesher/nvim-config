@@ -131,6 +131,7 @@ nvim/
         ├── lazygit.lua           -- snacks.nvim, lazygit module only (Snacks.lazygit() bound to <leader>gg)
         ├── dadbod.lua            -- vim-dadbod + dadbod-ui + dadbod-completion (database client)
         ├── kulala.lua            -- kulala.nvim HTTP client (.http / .rest files)
+        ├── bufferline.lua        -- bufferline.nvim tab line + famiu/bufdelete.nvim safe close
         └── ui.lua                -- catppuccin (mocha), lualine statusline, neo-tree file explorer (pulls in nvim-web-devicons)
 ```
 
@@ -219,6 +220,39 @@ Behavior:
 - **Live FS updates**: external changes (git pulls, codegen) refresh the tree automatically via `libuv` watchers.
 
 > Migrated from `nvim-tree.lua`. The global `<leader>e` toggle is unchanged. In-tree keys now follow neo-tree's defaults (e.g. `s` / `S` for splits instead of `<C-x>` / `<C-v>`); use `?` inside the tree for a complete reference.
+
+### Buffers (bufferline.nvim)
+
+[`bufferline.nvim`](https://github.com/akinsho/bufferline.nvim) renders open buffers as a clickable tab strip across the top of the window. nvim's underlying buffer model is unchanged — bufferline only adds the visual layer and per-tab click handlers.
+
+Buffer commands live under the `<leader>b` namespace ("**b**uffer"); the `]b` / `[b` cycle pair follows Tim Pope's unimpaired convention.
+
+| Key                       | Action                | Description                                                                |
+| ------------------------- | --------------------- | -------------------------------------------------------------------------- |
+| `]b`                      | Next buffer           | Cycle forward through the tab strip                                        |
+| `[b`                      | Previous buffer       | Cycle backward through the tab strip                                       |
+| `<leader>bd`              | Delete buffer (safe)  | Closes the buffer without collapsing the window (via `bufdelete.nvim`)     |
+| `<leader>bp`              | Pick buffer           | Shows a single-letter overlay on each tab; press a letter to jump          |
+| `<leader>b>`              | Move tab right        | Re-orders the current buffer one position to the right                     |
+| `<leader>b<`              | Move tab left         | Re-orders the current buffer one position to the left                      |
+| `<leader>bo`              | Close other buffers   | Keeps the current buffer, deletes every other listed one                   |
+| `<leader>bP`              | Toggle pin            | Pins / unpins the current buffer (pinned tabs are sticky in cycle / pick)  |
+| `<leader>1` … `<leader>9` | Jump to buffer N      | Jumps to the nth tab as displayed in the strip (`numbers = "ordinal"`)     |
+
+Behavior:
+
+- **Safe close**: clicking the per-tab `x` icon, right-clicking a tab, or pressing `<leader>bd` all route through [`famiu/bufdelete.nvim`](https://github.com/famiu/bufdelete.nvim). Stock `:bdelete` collapses any window that was showing the closed buffer; `bufdelete` switches the window to the next listed buffer first, then deletes — your splits stay intact.
+- **LSP diagnostics in the tab line**: each tab shows a `(N)` suffix when the LSP reports diagnostics for that buffer (driver: `diagnostics = "nvim_lsp"`). Disable in [`user-settings.lua`](nvim/lua/config/user-settings.lua) (`bufferline.diagnostics = false`).
+- **Modified marker**: unsaved buffers get a visible dot (`show_modified_icon = true`) so you don't lose track of dirty tabs.
+- **Sidebar offset**: when neo-tree is open the tab strip is shifted right and a `File Explorer` header appears above the tree, so tabs never sit under the file panel.
+- **Catppuccin integration**: highlights are pulled from `catppuccin.groups.integrations.bufferline.get()`. Tab colours follow the active flavour automatically.
+- **Indices vs. nvim buffer numbers**: the digit shown next to each tab is its **ordinal position in the strip**, not nvim's internal buffer ID — so `<leader>3` always means "the third visible tab" regardless of buffer reuse / deletion order. Re-ordering with `<leader>b>` / `<leader>b<` shifts those indices.
+
+Dependencies (auto-installed):
+
+- `nvim-tree/nvim-web-devicons` — file-type glyphs (already pulled in by lualine and neo-tree).
+- `famiu/bufdelete.nvim` — safe buffer close.
+- `catppuccin/nvim` — palette source for the highlight integration.
 
 ### LSP (any file with an attached language server)
 

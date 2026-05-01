@@ -67,6 +67,18 @@ return {
     default_env = "dev",
   },
 
+  -- bufferline.nvim tab line (lua/plugins/bufferline.lua).
+  bufferline = {
+    -- LSP diagnostics counts shown next to each buffer's name.
+    -- "nvim_lsp" | "coc" | false (disable). Set false to keep the bar quiet.
+    diagnostics = "nvim_lsp",
+    -- Tab separator style. "slant" | "slope" | "thick" | "thin".
+    -- Slant pairs naturally with the rounded edges in catppuccin's palette.
+    separator_style = "slant",
+    -- Show the bar even with one buffer open (true) vs auto-hide (false).
+    always_show = true,
+  },
+
   -- LSP feature toggles (lua/plugins/lsp.lua).
   -- Granular shape: keys mirror the actual LSP server settings so the plugin
   -- spec passes them through with no translation layer. Set any sub-value
