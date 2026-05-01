@@ -11,7 +11,6 @@ vim.g.maplocalleader = " "
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
-require("config.fallback-buf")
 
 -- Bootstrap the plugin manager (installs lazy.nvim on first run)
 require("lazy-bootstrap")

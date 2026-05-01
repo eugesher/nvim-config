@@ -24,13 +24,6 @@ return {
     -- Width (in spaces) of one indent step. Drives `tabstop` and `shiftwidth`.
     -- Common values: 2 (Node/TS), 4 (Python/Java).
     indent_width = 2,
-
-    -- Ordered list of filenames tried, in order, when we'd otherwise be left
-    -- staring at [No Name]: opening `nvim <dir>`, toggling neo-tree from a
-    -- fresh session, or closing the last listed buffer. The first file found
-    -- in the current working directory is loaded; if none exist, the empty
-    -- buffer is left in place. See `lua/config/fallback-buf.lua`.
-    fallback_files = { "TODO.md", "README.md" },
   },
 
   -- Catppuccin colorscheme. Variants (light → dark): latte, frappe, macchiato, mocha.
