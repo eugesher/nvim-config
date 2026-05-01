@@ -18,27 +18,54 @@ return {
         -- Per-group overrides (not `color_overrides`) so `CursorLine` can stay
         -- separable from `Normal` — palette-level edits coupled them together.
         custom_highlights = function(colors)
-          local cursor_bg = colors.crust
+          local window_bg = black
+          local window_cursor_bg = colors.crust
+          local float_bg = black
+          local float_border_fg = colors.blue
+          local float_cursor_bg = colors.crust
 
           return {
             -- Editor surfaces.
-            Normal = { bg = black },
-            NormalNC = { bg = black },
-            SignColumn = { bg = black },
-            LineNr = { bg = black },
-            CursorLineNr = { bg = black },
-            CursorLine = { bg = cursor_bg },
-            StatusLine = { bg = black },
-            StatusLineNC = { bg = black },
+            Normal = { bg = window_bg },
+            NormalNC = { bg = window_bg },
+            SignColumn = { bg = window_bg },
+            LineNr = { bg = window_bg },
+            CursorLineNr = { bg = window_cursor_bg },
+            CursorLine = { bg = window_cursor_bg },
+            StatusLine = { bg = window_bg },
+            StatusLineNC = { bg = window_bg },
 
             -- Neo-tree surfaces. Neo-tree's built-in `winhighlight` already
             -- remaps these, so defining the groups is enough. `CursorLine` is
             -- the exception — appended in the event handler below.
-            NeoTreeNormal = { bg = black },
-            NeoTreeNormalNC = { bg = black },
-            NeoTreeEndOfBuffer = { bg = black },
-            NeoTreeCursorLine = { bg = cursor_bg },
-            NeoTreeWinSeparator = { bg = black },
+            NeoTreeNormal = { bg = window_bg },
+            NeoTreeNormalNC = { bg = window_bg },
+            NeoTreeEndOfBuffer = { bg = window_bg },
+            NeoTreeCursorLine = { bg = window_cursor_bg },
+            NeoTreeWinSeparator = { bg = window_bg },
+
+            -- Generic floating-window baseline: LSP hover, `vim.ui.select`,
+            -- the `Snacks.lazygit()` terminal float, and any future plugin
+            -- that uses the stock groups. nvim-cmp's `bordered()` windows
+            -- remap `Normal` and `FloatBorder` to `Pmenu` / `CmpDocBorder`
+            -- via `winhighlight`, so the completion menu is unaffected.
+            NormalFloat = { bg = float_bg },
+            FloatBorder = { bg = float_bg, fg = float_border_fg },
+
+            -- Telescope pickers. Telescope sets `winhighlight` so the
+            -- results window's `CursorLine` is remapped to
+            -- `TelescopeSelection` — overriding that group here is enough
+            -- to colour the selected row, no per-buffer autocmd needed.
+            TelescopeNormal = { bg = float_bg },
+            TelescopePreviewNormal = { bg = float_bg },
+            TelescopePromptNormal = { bg = float_bg },
+            TelescopeResultsNormal = { bg = float_bg },
+            TelescopeBorder = { bg = float_bg, fg = float_border_fg },
+            TelescopePreviewBorder = { bg = float_bg, fg = float_border_fg },
+            TelescopePromptBorder = { bg = float_bg, fg = float_border_fg },
+            TelescopeResultsBorder = { bg = float_bg, fg = float_border_fg },
+            TelescopeSelection = { bg = float_cursor_bg },
+            TelescopeSelectionCaret = { bg = float_cursor_bg },
           }
         end,
       })
