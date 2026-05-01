@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/gitsigns.lua
 -- Git change indicators in the sign column.
 
 return {
@@ -12,7 +11,17 @@ return {
         delete = { text = "▁" },
         topdelete = { text = "▔" },
         changedelete = { text = "█" },
+        untracked = { text = "┆" },
       },
+      signs_staged = {
+        add = { text = "█" },
+        change = { text = "█" },
+        delete = { text = "▁" },
+        topdelete = { text = "▔" },
+        changedelete = { text = "█" },
+        untracked = { text = "┆" },
+      },
+      numhl = true,
     })
   end,
 }
