@@ -225,7 +225,7 @@ Behavior:
 
 [`bufferline.nvim`](https://github.com/akinsho/bufferline.nvim) renders open buffers as a clickable tab strip across the top of the window. nvim's underlying buffer model is unchanged — bufferline only adds the visual layer and per-tab click handlers.
 
-Buffer commands live under the `<leader>b` namespace ("buffer"); the `]b` / `[b` cycle pair follows Tim Pope's unimpaired convention.
+Buffer commands live under the `<leader>b` namespace; the `]b` / `[b` cycle pair follows Tim Pope's unimpaired convention.
 
 | Key                       | Action               | Description                                                               |
 | ------------------------- | -------------------- | ------------------------------------------------------------------------- |
