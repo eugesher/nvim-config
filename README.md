@@ -429,7 +429,7 @@ of the JSON files (`dev`, `staging`, `prod`).
    then re-run the request — `{{baseUrl}}` and `{{username}}` are resolved
    from the matching environment.
 5. Run the `### Login and capture token` request, then the `### Use token from
-login response` request — the second one references
+   login response` request — the second one references
    `{{login.response.body.$.token}}`, which kulala resolves from the previous
    response.
 
