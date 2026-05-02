@@ -21,8 +21,9 @@ return {
           local window_bg = black
           local window_cursor_bg = colors.crust
           local float_bg = black
-          local float_border_fg = colors.blue
-          local float_cursor_bg = colors.crust
+          local float_cursor_bg = colors.mantle
+          local float_fg = colors.blue
+          local telescope_preview_line_bg = colors.base
 
           return {
             -- Editor surfaces.
@@ -41,8 +42,8 @@ return {
             NeoTreeNormal = { bg = window_bg },
             NeoTreeNormalNC = { bg = window_bg },
             NeoTreeEndOfBuffer = { bg = window_bg },
-            NeoTreeCursorLine = { bg = window_cursor_bg },
             NeoTreeWinSeparator = { bg = window_bg },
+            NeoTreeCursorLine = { bg = window_cursor_bg },
 
             -- Generic floating-window baseline: LSP hover, `vim.ui.select`,
             -- the `Snacks.lazygit()` terminal float, and any future plugin
@@ -50,7 +51,8 @@ return {
             -- remap `Normal` and `FloatBorder` to `Pmenu` / `CmpDocBorder`
             -- via `winhighlight`, so the completion menu is unaffected.
             NormalFloat = { bg = float_bg },
-            FloatBorder = { bg = float_bg, fg = float_border_fg },
+            FloatBorder = { bg = float_bg, fg = float_fg },
+            FloatTitle = { bg = float_bg, fg = float_fg },
 
             -- Telescope pickers. Telescope sets `winhighlight` so the
             -- results window's `CursorLine` is remapped to
@@ -60,12 +62,13 @@ return {
             TelescopePreviewNormal = { bg = float_bg },
             TelescopePromptNormal = { bg = float_bg },
             TelescopeResultsNormal = { bg = float_bg },
-            TelescopeBorder = { bg = float_bg, fg = float_border_fg },
-            TelescopePreviewBorder = { bg = float_bg, fg = float_border_fg },
-            TelescopePromptBorder = { bg = float_bg, fg = float_border_fg },
-            TelescopeResultsBorder = { bg = float_bg, fg = float_border_fg },
+            TelescopeBorder = { bg = float_bg, fg = float_fg },
+            TelescopePreviewBorder = { bg = float_bg, fg = float_fg },
+            TelescopePromptBorder = { bg = float_bg, fg = float_fg },
+            TelescopeResultsBorder = { bg = float_bg, fg = float_fg },
             TelescopeSelection = { bg = float_cursor_bg },
             TelescopeSelectionCaret = { bg = float_cursor_bg },
+            TelescopePreviewLine = { bg = telescope_preview_line_bg },
           }
         end,
       })

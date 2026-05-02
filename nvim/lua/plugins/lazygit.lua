@@ -7,12 +7,23 @@ return {
   "folke/snacks.nvim",
   lazy = false,
   priority = 1000,
-  opts = { lazygit = { enabled = true } },
-  keys = { {
-    "<leader>gg",
-    function()
-      Snacks.lazygit()
-    end,
-    desc = "Open LazyGit",
-  } },
+  opts = {
+    lazygit = {
+      enabled = true,
+      -- Mirror Neovim's `CursorLine` (already `bg = crust` in `ui.lua`) so
+      -- the lazygit cursor row tracks the editor's cursor row.
+      theme = {
+        selectedLineBgColor = { bg = "TelescopeSelection" },
+      },
+    },
+  },
+  keys = {
+    {
+      "<leader>gg",
+      function()
+        Snacks.lazygit()
+      end,
+      desc = "Open LazyGit",
+    },
+  },
 }
