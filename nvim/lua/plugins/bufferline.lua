@@ -102,7 +102,9 @@ return {
       -- defaults instead of an error during `config()`.
       highlights = (function()
         local ok, integration = pcall(require, "catppuccin.groups.integrations.bufferline")
-        return ok and integration.get() or {}
+        local hl = ok and integration.get() or {}
+        hl.buffer_selected = vim.tbl_extend("force", hl.buffer_selected or {}, { italic = false })
+        return hl
       end)(),
     })
 
@@ -130,11 +132,7 @@ return {
     -- Generated in a loop because hand-written keys = { ... } entries would
     -- be nine near-identical lines.
     for i = 1, 9 do
-      map(
-        "<leader>" .. i,
-        "<cmd>BufferLineGoToBuffer " .. i .. "<CR>",
-        "Buffer: jump to " .. i
-      )
+      map("<leader>" .. i, "<cmd>BufferLineGoToBuffer " .. i .. "<CR>", "Buffer: jump to " .. i)
     end
   end,
 }
