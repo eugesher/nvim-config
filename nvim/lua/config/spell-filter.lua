@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/config/spell-filter.lua
 -- Definitions-only filter for cspell diagnostics on TypeScript/JavaScript.
 --
 -- Suppresses spell diagnostics whose token sits at an identifier USAGE site,

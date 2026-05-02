@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/formatting.lua
 -- conform.nvim: a lightweight formatter runner. Install Prettier and stylua
 -- via :Mason (or configure mason-tool-installer) before using.
 

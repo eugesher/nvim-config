@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/kulala.lua
 -- HTTP client: kulala.nvim. Run REST requests written in `.http` / `.rest`
 -- files (JetBrains-style) directly from a Neovim buffer, with response
 -- rendering, environment switching, and chained requests.

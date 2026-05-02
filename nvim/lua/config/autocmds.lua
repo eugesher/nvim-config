@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/config/autocmds.lua
 -- Autocommands: event-driven customizations.
 
 local autocmd = vim.api.nvim_create_autocmd

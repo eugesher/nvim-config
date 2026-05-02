@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/spell.lua
 -- Code-aware spell checking for TypeScript / Node.js / NestJS, via `cspell`.
 --
 -- Choice of integration: `none-ls.nvim` + `davidmh/cspell.nvim`.
@@ -82,7 +81,7 @@ return {
 
       -- Requirement §6 (stretch): hide spell warnings on identifier
       -- USAGES, keep them on DEFINITIONS. See that module for the
-      -- Treesitter details and fail-open behaviour.
+      -- Treesitter details and fail-open behavior.
       require("config.spell-filter").setup()
     end,
   },

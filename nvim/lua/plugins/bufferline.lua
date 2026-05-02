@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/bufferline.lua
 -- Tab line: bufferline.nvim renders open buffers as clickable tabs along the
 -- top of the window. Replaces nvim's bare `:buffers` listing with an IDE-style
 -- tab strip while keeping nvim's underlying buffer model intact (one buffer
@@ -11,7 +10,7 @@
 --   * `famiu/bufdelete.nvim` is loaded as a dependency to provide a *safe*
 --     buffer close: it switches the window to the next listed buffer, then
 --     deletes. nvim's stock `:bdelete` collapses any split that was showing
---     the buffer, which is the wrong behaviour for a "close this tab" click.
+--     the buffer, which is the wrong behavior for a "close this tab" click.
 --   * `nvim-web-devicons` is already pulled in by lualine and neo-tree — it's
 --     listed here too as an explicit dependency for clarity (lazy.nvim
 --     de-duplicates plugin loads).
@@ -108,7 +107,7 @@ return {
       end)(),
     })
 
-    -- Buffer keymaps. Live under the `<leader>b` namespace ("**b**uffer")
+    -- Buffer keymaps. Live under the `<leader>b` namespace
     -- with the `]b` / `[b` pair following Tim Pope's unimpaired convention
     -- for "next/previous in some sequence".
     local map = function(lhs, rhs, desc)

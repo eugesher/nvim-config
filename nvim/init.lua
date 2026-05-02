@@ -1,4 +1,3 @@
--- ~/.config/nvim/init.lua
 -- Entry point. Loads all configuration modules.
 
 -- Set the leader key BEFORE loading any plugins.

@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/lsp.lua
 -- Language Server Protocol setup for Neovim 0.11+.
 --
 -- Uses the native `vim.lsp.config()` and `vim.lsp.enable()` API introduced in
@@ -165,17 +164,14 @@ return {
 
       -- Lua — teach the server about the global `vim` table and skip
       -- third-party workspace scanning for faster startup.
-      vim.lsp.config(
-        "lua_ls",
-        {
-          settings = {
-            Lua = {
-              diagnostics = { globals = { "vim" } },
-              workspace = { checkThirdParty = false },
-            },
+      vim.lsp.config("lua_ls", {
+        settings = {
+          Lua = {
+            diagnostics = { globals = { "vim" } },
+            workspace = { checkThirdParty = false },
           },
-        }
-      )
+        },
+      })
 
       -- mason-lspconfig: install these servers and auto-enable them
       -- via vim.lsp.enable() (the default behavior in v2+).

@@ -1,5 +1,3 @@
--- ~/.config/nvim/lua/config/user-settings.lua
---
 -- Single source of truth for end-user-tunable values. Edit this file to
 -- personalize the editor without diving into individual plugin specs.
 --
@@ -19,7 +17,7 @@
 --     reads it via `require("config.user-settings")` and never re-defines it.
 
 return {
-  -- Core editor behaviour. Fed into nvim's `vim.opt.*` from `config/options.lua`.
+  -- Core editor behavior. Fed into nvim's `vim.opt.*` from `config/options.lua`.
   editor = {
     -- Width (in spaces) of one indent step. Drives `tabstop` and `shiftwidth`.
     -- Common values: 2 (Node/TS), 4 (Python/Java).
