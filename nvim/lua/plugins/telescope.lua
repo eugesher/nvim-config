@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/telescope.lua
 -- Telescope: extensible fuzzy finder for files, text, buffers, symbols, etc.
 -- Requires `ripgrep` on the system for live_grep to work.
 

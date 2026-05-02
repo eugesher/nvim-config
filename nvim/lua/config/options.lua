@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/config/options.lua
 -- Core editor options.
 
 local settings = require("config.user-settings")

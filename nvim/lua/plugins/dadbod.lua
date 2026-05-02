@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/dadbod.lua
 -- Database client: tpope/vim-dadbod (core) + vim-dadbod-ui (sidebar / query
 -- buffers) + vim-dadbod-completion (SQL completion source for nvim-cmp).
 --
@@ -45,9 +44,9 @@ return {
       "DBUILastQueryInfo",
     },
     keys = {
-      { "<leader>dbu", "<cmd>DBUIToggle<CR>",        desc = "Database: toggle UI" },
-      { "<leader>dbf", "<cmd>DBUIFindBuffer<CR>",    desc = "Database: find query buffer" },
-      { "<leader>dbr", "<cmd>DBUIRenameBuffer<CR>",  desc = "Database: rename query buffer" },
+      { "<leader>dbu", "<cmd>DBUIToggle<CR>", desc = "Database: toggle UI" },
+      { "<leader>dbf", "<cmd>DBUIFindBuffer<CR>", desc = "Database: find query buffer" },
+      { "<leader>dbr", "<cmd>DBUIRenameBuffer<CR>", desc = "Database: rename query buffer" },
       { "<leader>dba", "<cmd>DBUIAddConnection<CR>", desc = "Database: add connection" },
       { "<leader>dbq", "<cmd>DBUILastQueryInfo<CR>", desc = "Database: last query info" },
     },

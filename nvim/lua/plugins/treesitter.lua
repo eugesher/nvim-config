@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/treesitter.lua
 -- Treesitter: AST-based syntax highlighting, indentation, and navigation.
 
 return {

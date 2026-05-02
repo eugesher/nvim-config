@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/ui.lua
 -- Visual layer: colorscheme, status line, file explorer.
 
 local settings = require("config.user-settings")
@@ -57,7 +56,7 @@ return {
             -- Telescope pickers. Telescope sets `winhighlight` so the
             -- results window's `CursorLine` is remapped to
             -- `TelescopeSelection` — overriding that group here is enough
-            -- to colour the selected row, no per-buffer autocmd needed.
+            -- to color the selected row, no per-buffer autocmd needed.
             TelescopeNormal = { bg = float_bg },
             TelescopePreviewNormal = { bg = float_bg },
             TelescopePromptNormal = { bg = float_bg },
@@ -82,7 +81,7 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons", "catppuccin" },
     config = function()
       -- Theme required as a table (not the `"catppuccin-mocha"` string) so
-      -- per-section colours can be edited. Black out `b`/`c` (mirrored to
+      -- per-section colors can be edited. Black out `b`/`c` (mirrored to
       -- `y`/`x`); leave `a` on its catppuccin blue.
       local theme = require("lualine.themes.catppuccin-mocha")
       for _, mode in pairs(theme) do

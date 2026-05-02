@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/config/keymaps.lua
 -- User-defined keymaps. Plugin-specific mappings live in their plugin specs.
 
 local keymap = vim.keymap.set

@@ -1,4 +1,3 @@
--- ~/.config/nvim/lua/plugins/completion.lua
 -- Autocompletion engine (nvim-cmp) plus snippet support (LuaSnip).
 
 return {

@@ -21,9 +21,9 @@ spell checking via `cspell`.
 
 ### Recommended
 
-| Dependency | Why                                                                                  | Install                                                                                                  |
-| ---------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| **fd**     | Faster file finding in Telescope (falls back to `find` without it)                   | Download the latest `.deb` from [github.com/sharkdp/fd/releases](https://github.com/sharkdp/fd/releases) |
+| Dependency | Why                                                                | Install                                                                                                  |
+| ---------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
+| **fd**     | Faster file finding in Telescope (falls back to `find` without it) | Download the latest `.deb` from [github.com/sharkdp/fd/releases](https://github.com/sharkdp/fd/releases) |
 
 Install `fd` from GitHub releases (the `apt` package is outdated):
 
@@ -139,7 +139,7 @@ nvim/
 
 Common preferences (theme, indent width, file-tree dimensions, format-on-save
 timeout, dadbod sidebar position, HTTP default environment, LSP feature toggles)
-are centralised in **`nvim/lua/config/user-settings.lua`**. Edit that file
+are centralized in **`nvim/lua/config/user-settings.lua`**. Edit that file
 instead of touching individual plugin specs — every value is the single source
 of truth and is read at config-eval time by the relevant plugin.
 
@@ -152,14 +152,14 @@ The leader key is `<Space>`.
 
 ### General
 
-| Key               | Action                                         | Description                                                                                                                                      |
-| ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `<leader>w`       | Save file                                      | Writes the current buffer to disk (`:w`)                                                                                                         |
-| `<leader>q`       | Delete current buffer (safe close)             | Alias of `<leader>bd` — routes through `bufdelete.nvim` so the window switches to the next listed buffer instead of collapsing                   |
-| `<leader>nh`      | Clear search highlight                         | Clears the `hlsearch` highlight after a search                                                                                                   |
-| `<C-d>` / `<C-u>` | Half-page scroll, cursor re-centred            | Scrolls half a page and keeps the cursor at the screen centre                                                                                    |
-| `<A-j>` / `<A-k>` | Move selected lines down / up (Visual mode)    | Shifts the selected block one line down or up with auto-reindent                                                                                 |
-| `p` (Visual)      | Paste without overwriting the unnamed register | Replaces the selection without losing the previously yanked text                                                                                 |
+| Key               | Action                                         | Description                                                                                                                    |
+| ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `<leader>w`       | Save file                                      | Writes the current buffer to disk (`:w`)                                                                                       |
+| `<leader>q`       | Delete current buffer (safe close)             | Alias of `<leader>bd` — routes through `bufdelete.nvim` so the window switches to the next listed buffer instead of collapsing |
+| `<leader>nh`      | Clear search highlight                         | Clears the `hlsearch` highlight after a search                                                                                 |
+| `<C-d>` / `<C-u>` | Half-page scroll, cursor re-centred            | Scrolls half a page and keeps the cursor at the screen centre                                                                  |
+| `<A-j>` / `<A-k>` | Move selected lines down / up (Visual mode)    | Shifts the selected block one line down or up with auto-reindent                                                               |
+| `p` (Visual)      | Paste without overwriting the unnamed register | Replaces the selection without losing the previously yanked text                                                               |
 
 ### Window navigation
 
@@ -169,9 +169,9 @@ The leader key is `<Space>`.
 
 ### Git
 
-| Key          | Action       | Description                                                          |
-| ------------ | ------------ | -------------------------------------------------------------------- |
-| `<leader>gg` | Open lazygit | Floating-window lazygit via `Snacks.lazygit()` (requires `lazygit`)  |
+| Key          | Action       | Description                                                         |
+| ------------ | ------------ | ------------------------------------------------------------------- |
+| `<leader>gg` | Open lazygit | Floating-window lazygit via `Snacks.lazygit()` (requires `lazygit`) |
 
 ### File tree & Telescope
 
@@ -225,19 +225,19 @@ Behavior:
 
 [`bufferline.nvim`](https://github.com/akinsho/bufferline.nvim) renders open buffers as a clickable tab strip across the top of the window. nvim's underlying buffer model is unchanged — bufferline only adds the visual layer and per-tab click handlers.
 
-Buffer commands live under the `<leader>b` namespace ("**b**uffer"); the `]b` / `[b` cycle pair follows Tim Pope's unimpaired convention.
+Buffer commands live under the `<leader>b` namespace ("buffer"); the `]b` / `[b` cycle pair follows Tim Pope's unimpaired convention.
 
-| Key                       | Action                | Description                                                                |
-| ------------------------- | --------------------- | -------------------------------------------------------------------------- |
-| `]b`                      | Next buffer           | Cycle forward through the tab strip                                        |
-| `[b`                      | Previous buffer       | Cycle backward through the tab strip                                       |
-| `<leader>bd`              | Delete buffer (safe)  | Closes the buffer without collapsing the window (via `bufdelete.nvim`)     |
-| `<leader>bp`              | Pick buffer           | Shows a single-letter overlay on each tab; press a letter to jump          |
-| `<leader>b>`              | Move tab right        | Re-orders the current buffer one position to the right                     |
-| `<leader>b<`              | Move tab left         | Re-orders the current buffer one position to the left                      |
-| `<leader>bo`              | Close other buffers   | Keeps the current buffer, deletes every other listed one                   |
-| `<leader>bP`              | Toggle pin            | Pins / unpins the current buffer (pinned tabs are sticky in cycle / pick)  |
-| `<leader>1` … `<leader>9` | Jump to buffer N      | Jumps to the nth tab as displayed in the strip (`numbers = "ordinal"`)     |
+| Key                       | Action               | Description                                                               |
+| ------------------------- | -------------------- | ------------------------------------------------------------------------- |
+| `]b`                      | Next buffer          | Cycle forward through the tab strip                                       |
+| `[b`                      | Previous buffer      | Cycle backward through the tab strip                                      |
+| `<leader>bd`              | Delete buffer (safe) | Closes the buffer without collapsing the window (via `bufdelete.nvim`)    |
+| `<leader>bp`              | Pick buffer          | Shows a single-letter overlay on each tab; press a letter to jump         |
+| `<leader>b>`              | Move tab right       | Re-orders the current buffer one position to the right                    |
+| `<leader>b<`              | Move tab left        | Re-orders the current buffer one position to the left                     |
+| `<leader>bo`              | Close other buffers  | Keeps the current buffer, deletes every other listed one                  |
+| `<leader>bP`              | Toggle pin           | Pins / unpins the current buffer (pinned tabs are sticky in cycle / pick) |
+| `<leader>1` … `<leader>9` | Jump to buffer N     | Jumps to the nth tab as displayed in the strip (`numbers = "ordinal"`)    |
 
 Behavior:
 
@@ -245,7 +245,7 @@ Behavior:
 - **LSP diagnostics in the tab line**: each tab shows a `(N)` suffix when the LSP reports diagnostics for that buffer (driver: `diagnostics = "nvim_lsp"`). Disable in [`user-settings.lua`](nvim/lua/config/user-settings.lua) (`bufferline.diagnostics = false`).
 - **Modified marker**: unsaved buffers get a visible dot (`show_modified_icon = true`) so you don't lose track of dirty tabs.
 - **Sidebar offset**: when neo-tree is open the tab strip is shifted right and a `File Explorer` header appears above the tree, so tabs never sit under the file panel.
-- **Catppuccin integration**: highlights are pulled from `catppuccin.groups.integrations.bufferline.get()`. Tab colours follow the active flavour automatically.
+- **Catppuccin integration**: highlights are pulled from `catppuccin.groups.integrations.bufferline.get()`. Tab colors follow the active flavour automatically.
 - **Indices vs. nvim buffer numbers**: the digit shown next to each tab is its **ordinal position in the strip**, not nvim's internal buffer ID — so `<leader>3` always means "the third visible tab" regardless of buffer reuse / deletion order. Re-ordering with `<leader>b>` / `<leader>b<` shifts those indices.
 
 Dependencies (auto-installed):
@@ -333,21 +333,21 @@ Note that this introduces a small `timeoutlen` wait after `<leader>d` (the LSP
 "show diagnostic" keymap) while Neovim decides whether the next key starts a
 `db…` chord.
 
-| Key           | Action                            | Description                                                |
-| ------------- | --------------------------------- | ---------------------------------------------------------- |
-| `<leader>dbu` | Toggle DBUI sidebar               | Opens / closes the database explorer                       |
-| `<leader>dbf` | Find query buffer                 | Jump to an existing query buffer                           |
-| `<leader>dbr` | Rename current query buffer       | Rename a `*.sql` scratch buffer                            |
-| `<leader>dba` | Add a new connection              | Same as pressing `A` inside the sidebar                    |
-| `<leader>dbq` | Show last query info              | Run-time, row count, error if any                          |
+| Key           | Action                      | Description                             |
+| ------------- | --------------------------- | --------------------------------------- |
+| `<leader>dbu` | Toggle DBUI sidebar         | Opens / closes the database explorer    |
+| `<leader>dbf` | Find query buffer           | Jump to an existing query buffer        |
+| `<leader>dbr` | Rename current query buffer | Rename a `*.sql` scratch buffer         |
+| `<leader>dba` | Add a new connection        | Same as pressing `A` inside the sidebar |
+| `<leader>dbq` | Show last query info        | Run-time, row count, error if any       |
 
 Inside a query buffer (`*.sql` opened from DBUI):
 
-| Key            | Action                                         |
-| -------------- | ---------------------------------------------- |
-| `<leader>S`    | Execute the buffer (or visual selection)       |
-| `<leader>W`    | Save the query as a named bookmark             |
-| `<leader>E`    | Edit a bind variable                           |
+| Key         | Action                                   |
+| ----------- | ---------------------------------------- |
+| `<leader>S` | Execute the buffer (or visual selection) |
+| `<leader>W` | Save the query as a named bookmark       |
+| `<leader>E` | Edit a bind variable                     |
 
 These are dadbod-ui's own defaults — see `:help dadbod-ui` for the full list.
 
@@ -380,20 +380,20 @@ namespace is registered through a buffer-local `FileType` autocmd, so it does
 HTTP commands live under the `<leader>h` namespace ("**h**ttp") and only attach
 inside `.http` / `.rest` buffers.
 
-| Key          | Mode | Description                                         |
-| ------------ | ---- | --------------------------------------------------- |
-| `<leader>hh` | n    | Run the request under the cursor                    |
-| `<leader>ha` | n    | Run every request in the current file               |
-| `<leader>hn` | n    | Jump to the next request                            |
-| `<leader>hp` | n    | Jump to the previous request                        |
-| `<leader>he` | n    | Select / switch the active environment              |
-| `<leader>hc` | n    | Copy the current request as a `curl` command        |
-| `<leader>hb` | n    | Show response body                                  |
-| `<leader>hH` | n    | Show response headers                               |
-| `<leader>hs` | n    | Show response headers + body                        |
-| `<leader>hx` | n    | Close the response window                           |
-| `<leader>hi` | n    | Inspect the current request (dry-run, no network)   |
-| `<leader>hS` | n    | Open a scratchpad (temporary `.http` buffer)        |
+| Key          | Mode | Description                                       |
+| ------------ | ---- | ------------------------------------------------- |
+| `<leader>hh` | n    | Run the request under the cursor                  |
+| `<leader>ha` | n    | Run every request in the current file             |
+| `<leader>hn` | n    | Jump to the next request                          |
+| `<leader>hp` | n    | Jump to the previous request                      |
+| `<leader>he` | n    | Select / switch the active environment            |
+| `<leader>hc` | n    | Copy the current request as a `curl` command      |
+| `<leader>hb` | n    | Show response body                                |
+| `<leader>hH` | n    | Show response headers                             |
+| `<leader>hs` | n    | Show response headers + body                      |
+| `<leader>hx` | n    | Close the response window                         |
+| `<leader>hi` | n    | Inspect the current request (dry-run, no network) |
+| `<leader>hS` | n    | Open a scratchpad (temporary `.http` buffer)      |
 
 #### Environment files
 
@@ -401,10 +401,10 @@ Environment variables (`{{baseUrl}}`, `{{username}}`, `{{password}}`, …) live
 in two JSON files alongside your `.http` files. kulala walks upward from the
 request file to find them.
 
-| File                            | Purpose                                                            | Tracked in git? |
-| ------------------------------- | ------------------------------------------------------------------ | --------------- |
-| `http-client.env.json`          | Public values: base URLs, non-secret usernames, environment names  | **Yes**         |
-| `http-client.private.env.json`  | Secrets: passwords, tokens, API keys                               | **No**          |
+| File                           | Purpose                                                           | Tracked in git? |
+| ------------------------------ | ----------------------------------------------------------------- | --------------- |
+| `http-client.env.json`         | Public values: base URLs, non-secret usernames, environment names | **Yes**         |
+| `http-client.private.env.json` | Secrets: passwords, tokens, API keys                              | **No**          |
 
 The repository ships templates at [`http/`](http/) along with an example
 request file. The `http/.gitignore` excludes `http-client.private.env.json` and
@@ -429,7 +429,7 @@ of the JSON files (`dev`, `staging`, `prod`).
    then re-run the request — `{{baseUrl}}` and `{{username}}` are resolved
    from the matching environment.
 5. Run the `### Login and capture token` request, then the `### Use token from
-   login response` request — the second one references
+login response` request — the second one references
    `{{login.response.body.$.token}}`, which kulala resolves from the previous
    response.
 
@@ -438,16 +438,16 @@ of the JSON files (`dev`, `staging`, `prod`).
 Both are optional but recommended for prettier responses; kulala falls back to
 the raw payload when the binary is missing.
 
-| Tool       | Why                              | macOS              | Ubuntu / Debian             |
-| ---------- | -------------------------------- | ------------------ | --------------------------- |
-| `jq`       | Pretty-print JSON responses      | `brew install jq`  | `sudo apt install jq`       |
-| `xmllint`  | Pretty-print XML / SOAP / RSS    | `brew install libxml2` (ships `xmllint`) | `sudo apt install libxml2-utils` |
+| Tool      | Why                           | macOS                                    | Ubuntu / Debian                  |
+| --------- | ----------------------------- | ---------------------------------------- | -------------------------------- |
+| `jq`      | Pretty-print JSON responses   | `brew install jq`                        | `sudo apt install jq`            |
+| `xmllint` | Pretty-print XML / SOAP / RSS | `brew install libxml2` (ships `xmllint`) | `sudo apt install libxml2-utils` |
 
 ### Git integration
 
 Two complementary plugins:
 
-- **[`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim)** (loads on `BufReadPost`) — adds add / change / delete markers to the sign column for any file under git. Only the sign glyphs are customised; gitsigns ships its own commands (`:Gitsigns next_hunk`, `:Gitsigns preview_hunk`, `:Gitsigns blame_line`, etc.) which you can run directly or bind to your own keys.
+- **[`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim)** (loads on `BufReadPost`) — adds add / change / delete markers to the sign column for any file under git. Only the sign glyphs are customized; gitsigns ships its own commands (`:Gitsigns next_hunk`, `:Gitsigns preview_hunk`, `:Gitsigns blame_line`, etc.) which you can run directly or bind to your own keys.
 - **[`snacks.nvim`](https://github.com/folke/snacks.nvim)** (loads eagerly) — only the `lazygit` module is enabled. `<leader>gg` opens [`lazygit`](https://github.com/jesseduffield/lazygit) in a floating window with the colorscheme auto-derived from the active Neovim theme. Requires the `lazygit` binary on `PATH` (see Prerequisites).
 
 ### Spell checking (cspell)
