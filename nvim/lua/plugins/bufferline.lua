@@ -121,6 +121,10 @@ return {
     end
     map("<leader>bd", delete_current_buffer, "Buffer: delete (safe)")
     map("<leader>q", delete_current_buffer, "Buffer: delete (safe)")
+    map("<leader>wq", function()
+      vim.cmd("write")
+      delete_current_buffer()
+    end, "Save and delete buffer")
     map("<leader>bp", "<cmd>BufferLinePick<CR>", "Buffer: pick")
     map("<leader>b>", "<cmd>BufferLineMoveNext<CR>", "Buffer: move right")
     map("<leader>b<", "<cmd>BufferLineMovePrev<CR>", "Buffer: move left")
