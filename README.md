@@ -156,6 +156,7 @@ The leader key is `<Space>`.
 | ----------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | `<leader>w`       | Save file                                      | Writes the current buffer to disk (`:w`)                                                                                       |
 | `<leader>q`       | Delete current buffer (safe close)             | Alias of `<leader>bd` — routes through `bufdelete.nvim` so the window switches to the next listed buffer instead of collapsing |
+| `<leader>wq`      | Save file and delete current buffer            | Writes the buffer (`:w`) then routes through the same safe-close helper as `<leader>q`                                         |
 | `<leader>nh`      | Clear search highlight                         | Clears the `hlsearch` highlight after a search                                                                                 |
 | `<C-d>` / `<C-u>` | Half-page scroll, cursor re-centred            | Scrolls half a page and keeps the cursor at the screen centre                                                                  |
 | `<A-j>` / `<A-k>` | Move selected lines down / up (Visual mode)    | Shifts the selected block one line down or up with auto-reindent                                                               |
