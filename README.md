@@ -170,9 +170,26 @@ The leader key is `<Space>`.
 
 ### Git
 
-| Key          | Action       | Description                                                         |
-| ------------ | ------------ | ------------------------------------------------------------------- |
-| `<leader>gg` | Open lazygit | Floating-window lazygit via `Snacks.lazygit()` (requires `lazygit`) |
+`<leader>gg` is registered globally; every other binding in this table is **buffer-local** and only attaches when [`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim) has hooked into the file (i.e. a tracked file in a git repo). Inside an unrelated buffer (scratch, non-repo, sidebar) these keys remain free.
+
+| Key                         | Mode  | Action                  | Description                                                                                                  |
+| --------------------------- | ----- | ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `<leader>gg`                | n     | Open lazygit            | Floating-window lazygit via `Snacks.lazygit()` (requires `lazygit`)                                          |
+| `]g`                        | n / x | Next git hunk           | Jumps to the next changed region; supports a count prefix (`3]g`) and wraps at end-of-file                   |
+| `[g`                        | n / x | Previous git hunk       | Mirror of `]g`                                                                                               |
+| `<leader>gp`                | n     | Preview hunk            | Floating diff popup for the hunk under the cursor — non-destructive peek                                     |
+| `<leader>gb`                | n     | Blame current line      | Full author / commit / message popup (`gs.blame_line({ full = true })`)                                      |
+| `<leader>gs`                | n     | Stage hunk              | Stages the hunk under the cursor                                                                             |
+| `<leader>gs`                | x     | Stage selected lines    | Stages exactly the visual selection — useful for splitting a hunk                                            |
+| `<leader>gr`                | n     | Reset hunk              | Reverts the hunk under the cursor to the index version                                                       |
+| `<leader>gr`                | x     | Reset selected lines    | Reverts only the visual selection                                                                            |
+| `<leader>gS`                | n     | Stage entire buffer     | Stages every change in the file                                                                              |
+| `<leader>gR`                | n     | Reset entire buffer     | Reverts every unstaged change in the file (destructive — confirm before pressing)                            |
+| `ih` / `ah`                 | o / x | Hunk text object        | Use after an operator (`d ih`, `y ih`, `c ah`, …) or in Visual mode to act on the surrounding hunk           |
+
+> The `ih` / `ah` text objects are aliases — gitsigns ships a single `select_hunk` action with no inside/outside distinction, so both bindings exist only to match vim's standard `iX` / `aX` muscle memory.
+>
+> Sharing the `<leader>g` prefix with `<leader>gg` introduces a brief `timeoutlen` wait when you start typing `<leader>g`, while Neovim decides whether the next key opens lazygit or starts a `<leader>g{p,b,s,S,r,R}` chord. This is the same trade-off as the `<leader>d` / `<leader>db*` overlap and is intentional.
 
 ### File tree & Telescope
 
@@ -448,7 +465,7 @@ the raw payload when the binary is missing.
 
 Two complementary plugins:
 
-- **[`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim)** (loads on `BufReadPost`) — adds add / change / delete markers to the sign column for any file under git. Only the sign glyphs are customized; gitsigns ships its own commands (`:Gitsigns next_hunk`, `:Gitsigns preview_hunk`, `:Gitsigns blame_line`, etc.) which you can run directly or bind to your own keys.
+- **[`gitsigns.nvim`](https://github.com/lewis6991/gitsigns.nvim)** (loads on `BufReadPost`) — adds add / change / delete markers to the sign column for any file under git, and tints the line-number column with the same hunk colour (`numhl = true`). On attach, gitsigns registers a buffer-local keymap suite for hunk navigation (`]g` / `[g`), preview / blame (`<leader>gp` / `<leader>gb`), per-hunk stage / reset (`<leader>gs` / `<leader>gr`, with Visual-mode variants for partial hunks), whole-buffer stage / reset (`<leader>gS` / `<leader>gR`), and the `ih` / `ah` hunk text objects — see the [Git keymap table](#git) above. Anything not bound here (current-line virtual-text blame, change-base, undo-stage, …) is still reachable via `:Gitsigns <action>`.
 - **[`snacks.nvim`](https://github.com/folke/snacks.nvim)** (loads eagerly) — only the `lazygit` module is enabled. `<leader>gg` opens [`lazygit`](https://github.com/jesseduffield/lazygit) in a floating window with the colorscheme auto-derived from the active Neovim theme. Requires the `lazygit` binary on `PATH` (see Prerequisites).
 
 ### Spell checking (cspell)
