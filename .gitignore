@@ -1,0 +1,5 @@
+*.log
+.DS_Store
+
+# IDE / editor scratch directories
+.idea/
