@@ -3,14 +3,7 @@
 local user = require("user.settings")
 local severity = vim.diagnostic.severity
 
--- TODO(задача 03): заменить на общую таблицу `require("settings.icons").diagnostics`
--- и удалить эту локальную копию.
-local icons = {
-  [severity.ERROR] = " ",
-  [severity.WARN] = " ",
-  [severity.INFO] = " ",
-  [severity.HINT] = " ",
-}
+local icons = require("settings.icons").diagnostics
 
 vim.diagnostic.config({
   -- Inline text only for WARN and above: INFO/HINT (spelling, unused vars)
@@ -22,7 +15,12 @@ vim.diagnostic.config({
   },
   virtual_lines = false,
   signs = {
-    text = icons,
+    text = {
+      [severity.ERROR] = icons.Error,
+      [severity.WARN] = icons.Warn,
+      [severity.INFO] = icons.Info,
+      [severity.HINT] = icons.Hint,
+    },
     numhl = {
       [severity.ERROR] = "DiagnosticSignError",
       [severity.WARN] = "DiagnosticSignWarn",

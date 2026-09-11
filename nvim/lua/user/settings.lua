@@ -1,7 +1,7 @@
 -- User-tunable values: the single place to personalize the editor.
 -- Pure data — no `vim.*` calls and no functions, so it is safe to require
--- from anywhere and at any time. New groups (`colorscheme`, `explorer`,
--- `http`, `database`, …) are added by the tasks that introduce the plugins.
+-- from anywhere and at any time. New groups (`explorer`, `http`, `database`, …)
+-- are added by the tasks that introduce the plugins.
 
 return {
   editor = {
@@ -17,7 +17,15 @@ return {
     -- Border style for floating windows: "none" | "single" | "double" |
     -- "rounded" | "solid" | "shadow" | "bold". Feeds 'winborder'.
     border = "rounded",
-    -- Transparent background (consumed by the colorscheme, task 03).
+  },
+
+  colorscheme = {
+    -- Catppuccin flavour: "latte" | "frappe" | "macchiato" | "mocha".
+    flavour = "mocha",
+    -- Let the terminal background show through the editor surfaces
+    -- (replaces `window_bg`).
     transparent = false,
+    -- Base background of editor surfaces, side panels, floats and the status line.
+    window_bg = "#000000",
   },
 }

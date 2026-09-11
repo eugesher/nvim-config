@@ -1,7 +1,6 @@
--- Перенесено из старого конфига (задача 01). Опции дополняются в задаче 03.
--- TODO(задача 03): добавить шапку
--- `-- defaults verified against catppuccin vX.Y.Z (YYYY-MM-DD)` после того,
--- как остальные документированные опции catppuccin будут выписаны явно.
+-- defaults verified against catppuccin v2.0.0-16-gedefef7 (2026-09-11)
+--
+-- Перенесено из старого конфига (задача 01), дополнено в задаче 03.
 --
 -- ВАЖНО: переопределения делаются ТОЛЬКО через `custom_highlights`,
 -- никогда через `color_overrides`. Правки на уровне палитры связывают
@@ -9,13 +8,70 @@
 -- Прошлая версия конфига уже переезжала с палитры на per-group
 -- переопределения — не откатывать.
 
+local user = require("user.settings")
+
 local M = {}
 
 -- Module-scope so the catppuccin and lualine specs below share one source.
-local black = "#000000" -- TODO(задача 03): переехать в user/settings.lua → colorscheme.window_bg
+-- Comes from user/settings.lua (`colorscheme.window_bg`); with
+-- `colorscheme.transparent` the surfaces show the terminal background instead.
+local black = user.colorscheme.transparent and "NONE" or user.colorscheme.window_bg
+
+-- Eager and first: every other UI plugin reads its palette and groups.
+M.lazy = false
+M.priority = 1000
 
 M.opts = {
-  flavour = "mocha", -- Variants: latte, frappe, macchiato, mocha
+  flavour = user.colorscheme.flavour, -- Variants: latte, frappe, macchiato, mocha
+  background = { light = "latte", dark = "mocha" }, -- used only by `flavour = "auto"`
+  compile_path = vim.fn.stdpath("cache") .. "/catppuccin",
+  transparent_background = user.colorscheme.transparent,
+  float = {
+    transparent = false, -- floats keep their own (black) background
+    solid = false, -- keep the 'winborder' borders
+  },
+  term_colors = true, -- :terminal buffers (debug console, test output) use the palette
+  dim_inactive = { enabled = false, shade = "dark", percentage = 0.15 },
+  no_italic = false,
+  no_bold = false,
+  no_underline = false,
+  styles = {
+    comments = { "italic" },
+    conditionals = { "italic" },
+    loops = {},
+    functions = {},
+    keywords = {},
+    strings = {},
+    variables = {},
+    numbers = {},
+    booleans = {},
+    properties = {},
+    types = {},
+    operators = {},
+  },
+  -- Built-in LSP/diagnostic groups. Catppuccin v2 moved this here from
+  -- `integrations.native_lsp`.
+  lsp_styles = {
+    virtual_text = {
+      errors = { "italic" },
+      hints = { "italic" },
+      warnings = { "italic" },
+      information = { "italic" },
+      ok = { "italic" },
+    },
+    underlines = {
+      errors = { "underline" },
+      hints = { "underline" },
+      warnings = { "underline" },
+      information = { "underline" },
+      ok = { "underline" },
+    },
+    inlay_hints = { background = true },
+  },
+  -- Intentionally empty: see the rule at the top of the file.
+  color_overrides = {},
+  -- Per-flavour variant of `custom_highlights`; unused — one scheme for all flavours.
+  highlight_overrides = {},
   -- Per-group overrides (not `color_overrides`) so `CursorLine` can stay
   -- separable from `Normal` — palette-level edits coupled them together.
   custom_highlights = function(colors)
@@ -51,8 +107,8 @@ M.opts = {
       -- that uses the stock groups. nvim-cmp's `bordered()` windows
       -- remap `Normal` and `FloatBorder` to `Pmenu` / `CmpDocBorder`
       -- via `winhighlight`, so the completion menu is unaffected.
-      -- TODO(задача 03/06): nvim-cmp и lazygit из стека ушли (blink.cmp,
-      -- neogit) — перепроверить, кто теперь remap'ит эти группы.
+      -- Задача 03: nvim-cmp и lazygit из стека ушли. blink.cmp по умолчанию
+      -- берёт `Pmenu`/`NormalFloat` — его группы заданы явно ниже.
       NormalFloat = { bg = float_bg },
       FloatBorder = { bg = float_bg, fg = float_fg },
       FloatTitle = { bg = float_bg, fg = float_fg },
@@ -73,19 +129,94 @@ M.opts = {
       FzfLuaCursorLine = { bg = float_cursor_bg },
       FzfLuaCursorLineNr = { bg = float_cursor_bg },
       FzfLuaPreviewTitle = { bg = picker_preview_line_bg },
+
+      -- Задача 03: поверхности плагинов, которых в старом конфиге не было.
+      -- Та же логика: фон — базовый чёрный, курсор/выделение — `crust`/`mantle`,
+      -- рамка/заголовок — `blue`. Объявлены заранее: неизвестная группа безвредна.
+
+      -- Completion menu, docs and signature help (blink.cmp, задача 08).
+      BlinkCmpMenu = { bg = float_bg },
+      BlinkCmpMenuBorder = { bg = float_bg, fg = float_fg },
+      BlinkCmpMenuSelection = { bg = float_cursor_bg },
+      BlinkCmpDoc = { bg = float_bg },
+      BlinkCmpDocBorder = { bg = float_bg, fg = float_fg },
+      BlinkCmpSignatureHelp = { bg = float_bg },
+      BlinkCmpSignatureHelpBorder = { bg = float_bg, fg = float_fg },
+
+      -- Git panels (neogit, diffview — задача 13).
+      NeogitNormal = { bg = window_bg },
+      NeogitCursorLine = { bg = window_cursor_bg },
+      DiffviewNormal = { bg = window_bg },
+      DiffviewEndOfBuffer = { bg = window_bg },
+      DiffviewWinSeparator = { bg = window_bg },
+      DiffviewCursorLine = { bg = window_cursor_bg },
+
+      -- Debugger panels (nvim-dap-view, задача 17). Its windows use plain
+      -- `Normal` / `NormalFloat` (covered above); only the tab bar has own groups.
+      NvimDapViewTabFill = { bg = window_bg },
+      NvimDapViewTab = { bg = window_bg },
+      NvimDapViewTabSelected = { bg = window_cursor_bg, fg = float_fg },
+
+      -- Test runner (neotest, задача 18): window-picker label, float borders.
+      NeotestWinSelect = { fg = float_fg, bold = true },
+      NeotestBorder = { bg = float_bg, fg = float_fg },
+
+      -- Problems panel (trouble.nvim, задача 20).
+      TroubleNormal = { bg = window_bg },
+      TroubleNormalNC = { bg = window_bg },
+
+      -- Outline and breadcrumbs (aerial, dropbar — задача 26). dropbar's menu is
+      -- a float: the group is `DropBarMenuNormalFloat`, `DropBarMenuNormal` doesn't exist.
+      AerialNormal = { bg = window_bg },
+      AerialLine = { bg = window_cursor_bg },
+      DropBarMenuNormalFloat = { bg = float_bg },
+      DropBarMenuFloatBorder = { bg = float_bg, fg = float_fg },
+      DropBarMenuHoverEntry = { bg = float_cursor_bg },
     }
   end,
+  -- The list below is the single source of truth — nothing is enabled just
+  -- because a plugin happens to be installed.
+  auto_integrations = false,
+  -- The whole planned stack, declared ahead: catppuccin skips modules it cannot
+  -- find, and a table only counts with `enabled = true`. Not listed because
+  -- catppuccin v2 has no such integration: `treesitter` (its groups are always
+  -- on) and `native_lsp` (now the top-level `lsp_styles`). bufferline and
+  -- lualine are themed from their own settings files.
+  integrations = {
+    indent_blankline = { enabled = true, scope_color = "", colored_indent_levels = false },
+    which_key = true, -- задача 04
+    treesitter_context = true, -- задача 05
+    mason = true,
+    blink_cmp = { enabled = true, style = "bordered" }, -- задача 08
+    fzf = true, -- задача 10
+    neotree = true, -- задача 11
+    gitsigns = true,
+    neogit = true, -- задача 13
+    diffview = true, -- задача 13
+    dap = true, -- задача 16
+    dap_ui = true,
+    neotest = true, -- задача 18
+    lsp_trouble = true, -- задача 20
+    aerial = true, -- задача 26
+    dropbar = { enabled = true, color_mode = false }, -- задача 26
+    dadbod_ui = true,
+    telescope = false, -- replaced by fzf-lua
+    illuminate = false,
+  },
 }
 
+function M.config(_, opts)
+  require("catppuccin").setup(opts)
+  vim.cmd.colorscheme("catppuccin")
+end
+
 -- Производная от «чёрной» схемы выше: тема lualine с обнулёнными фонами
--- секций. Вызывается из `settings/lualine.lua` (задача 03).
--- TODO(задача 03): flavour захардкожен в имени модуля темы — связать
--- с `M.opts.flavour`, когда базовый цвет переедет в user/settings.lua.
+-- секций. Вызывается из `settings/lualine.lua`.
 function M.lualine_theme()
   -- Theme required as a table (not the `"catppuccin-mocha"` string) so
   -- per-section colors can be edited. Black out `b`/`c` (mirrored to
   -- `y`/`x`); leave `a` on its catppuccin blue.
-  local theme = require("lualine.themes.catppuccin-mocha")
+  local theme = require("lualine.themes.catppuccin-" .. user.colorscheme.flavour)
   for _, mode in pairs(theme) do
     if mode.b then
       mode.b.bg = black
@@ -99,7 +230,7 @@ end
 
 -- Тоже производная от схемы: без этого хендлера группа `NeoTreeCursorLine`,
 -- определённая в `custom_highlights`, никуда не подключается.
--- Вызывается из `settings/neo-tree.lua` как `event_handlers` (задача 05).
+-- Вызывается из `settings/neo-tree.lua` как `event_handlers` (задача 11).
 function M.neo_tree_cursorline()
   return {
     -- Neo-tree's built-in `winhighlight` doesn't include `CursorLine`;
