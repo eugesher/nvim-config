@@ -32,6 +32,7 @@ local groups = {
   { "<leader>g", group = "git", icon = { icon = glyphs.git, color = "orange" } },
   { "<leader>gh", group = "hunks", icon = { icon = glyphs.hunks, color = "yellow" } },
   { "<leader>gt", group = "git toggles", icon = { icon = glyphs.git_toggles, color = "yellow" } },
+  { "<leader>gx", group = "conflicts", icon = { icon = glyphs.conflicts, color = "red" } },
   { "<leader>l", group = "lsp / tooling", icon = { icon = glyphs.lsp, color = "blue" } },
   { "<leader>m", group = "multicursor", icon = { icon = glyphs.multicursor, color = "purple" } },
   { "<leader>r", group = "refactor", icon = { icon = glyphs.refactor, color = "cyan" } },
