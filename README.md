@@ -126,6 +126,24 @@ Details are intentionally omitted — they will appear as the rewrite progresses
   `:DB redis://127.0.0.1:6379 TTL session:abc`. Interactive work happens in
   `redis-cli` in a separate terminal window.
 
+## HTTP client
+
+Request collections live in `http/` at the repository root, outside `nvim/`, so
+`install.sh` never overwrites them. Public values (`baseUrl`, usernames) go to
+`http-client.env.json`; secrets belong in `http-client.private.env.json`, which
+`http/.gitignore` keeps out of the repository.
+
+- **Chaining requests goes through a post-request script.** `client.global.set`
+  stores a value that later requests use as `{{VAR}}` — see `http/example.http`.
+  The documented `{{request.response.body.$.field}}` syntax does not work in
+  kulala 6.x: requests are executed by the kulala-core binary, and its store for
+  those values stays empty. The scripts need no Node.js — kulala-core runs them.
+- **kulala-core keeps a local history.** `~/.local/share/kulala-core/kulala.db`
+  (SQLite) stores request history with headers and response bodies, plus the
+  variables set from scripts — tokens included, in plain text, surviving restarts.
+  Clear the variables with `<leader>hX` in an `.http` buffer; delete the file to
+  drop the history.
+
 ## Repository layout
 
 ```

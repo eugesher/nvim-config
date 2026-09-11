@@ -154,6 +154,12 @@ M.opts = {
       DiffviewWinSeparator = { bg = window_bg },
       DiffviewCursorLine = { bg = window_cursor_bg },
 
+      -- Debugger (nvim-dap, задача 16). Catppuccin's `dap` integration colors
+      -- the signs themselves (DapBreakpoint, DapStopped, …); the line the
+      -- debugger stopped on has no group of its own — it must stand out more
+      -- than `CursorLine`, hence `surface1` instead of `crust`.
+      DapStoppedLine = { bg = colors.surface1 },
+
       -- Debugger panels (nvim-dap-view, задача 17). Its windows use plain
       -- `Normal` / `NormalFloat` (covered above); only the tab bar has own groups.
       NvimDapViewTabFill = { bg = window_bg },

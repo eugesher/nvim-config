@@ -67,35 +67,6 @@ local function formatter(cmd)
   return vim.fn.executable(cmd[1]) == 1 and cmd or nil
 end
 
--- Resolves the path of a request variable — {{login.response.body.$.token}} —
--- against a JSON body. Required: a content type without `pathresolver` returns
--- nothing, and the reference would be sent as plain text (kulala 6.x has no
--- built-in JSONPath). kulala passes the body already parsed where it can.
-local function json_path(body, path)
-  local data = body
-  if type(data) == "string" then
-    local ok, decoded = pcall(vim.json.decode, data)
-    if not ok then
-      return nil
-    end
-    data = decoded
-  end
-  for key in path:gmatch("[^%.%[%]\"']+") do
-    if key ~= "$" then -- the root of the JSONPath expression
-      if type(data) ~= "table" then
-        return nil
-      end
-      local index = tonumber(key)
-      -- JSONPath counts array items from 0, Lua lists from 1.
-      data = index and data[index + 1] or data[key]
-      if data == nil then
-        return nil
-      end
-    end
-  end
-  return type(data) == "table" and vim.json.encode(data) or tostring(data)
-end
-
 M.opts = {
   -- The engine. `path` points at a binary of your own; nil downloads one.
   kulala_core = {
@@ -125,15 +96,15 @@ M.opts = {
   halt_on_error = true, -- a failed request stops the rest of the run
 
   contenttypes = {
-    ["application/json"] = {
-      ft = "json",
-      formatter = formatter({ "jq", "." }),
-      pathresolver = json_path,
-    },
+    ["application/json"] = { ft = "json", formatter = formatter({ "jq", "." }) },
+    -- `pathresolver` feeds only the Lua resolution of request variables
+    -- ({{name.response.body.…}}), and kulala 6.x never calls it: requests are
+    -- executed by kulala-core, which resolves variables itself. Kept as the
+    -- plugin's documented default; chaining goes through a post-request script
+    -- instead (http/example.http, README).
     ["application/xml"] = {
       ft = "xml",
       formatter = formatter({ "xmllint", "--format", "-" }),
-      -- Resolves {{request.response.body.//path}} for XML responses.
       pathresolver = formatter({ "xmllint", "--xpath", "{{path}}", "-" }),
     },
     ["text/xml"] = "application/xml",

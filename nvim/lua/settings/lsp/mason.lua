@@ -87,8 +87,8 @@ local lspconfig_opts = {
 -- another plugin (mason-tool-installer).
 -- prettier is the fallback when prettierd is missing and serves files outside
 -- projects; inside a project conform and prettierd use the project's own Prettier.
--- js-debug-adapter arrives with nvim-dap (task 17).
-M.extra_tools = { "prettierd", "prettier", "stylua" }
+-- js-debug-adapter is the debug adapter for Node and TypeScript (settings/dap.lua).
+M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter" }
 
 local function ensure_extra_tools()
   local registry = require("mason-registry")

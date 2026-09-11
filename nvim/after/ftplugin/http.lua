@@ -40,6 +40,9 @@ local KEYMAPS = {
   -- neither Postman nor Bruno collections (task 15).
   { "n", "<leader>hI", kulala("open_openapi_explorer"), "OpenAPI explorer" },
   { "n", "<leader>hE", kulala("export"), "Export to Postman" },
+  -- Values stored by post-request scripts (client.global.set) persist in
+  -- kulala-core's database between restarts — tokens included.
+  { "n", "<leader>hX", kulala("scripts_clear_global"), "Clear script variables" },
 }
 
 local undo = {}
