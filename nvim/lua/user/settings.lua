@@ -36,6 +36,16 @@ return {
     max_line_length = 2000, -- characters in the longest line
   },
 
+  formatting = {
+    -- Format on save (conform.nvim). Toggle with <leader>uf (buffer) / <leader>uF
+    -- (global) or :FormatDisable[!] / :FormatEnable[!].
+    format_on_save = true,
+    -- Milliseconds a formatter may block the save.
+    timeout_ms = 3000,
+    -- Larger files (bytes) are saved as they are, without formatting.
+    max_filesize = 1024 * 1024,
+  },
+
   lsp = {
     -- Inlay hints (parameter names, inferred types) where the server supports them.
     -- Toggle per buffer with `<leader>ui`.

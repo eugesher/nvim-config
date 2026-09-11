@@ -45,7 +45,7 @@ directory will be linked here if it is added.
 
 `vtsls`, `eslint-lsp`, `lua-language-server`, `json-lsp`, `yaml-language-server`,
 `docker-language-server`, `codebook`, `bash-language-server`, `prettierd`,
-`stylua`, `js-debug-adapter`.
+`prettier`, `stylua`, `js-debug-adapter`.
 
 ## Installation
 
