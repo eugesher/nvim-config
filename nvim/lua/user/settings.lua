@@ -55,6 +55,13 @@ return {
     hide_gitignored = true,
   },
 
+  database = {
+    -- Side of the vim-dadbod-ui drawer: "left" | "right".
+    position = "left",
+    -- Drawer width in columns.
+    width = 40,
+  },
+
   lsp = {
     -- Inlay hints (parameter names, inferred types) where the server supports them.
     -- Toggle per buffer with `<leader>ui`.

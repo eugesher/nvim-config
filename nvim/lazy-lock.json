@@ -26,5 +26,8 @@
   "nvim-web-devicons": { "branch": "master", "commit": "5f032a85be210cd1c6ac98861eb3b187ff3bd5eb" },
   "oil.nvim": { "branch": "master", "commit": "b73018b75affd13fa38e2fc94ef753b465f770d7" },
   "plenary.nvim": { "branch": "master", "commit": "74b06c6c75e4eeb3108ec01852001636d85a932b" },
+  "vim-dadbod": { "branch": "master", "commit": "6d1d41da4873a445c5605f2005ad2c68c99d8770" },
+  "vim-dadbod-completion": { "branch": "master", "commit": "a8dac0b3cf6132c80dc9b18bef36d4cf7a9e1fe6" },
+  "vim-dadbod-ui": { "branch": "master", "commit": "afd07819d8efcefc3317205b855ad4e3513b0011" },
   "which-key.nvim": { "branch": "main", "commit": "3aab2147e74890957785941f0c1ad87d0a44c15a" }
 }
