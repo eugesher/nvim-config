@@ -1,6 +1,6 @@
 -- defaults verified against nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-11)
 --
--- LSP foundation; the servers themselves come in task 07. nvim-lspconfig only
+-- LSP foundation (servers: settings/lsp/servers/). nvim-lspconfig only
 -- contributes its catalogue of `lsp/<server>.lua` defaults on 'runtimepath':
 -- configuration goes through Neovim's own vim.lsp.config() / vim.lsp.enable().
 -- The old `require("lspconfig").<server>.setup{}` pattern is not used anywhere.
@@ -9,11 +9,30 @@ local M = {}
 
 M.event = { "BufReadPre", "BufNewFile" }
 
--- Servers to enable. Empty until task 07. mason-lspconfig (`automatic_enable`,
--- settings/lsp/mason.lua) already enables every server installed through
--- Mason — only servers installed some other way belong here, otherwise they
--- would be enabled twice.
-M.servers = {}
+-- Servers enabled by this config; each has settings/lsp/servers/<name>.lua.
+-- mason-lspconfig's `automatic_enable` enables installed servers as well —
+-- harmless, vim.lsp.enable() is idempotent. Never add ts_ls next to vtsls
+-- (double diagnostics).
+M.servers = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls" }
+
+-- Feeds every settings/lsp/servers/<name>.lua into vim.lsp.config(<name>, …),
+-- so a new server is a new file (plus its name above and in ensure_installed).
+-- Each file returns `{ config = <vim.lsp.Config>, keymaps? = fun(client, buf, map) }`.
+local function load_server_configs()
+  local dir = vim.fn.stdpath("config") .. "/lua/settings/lsp/servers"
+  for file, kind in vim.fs.dir(dir) do
+    local name = file:match("^(.+)%.lua$")
+    if kind == "file" and name then
+      vim.lsp.config(name, require("settings.lsp.servers." .. name).config or {})
+    end
+  end
+end
+
+-- At startup, so LspAttach / LspDetach exist before any client can attach
+-- (mason-lspconfig enables servers before this plugin's `config` runs).
+function M.init()
+  require("settings.lsp.keymaps").setup()
+end
 
 function M.config()
   -- The LSP log grows without bound (gigabytes over time): off unless debugging.
@@ -22,10 +41,8 @@ function M.config()
     capabilities = require("settings.lsp.capabilities").get(),
     root_markers = { ".git" },
   })
-  if #M.servers > 0 then
-    vim.lsp.enable(M.servers)
-  end
-  require("settings.lsp.keymaps").setup()
+  load_server_configs()
+  vim.lsp.enable(M.servers)
 end
 
 -- `<leader>l`: LSP / tooling meta.
