@@ -10,8 +10,11 @@
 --   opts, init,        plugin setup, passed to lazy.nvim as is
 --   config
 --   priority, lazy     load order / eager loading, passed to lazy.nvim as is
---   which_key          list of which-key specs (group names, descriptions);
---                      collected by M.which_key(), never passed to lazy.nvim
+--   which_key          list of which-key specs describing keymaps the plugin
+--                      creates itself (so there is no `keys` entry to carry a
+--                      `desc`); collected by M.which_key(), never passed to
+--                      lazy.nvim. Groups are NOT declared here — they live
+--                      only in settings/whichkey.lua.
 --
 -- Anything else in the module (helpers, exported functions) is ignored here.
 -- Repository-level fields (`dependencies`, `build`, `version`, `commit`) belong

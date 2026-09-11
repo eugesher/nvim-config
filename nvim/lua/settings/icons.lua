@@ -93,4 +93,27 @@ M.ui = {
   lock = "",
 }
 
+-- Keymap namespaces (which-key group icons; colors live in settings/whichkey.lua).
+M.keymap_groups = {
+  buffers = "󰈔",
+  code = "",
+  debug = "󰃤",
+  database = "",
+  find = "",
+  git = "",
+  hunks = "",
+  git_toggles = "",
+  lsp = "",
+  multicursor = "",
+  refactor = "",
+  session = "",
+  test = "",
+  coverage = "",
+  ui = "󰙵",
+  problems = "󱖫",
+  http = "",
+  next = "",
+  prev = "",
+}
+
 return M

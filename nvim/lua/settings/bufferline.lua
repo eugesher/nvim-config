@@ -147,8 +147,4 @@ for i = 1, 9 do
   }
 end
 
-M.which_key = {
-  { "<leader>b", group = "Buffers" },
-}
-
 return M
