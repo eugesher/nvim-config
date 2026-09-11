@@ -33,6 +33,7 @@ directory will be linked here if it is added.
 
 | Dependency | What it enables |
 | --- | --- |
+| **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher |
 | **mysql-client** | MySQL database client for vim-dadbod |
 | **redis-tools** (`redis-cli`) | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window |
 | **jq** | Pretty-printing JSON responses in kulala |

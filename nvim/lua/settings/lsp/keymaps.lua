@@ -1,0 +1,134 @@
+-- defaults verified against Neovim v0.12.5 (2026-09-11)
+--
+-- The only LspAttach autocmd of the config. Every LSP keymap is created here,
+-- buffer-local, and only for methods the attached server supports: a key that
+-- silently does nothing is worse than no key. LspDetach undoes all of it once
+-- the last client has left the buffer, so no LSP keymap outlives its server.
+--
+-- Neovim's own LSP maps stay as they are: K, grn, gra, grr, gri, grt, gO and
+-- <C-s> in insert mode. Ours are added on top as aliases.
+--   TODO(задача 10): grr / gri / grt → fzf-lua pickers.
+--   TODO(задача 20): references / implementations into the trouble panel.
+
+local user = require("user.settings")
+
+local M = {}
+
+-- Keymaps created per buffer, deleted on the last LspDetach.
+---@type table<integer, { [1]: string|string[], [2]: string }[]>
+local buffer_maps = {}
+
+local function map(buf, mode, lhs, rhs, desc)
+  vim.keymap.set(mode, lhs, rhs, { buffer = buf, desc = desc })
+  buffer_maps[buf] = buffer_maps[buf] or {}
+  table.insert(buffer_maps[buf], { mode, lhs })
+end
+
+local function highlight_group(buf)
+  return "settings_lsp_highlight_" .. buf
+end
+
+local function on_attach(event)
+  local client = vim.lsp.get_client_by_id(event.data.client_id)
+  if not client then
+    return
+  end
+  local buf = event.buf
+  local function supports(method)
+    return client:supports_method(method, buf)
+  end
+
+  if supports("textDocument/definition") then
+    map(buf, "n", "gd", vim.lsp.buf.definition, "Go to definition")
+  end
+  if supports("textDocument/declaration") then
+    map(buf, "n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+  end
+  if supports("textDocument/codeAction") then
+    map(buf, { "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+  end
+  if supports("textDocument/rename") then
+    -- TODO(задача 24): inc-rename.nvim (live preview).
+    map(buf, "n", "<leader>cr", vim.lsp.buf.rename, "Rename symbol")
+  end
+  map(buf, "n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
+  map(buf, "n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")
+  if supports("textDocument/codeLens") then
+    -- 0.12: code lenses refresh themselves once enabled (`codelens.refresh()` is deprecated).
+    vim.lsp.codelens.enable(true, { bufnr = buf })
+    map(buf, "n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
+    map(buf, "n", "<leader>cL", function()
+      vim.lsp.codelens.enable(not vim.lsp.codelens.is_enabled({ bufnr = buf }), { bufnr = buf })
+    end, "Toggle code lenses")
+  end
+  map(buf, "n", "<leader>cR", "<cmd>lsp restart<CR>", "Restart LSP")
+  if supports("textDocument/inlayHint") then
+    vim.lsp.inlay_hint.enable(user.lsp.inlay_hints, { bufnr = buf })
+    map(buf, "n", "<leader>ui", function()
+      vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
+    end, "Toggle inlay hints")
+  end
+  if supports("textDocument/documentColor") then
+    vim.lsp.document_color.enable(true, { bufnr = buf })
+  end
+  if supports("textDocument/documentHighlight") then
+    -- Highlight other occurrences of the symbol under the cursor after 'updatetime'.
+    local group = vim.api.nvim_create_augroup(highlight_group(buf), { clear = true })
+    vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+      group = group,
+      buffer = buf,
+      desc = "Highlight references of the symbol under the cursor",
+      callback = vim.lsp.buf.document_highlight,
+    })
+    vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+      group = group,
+      buffer = buf,
+      desc = "Clear reference highlights",
+      callback = vim.lsp.buf.clear_references,
+    })
+  end
+end
+
+local function on_detach(event)
+  local buf = event.buf
+  if not vim.api.nvim_buf_is_valid(buf) then
+    buffer_maps[buf] = nil
+    return
+  end
+  -- The detaching client is still listed during LspDetach.
+  local others = vim.tbl_filter(function(c)
+    return c.id ~= event.data.client_id
+  end, vim.lsp.get_clients({ bufnr = buf }))
+
+  local highlight_left = vim.iter(others):any(function(c)
+    return c:supports_method("textDocument/documentHighlight", buf)
+  end)
+  if not highlight_left then
+    pcall(vim.api.nvim_del_augroup_by_name, highlight_group(buf))
+    vim.lsp.util.buf_clear_references(buf)
+  end
+
+  if #others == 0 then
+    vim.lsp.inlay_hint.enable(false, { bufnr = buf })
+    for _, m in ipairs(buffer_maps[buf] or {}) do
+      pcall(vim.keymap.del, m[1], m[2], { buffer = buf })
+    end
+    buffer_maps[buf] = nil
+  end
+end
+
+function M.setup()
+  local group = vim.api.nvim_create_augroup("settings_lsp_attach", { clear = true })
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = group,
+    desc = "LSP keymaps and buffer features",
+    callback = on_attach,
+  })
+  vim.api.nvim_create_autocmd("LspDetach", {
+    group = group,
+    desc = "Undo LspAttach once the last client leaves the buffer",
+    callback = on_detach,
+  })
+end
+
+return M

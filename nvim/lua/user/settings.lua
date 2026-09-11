@@ -35,4 +35,14 @@ return {
     max_filesize = 1536 * 1024, -- bytes (~1.5 MB)
     max_line_length = 2000, -- characters in the longest line
   },
+
+  lsp = {
+    -- Inlay hints (parameter names, inferred types) where the server supports them.
+    -- Toggle per buffer with `<leader>ui`.
+    inlay_hints = true,
+    -- Stop advertising file watching (workspace/didChangeWatchedFiles). Cuts the
+    -- CPU load of ESLint / TS servers in large monorepos, at the price of not
+    -- noticing files changed outside the editor.
+    disable_watchers = false,
+  },
 }
