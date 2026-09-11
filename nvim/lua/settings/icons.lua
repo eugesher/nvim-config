@@ -93,6 +93,24 @@ M.test = {
   skipped = "",
 }
 
+-- Database drawer (vim-dadbod-ui): tree nodes and the entries under them.
+M.database = {
+  db = "󰆼",
+  buffers = "",
+  saved_queries = "",
+  schemas = "",
+  schema = "󰙅",
+  tables = "󰓱",
+  table = "",
+  helper = "󰓫",
+  buffer = "",
+  saved_query = "",
+  new_query = "󰓰",
+  add_connection = "󰆺",
+  connection_ok = "✓",
+  connection_error = "✕",
+}
+
 -- Generic UI glyphs.
 M.ui = {
   chevron_right = "",

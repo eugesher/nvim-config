@@ -6,8 +6,19 @@
 
 local user = require("user.settings")
 local icons = require("settings.icons")
+local sql_filetypes = require("settings.dadbod-completion").ft
 
 local M = {}
+
+-- Schema-aware SQL completion (vim-dadbod-completion) on top of the defaults,
+-- in SQL buffers only.
+local function per_filetype()
+  local sources = {}
+  for _, filetype in ipairs(sql_filetypes) do
+    sources[filetype] = { inherit_defaults = true, "dadbod" }
+  end
+  return sources
+end
 
 M.event = { "InsertEnter", "CmdlineEnter" }
 
@@ -186,10 +197,10 @@ M.opts = {
   },
 
   sources = {
+    -- Never `dadbod` here, or SQL suggestions would show up in TypeScript. Its
+    -- filetypes are the lazy-loading trigger of vim-dadbod-completion.
     default = { "lsp", "snippets", "path", "buffer" },
-    -- dadbod completion is added buffer-locally for SQL in task 14 — never here,
-    -- or SQL suggestions would show up in TypeScript.
-    per_filetype = {},
+    per_filetype = per_filetype(),
     transform_items = function(_, items)
       return items
     end,
@@ -229,6 +240,12 @@ M.opts = {
           use_cache = true,
           enable_in_ex_commands = false, -- would switch off 'inccommand' previews
         },
+      },
+      -- vim-dadbod-completion's own blink source (settings/dadbod-completion.lua).
+      dadbod = {
+        name = "Dadbod",
+        module = "vim_dadbod_completion.blink",
+        score_offset = 90, -- tables and columns above snippets
       },
     },
   },

@@ -97,6 +97,34 @@ nvim
 
 Details are intentionally omitted — they will appear as the rewrite progresses.
 
+## Databases
+
+**No credentials live in this repository.** Connections added with
+`:DBUIAddConnection` (`<leader>Da`) and saved queries are stored in
+`~/.local/share/nvim/db_ui/` — outside the repository and outside
+`~/.config/nvim`, so `install.sh` never touches them.
+
+- **MySQL passwords go to `~/.my.cnf`, not into the URL.** A password in the URL
+  ends up in plain text in `connections.json`, and the MySQL 8+ client prints
+  "Using a password on the command line interface can be insecure" into every
+  result. Keep it in the client option file (`chmod 600 ~/.my.cnf`):
+
+  ```ini
+  [client]
+  user=app
+  password=secret
+  ```
+
+  and add the connection without it: `mysql://app@127.0.0.1:3306/app_db`.
+- **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
+  MySQL client ignores the port and connects to the local Unix socket.
+- Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
+  or one variable per connection, `DB_UI_<NAME>=mysql://…`.
+- **Redis** has no browser in the drawer. One-off commands go through `:DB`, and
+  the result opens in a buffer: `:DB redis://127.0.0.1:6379 KEYS user:*`,
+  `:DB redis://127.0.0.1:6379 TTL session:abc`. Interactive work happens in
+  `redis-cli` in a separate terminal window.
+
 ## Repository layout
 
 ```
