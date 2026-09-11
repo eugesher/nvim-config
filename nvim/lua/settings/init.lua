@@ -83,6 +83,7 @@ end
 
 --- Collects the `which_key` fields of all enabled settings modules of this
 --- config (in module-name order) into one flat list of which-key specs.
+--- Scans `settings/<name>.lua` and package modules `settings/<name>/init.lua`.
 ---@return table[]
 function M.which_key()
   local dir = vim.fn.stdpath("config") .. "/lua/settings"
@@ -91,6 +92,8 @@ function M.which_key()
     local name = file:match("^(.+)%.lua$")
     if kind == "file" and name and name ~= "init" then
       names[#names + 1] = name
+    elseif kind == "directory" and vim.uv.fs_stat(dir .. "/" .. file .. "/init.lua") then
+      names[#names + 1] = file
     end
   end
   table.sort(names)
