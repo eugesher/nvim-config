@@ -1,8 +1,8 @@
 -- defaults verified against lualine.nvim 221ce6b (2026-09-11)
 --
 -- Status line: a single global bar (`laststatus = 3`, core/options.lua).
--- Components for plugins that arrive in later tasks (gitsigns, nvim-dap,
--- neotest) check `package.loaded` / `pcall` first and stay empty until then.
+-- Components for plugins that arrive in later tasks (nvim-dap, neotest)
+-- check `package.loaded` / `pcall` first and stay empty until then.
 -- `winbar` stays empty on purpose: dropbar owns it (task 26).
 
 local icons = require("settings.icons")
@@ -65,7 +65,7 @@ local function neotest_status()
   return ok and text or ""
 end
 
--- Diff counts from gitsigns (task 12); empty until gitsigns is installed.
+-- Diff counts from gitsigns (settings/gitsigns.lua); empty outside git buffers.
 local function gitsigns_diff()
   local status = vim.b.gitsigns_status_dict
   if status then
