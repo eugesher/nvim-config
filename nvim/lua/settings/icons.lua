@@ -107,6 +107,7 @@ M.ui = {
   arrow_right = "",
   dot = "●",
   lock = "",
+  check = "✓",
 }
 
 -- Keymap namespaces (which-key group icons; colors live in settings/whichkey.lua).
@@ -119,6 +120,7 @@ M.keymap_groups = {
   git = "",
   hunks = "",
   git_toggles = "",
+  conflicts = "",
   lsp = "",
   multicursor = "",
   refactor = "",
