@@ -55,6 +55,12 @@ return {
     hide_gitignored = true,
   },
 
+  http = {
+    -- Environment selected in .http buffers on startup; the keys come from
+    -- http/http-client.env.json (`<leader>he` switches).
+    default_env = "dev",
+  },
+
   database = {
     -- Side of the vim-dadbod-ui drawer: "left" | "right".
     position = "left",

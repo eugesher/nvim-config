@@ -36,6 +36,7 @@ directory will be linked here if it is added.
 | **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher |
 | **mysql-client** | MySQL database client for vim-dadbod |
 | **redis-tools** (`redis-cli`) | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window |
+| **kulala-core** | The engine behind the HTTP client: kulala 6.x runs every request through it. Downloaded automatically from GitHub releases on the first request into `~/.local/share/nvim/kulala.nvim/bin` (~100 MB), so a new machine needs network access once. That first request fails while the download runs — repeat it after the "Backend installed successfully" message |
 | **jq** | Pretty-printing JSON responses in kulala |
 | **libxml2-utils** (`xmllint`) | Pretty-printing XML responses in kulala |
 | **bat** | Syntax highlighting in picker previews (ships as `batcat`, needs a `bat` symlink) |
