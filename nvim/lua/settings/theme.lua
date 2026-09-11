@@ -80,7 +80,6 @@ M.opts = {
     local float_bg = black
     local float_cursor_bg = colors.mantle
     local float_fg = colors.blue
-    local picker_preview_line_bg = colors.base
 
     return {
       -- Editor surfaces.
@@ -121,14 +120,18 @@ M.opts = {
       --    `CursorLine` is remapped to `TelescopeSelection` — overriding
       --    that group here is enough to color the selected row, no
       --    per-buffer autocmd needed."
-      -- TODO(задача 10): проверить, как то же самое устроено в fzf-lua.
+      -- Проверено в задаче 10: выделенная строка списка fzf берёт цвет из
+      -- `FzfLuaFzfCursorLine`, которая по умолчанию ссылается на
+      -- `FzfLuaCursorLine` — эту же группу использует курсорная строка превью.
+      -- Бывший `TelescopePreviewLine` (строка совпадения в превью) убран: у
+      -- fzf-lua нет такой группы, её роль играет курсорная строка превью, а
+      -- `FzfLuaPreviewTitle` — это заголовок окна превью, он остаётся как в теме.
       FzfLuaNormal = { bg = float_bg },
       FzfLuaPreviewNormal = { bg = float_bg },
       FzfLuaBorder = { bg = float_bg, fg = float_fg },
       FzfLuaPreviewBorder = { bg = float_bg, fg = float_fg },
       FzfLuaCursorLine = { bg = float_cursor_bg },
       FzfLuaCursorLineNr = { bg = float_cursor_bg },
-      FzfLuaPreviewTitle = { bg = picker_preview_line_bg },
 
       -- Задача 03: поверхности плагинов, которых в старом конфиге не было.
       -- Та же логика: фон — базовый чёрный, курсор/выделение — `crust`/`mantle`,
