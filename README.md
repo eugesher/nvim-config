@@ -86,6 +86,7 @@ nvim
 | Completion | blink.cmp |
 | Picker | fzf-lua |
 | File tree | neo-tree |
+| File operations | oil.nvim (directory as an editable buffer) |
 | Git | neogit, diffview.nvim, gitsigns |
 | Database | vim-dadbod |
 | HTTP client | kulala |

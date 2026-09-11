@@ -14,13 +14,17 @@ M.diagnostics = {
   Hint = "",
 }
 
--- Git change types (status line diff, file tree, gitsigns).
+-- Git change types and file states (status line diff, file tree, gitsigns).
 M.git = {
   added = "",
   modified = "",
   removed = "",
   untracked = "",
   staged = "",
+  renamed = "󰁕",
+  ignored = "",
+  unstaged = "󰄱",
+  conflict = "",
 }
 
 -- LSP kinds: the full CompletionItemKind set (blink.cmp) followed by the
@@ -85,6 +89,8 @@ M.ui = {
   chevron_down = "",
   folder_closed = "",
   folder_open = "",
+  folder_empty = "󰉖",
+  folder_empty_open = "󰷏",
   file = "",
   close = "",
   arrow_left = "",

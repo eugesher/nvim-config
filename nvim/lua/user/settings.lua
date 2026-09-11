@@ -46,6 +46,15 @@ return {
     max_filesize = 1024 * 1024,
   },
 
+  explorer = {
+    -- Side of the neo-tree panel: "left" | "right".
+    position = "left",
+    -- Panel width in columns.
+    width = 34,
+    -- Hide files matched by .gitignore (`H` in the tree shows them anyway).
+    hide_gitignored = true,
+  },
+
   lsp = {
     -- Inlay hints (parameter names, inferred types) where the server supports them.
     -- Toggle per buffer with `<leader>ui`.
