@@ -7,6 +7,11 @@
 --
 -- Neovim's own LSP maps stay as they are: K, grn, gra, grr, gri, grt, gO and
 -- <C-s> in insert mode. Ours are added on top as aliases.
+--
+-- Server-specific keymaps live next to their server: a `keymaps(client, buf, map)`
+-- function in settings/lsp/servers/<name>.lua is called from here for that client.
+-- Every keymap remembers which clients registered it and disappears when the
+-- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
 --   TODO(задача 10): grr / gri / grt → fzf-lua pickers.
 --   TODO(задача 20): references / implementations into the trouble panel.
 
@@ -14,14 +19,18 @@ local user = require("user.settings")
 
 local M = {}
 
--- Keymaps created per buffer, deleted on the last LspDetach.
----@type table<integer, { [1]: string|string[], [2]: string }[]>
-local buffer_maps = {}
+-- owners[buf]["<mode> <lhs>"] = set of client ids that registered the keymap.
+---@type table<integer, table<string, table<integer, true>>>
+local owners = {}
 
-local function map(buf, mode, lhs, rhs, desc)
-  vim.keymap.set(mode, lhs, rhs, { buffer = buf, desc = desc })
-  buffer_maps[buf] = buffer_maps[buf] or {}
-  table.insert(buffer_maps[buf], { mode, lhs })
+local function map(buf, client_id, modes, lhs, rhs, desc)
+  vim.keymap.set(modes, lhs, rhs, { buffer = buf, desc = desc })
+  owners[buf] = owners[buf] or {}
+  for _, mode in ipairs(type(modes) == "table" and modes or { modes }) do
+    local key = mode .. " " .. lhs
+    owners[buf][key] = owners[buf][key] or {}
+    owners[buf][key][client_id] = true
+  end
 end
 
 local function highlight_group(buf)
@@ -37,34 +46,37 @@ local function on_attach(event)
   local function supports(method)
     return client:supports_method(method, buf)
   end
+  local function bmap(mode, lhs, rhs, desc)
+    map(buf, client.id, mode, lhs, rhs, desc)
+  end
 
   if supports("textDocument/definition") then
-    map(buf, "n", "gd", vim.lsp.buf.definition, "Go to definition")
+    bmap("n", "gd", vim.lsp.buf.definition, "Go to definition")
   end
   if supports("textDocument/declaration") then
-    map(buf, "n", "gD", vim.lsp.buf.declaration, "Go to declaration")
+    bmap("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
   end
   if supports("textDocument/codeAction") then
-    map(buf, { "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+    bmap({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
   end
   if supports("textDocument/rename") then
     -- TODO(задача 24): inc-rename.nvim (live preview).
-    map(buf, "n", "<leader>cr", vim.lsp.buf.rename, "Rename symbol")
+    bmap("n", "<leader>cr", vim.lsp.buf.rename, "Rename symbol")
   end
-  map(buf, "n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
-  map(buf, "n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")
+  bmap("n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
+  bmap("n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")
   if supports("textDocument/codeLens") then
     -- 0.12: code lenses refresh themselves once enabled (`codelens.refresh()` is deprecated).
     vim.lsp.codelens.enable(true, { bufnr = buf })
-    map(buf, "n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
-    map(buf, "n", "<leader>cL", function()
+    bmap("n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
+    bmap("n", "<leader>cL", function()
       vim.lsp.codelens.enable(not vim.lsp.codelens.is_enabled({ bufnr = buf }), { bufnr = buf })
     end, "Toggle code lenses")
   end
-  map(buf, "n", "<leader>cR", "<cmd>lsp restart<CR>", "Restart LSP")
+  bmap("n", "<leader>cR", "<cmd>lsp restart<CR>", "Restart LSP")
   if supports("textDocument/inlayHint") then
     vim.lsp.inlay_hint.enable(user.lsp.inlay_hints, { bufnr = buf })
-    map(buf, "n", "<leader>ui", function()
+    bmap("n", "<leader>ui", function()
       vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = buf }), { bufnr = buf })
     end, "Toggle inlay hints")
   end
@@ -87,12 +99,18 @@ local function on_attach(event)
       callback = vim.lsp.buf.clear_references,
     })
   end
+
+  -- Server-specific keymaps (settings/lsp/servers/<name>.lua, field `keymaps`).
+  local ok, server = pcall(require, "settings.lsp.servers." .. client.name)
+  if ok and type(server) == "table" and type(server.keymaps) == "function" then
+    server.keymaps(client, buf, bmap)
+  end
 end
 
 local function on_detach(event)
   local buf = event.buf
   if not vim.api.nvim_buf_is_valid(buf) then
-    buffer_maps[buf] = nil
+    owners[buf] = nil
     return
   end
   -- The detaching client is still listed during LspDetach.
@@ -108,12 +126,19 @@ local function on_detach(event)
     vim.lsp.util.buf_clear_references(buf)
   end
 
+  -- Keymaps no remaining client registered go away with the detaching one.
+  for key, clients in pairs(owners[buf] or {}) do
+    clients[event.data.client_id] = nil
+    if next(clients) == nil then
+      local mode, lhs = key:match("^(%S+) (.+)$")
+      pcall(vim.keymap.del, mode, lhs, { buffer = buf })
+      owners[buf][key] = nil
+    end
+  end
+
   if #others == 0 then
     vim.lsp.inlay_hint.enable(false, { bufnr = buf })
-    for _, m in ipairs(buffer_maps[buf] or {}) do
-      pcall(vim.keymap.del, m[1], m[2], { buffer = buf })
-    end
-    buffer_maps[buf] = nil
+    owners[buf] = nil
   end
 end
 

@@ -7,13 +7,13 @@ return {
   -- Loads mason first: its PATH entry and `automatic_enable` must be in place
   -- before the first buffer's FileType starts a client.
   spec("neovim/nvim-lspconfig", "lsp", {
-    dependencies = { "mason-org/mason.nvim" },
+    dependencies = { "mason-org/mason.nvim", "b0o/SchemaStore.nvim" },
   }),
   spec("mason-org/mason.nvim", "lsp.mason", {
     dependencies = { "mason-org/mason-lspconfig.nvim" },
   }),
   -- Set up from settings/lsp/mason.lua, right after mason itself.
   spec("mason-org/mason-lspconfig.nvim"),
-  -- Loaded on require by the jsonls / yamlls configs (task 07).
+  -- JSON / YAML schema catalogue for jsonls and yamlls (settings/lsp/servers/).
   spec("b0o/SchemaStore.nvim"),
 }

@@ -72,17 +72,20 @@ M.opts = {
 
 -- mason-lspconfig.nvim, set up in `config` right after mason itself.
 local lspconfig_opts = {
-  -- Language servers to install automatically. Empty until task 07.
-  ensure_installed = {},
+  -- Language servers to install automatically, by their vim.lsp config names
+  -- (Mason packages: vtsls, eslint-lsp, lua-language-server, json-lsp,
+  -- yaml-language-server, bash-language-server). docker-language-server and
+  -- codebook arrive with tasks 22 and 21.
+  ensure_installed = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls" },
   -- The default, stated explicitly: every installed server gets vim.lsp.enable().
-  -- Never call vim.lsp.enable() again for the same servers (double start).
+  -- Harmless next to the explicit list in settings/lsp/init.lua: enable() is idempotent.
   automatic_enable = true,
 }
 
 -- Non-LSP tools. mason-lspconfig only knows language servers, so these are
 -- checked on startup and installed when missing — a few lines instead of
 -- another plugin (mason-tool-installer).
-M.extra_tools = { "prettierd", "stylua", "js-debug-adapter" }
+M.extra_tools = { "prettierd", "stylua" } -- js-debug-adapter: with nvim-dap (task 17)
 
 local function ensure_extra_tools()
   local registry = require("mason-registry")
