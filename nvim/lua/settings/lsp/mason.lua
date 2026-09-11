@@ -85,7 +85,10 @@ local lspconfig_opts = {
 -- Non-LSP tools. mason-lspconfig only knows language servers, so these are
 -- checked on startup and installed when missing — a few lines instead of
 -- another plugin (mason-tool-installer).
-M.extra_tools = { "prettierd", "stylua" } -- js-debug-adapter: with nvim-dap (task 17)
+-- prettier is the fallback when prettierd is missing and serves files outside
+-- projects; inside a project conform and prettierd use the project's own Prettier.
+-- js-debug-adapter arrives with nvim-dap (task 17).
+M.extra_tools = { "prettierd", "prettier", "stylua" }
 
 local function ensure_extra_tools()
   local registry = require("mason-registry")
