@@ -12,7 +12,8 @@
 -- function in settings/lsp/servers/<name>.lua is called from here for that client.
 -- Every keymap remembers which clients registered it and disappears when the
 -- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
---   TODO(задача 10): grr / gri / grt → fzf-lua pickers.
+-- gd / grr / gri / grt open fzf-lua pickers (settings/fzf.lua); a single
+-- result jumps straight to it. Neovim's own functions serve as the fallback.
 --   TODO(задача 20): references / implementations into the trouble panel.
 
 local user = require("user.settings")
@@ -30,6 +31,18 @@ local function map(buf, client_id, modes, lhs, rhs, desc)
     local key = mode .. " " .. lhs
     owners[buf][key] = owners[buf][key] or {}
     owners[buf][key][client_id] = true
+  end
+end
+
+-- An fzf-lua LSP picker, or Neovim's own function when fzf-lua is unavailable.
+local function picker(name, fallback)
+  return function()
+    local ok, fzf = pcall(require, "fzf-lua")
+    if ok then
+      fzf[name]()
+    else
+      fallback()
+    end
   end
 end
 
@@ -51,7 +64,16 @@ local function on_attach(event)
   end
 
   if supports("textDocument/definition") then
-    bmap("n", "gd", vim.lsp.buf.definition, "Go to definition")
+    bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
+  end
+  if supports("textDocument/references") then
+    bmap("n", "grr", picker("lsp_references", vim.lsp.buf.references), "References")
+  end
+  if supports("textDocument/implementation") then
+    bmap("n", "gri", picker("lsp_implementations", vim.lsp.buf.implementation), "Implementations")
+  end
+  if supports("textDocument/typeDefinition") then
+    bmap("n", "grt", picker("lsp_typedefs", vim.lsp.buf.type_definition), "Type definition")
   end
   if supports("textDocument/declaration") then
     bmap("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
