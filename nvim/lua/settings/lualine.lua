@@ -26,7 +26,9 @@ end
 -- `vim.lsp.status()` consumes the messages, so it is read once per event.
 local lsp_message = ""
 local function lsp_progress()
-  return lsp_message
+  -- The text is inserted into 'statusline' as is: `vim.lsp.status()` reports
+  -- " 45%: Loading workspace", and a bare `%:` there is E539.
+  return (lsp_message:gsub("%%", "%%%%"))
 end
 
 -- nvim-dap (task 16): only while a debug session exists.

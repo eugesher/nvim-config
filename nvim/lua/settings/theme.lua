@@ -233,7 +233,7 @@ end
 
 -- Тоже производная от схемы: без этого хендлера группа `NeoTreeCursorLine`,
 -- определённая в `custom_highlights`, никуда не подключается.
--- Вызывается из `settings/neo-tree.lua` как `event_handlers` (задача 11).
+-- Вызывается из `settings/neotree.lua` как `event_handlers` (задача 11).
 function M.neo_tree_cursorline()
   return {
     -- Neo-tree's built-in `winhighlight` doesn't include `CursorLine`;
