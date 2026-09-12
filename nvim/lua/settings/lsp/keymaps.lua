@@ -5,8 +5,9 @@
 -- silently does nothing is worse than no key. LspDetach undoes all of it once
 -- the last client has left the buffer, so no LSP keymap outlives its server.
 --
--- Neovim's own LSP maps stay as they are: K, grn, gra, grr, gri, grt, gO and
--- <C-s> in insert mode. Ours are added on top as aliases.
+-- Neovim's own LSP maps stay as they are: K, gra, grr, gri, grt, gO and <C-s>
+-- in insert mode. Ours are added on top as aliases. The one exception is `grn`,
+-- which is pointed at inc-rename below — same rename, with a live preview.
 --
 -- Server-specific keymaps live next to their server: a `keymaps(client, buf, map)`
 -- function in settings/lsp/servers/<name>.lua is called from here for that client.
@@ -24,8 +25,9 @@ local M = {}
 ---@type table<integer, table<string, table<integer, true>>>
 local owners = {}
 
-local function map(buf, client_id, modes, lhs, rhs, desc)
-  vim.keymap.set(modes, lhs, rhs, { buffer = buf, desc = desc })
+local function map(buf, client_id, modes, lhs, rhs, desc, opts)
+  opts = vim.tbl_extend("force", { buffer = buf, desc = desc }, opts or {})
+  vim.keymap.set(modes, lhs, rhs, opts)
   owners[buf] = owners[buf] or {}
   for _, mode in ipairs(type(modes) == "table" and modes or { modes }) do
     local key = mode .. " " .. lhs
@@ -59,8 +61,8 @@ local function on_attach(event)
   local function supports(method)
     return client:supports_method(method, buf)
   end
-  local function bmap(mode, lhs, rhs, desc)
-    map(buf, client.id, mode, lhs, rhs, desc)
+  local function bmap(mode, lhs, rhs, desc, opts)
+    map(buf, client.id, mode, lhs, rhs, desc, opts)
   end
 
   if supports("textDocument/definition") then
@@ -85,8 +87,17 @@ local function on_attach(event)
     bmap({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
   end
   if supports("textDocument/rename") then
-    -- TODO(задача 24): inc-rename.nvim (live preview).
-    bmap("n", "<leader>cr", vim.lsp.buf.rename, "Rename symbol")
+    -- Renaming goes through inc-rename: the same LSP rename, but every
+    -- occurrence in the project updates live while the new name is typed
+    -- (settings/inc-rename.lua). `grn` keeps Neovim's own meaning and only gains
+    -- the preview; `<leader>cr` is its alias in the code namespace and
+    -- `<leader>rn` the one in the refactor namespace — a deliberate duplicate
+    -- (task 24), not an oversight to be cleaned up.
+    local function rename()
+      return ":IncRename " .. vim.fn.expand("<cword>")
+    end
+    bmap("n", "grn", rename, "Rename symbol (live preview)", { expr = true })
+    bmap("n", "<leader>cr", rename, "Rename symbol (live preview)", { expr = true })
   end
   bmap("n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
   bmap("n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")
