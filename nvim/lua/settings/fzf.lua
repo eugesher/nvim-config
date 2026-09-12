@@ -1,8 +1,9 @@
 -- defaults verified against fzf-lua @05e44d3 (2026-09-11)
 --
 -- One picker for files, text, symbols, diagnostics and git; it also serves
--- vim.ui.select (code actions, DAP configurations, sessions). Telescope is not
--- part of this config in any form.
+-- vim.ui.select (code actions, DAP configurations, sessions). Telescope itself
+-- is not part of this config; telescope-fzf-native.nvim is, but only as the C
+-- fzf library behind dropbar's menu filter (plugins/structure.lua).
 --
 -- fzf-lua's default key tables bind Alt combinations (hide, toggle-all, first /
 -- last, preview line scroll, ignore / hidden toggles). The tables below replace

@@ -170,7 +170,7 @@ M.opts = {
   show_help = true,
   show_keys = true,
   disable = {
-    ft = { "neo-tree", "dbui", "dap-view", "trouble" },
+    ft = { "neo-tree", "dbui", "dap-view", "trouble", "aerial" },
     bt = { "terminal" },
   },
   debug = false,
