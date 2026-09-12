@@ -211,11 +211,17 @@ local lines = {
 for _, name in ipairs(ORDER) do
   local list = grouped[name]
   if list then
+    -- A total order: `table.sort` is not stable, and the same key can have one
+    -- row per description (`<M-k>` moves a line in n, a selection in x).
     table.sort(list, function(a, b)
       if a.shown:lower() ~= b.shown:lower() then
         return a.shown:lower() < b.shown:lower()
+      elseif a.shown ~= b.shown then
+        return a.shown < b.shown
+      elseif modes(a) ~= modes(b) then
+        return modes(a) < modes(b)
       end
-      return a.shown < b.shown
+      return a.desc < b.desc
     end)
     vim.list_extend(lines, { "", "### " .. name, "", "| Keys | Mode | Description | Buffer |" })
     lines[#lines + 1] = "| --- | --- | --- | --- |"

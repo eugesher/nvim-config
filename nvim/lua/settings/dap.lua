@@ -21,6 +21,8 @@ local M = {}
 local function server_path()
   return vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
 end
+-- `:checkhealth myconfig` checks the same file (lua/myconfig/health.lua).
+M.server_path = server_path
 
 local function conditional_breakpoint()
   vim.ui.input({ prompt = "Breakpoint condition: " }, function(condition)
