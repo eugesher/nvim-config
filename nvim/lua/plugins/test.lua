@@ -15,6 +15,10 @@ return {
       "marilari88/neotest-vitest",
     },
   }),
+  -- Coverage is a separate plugin: neotest does not read lcov reports.
+  spec("andythigpen/nvim-coverage", "coverage", {
+    dependencies = { "nvim-lua/plenary.nvim" },
+  }),
   spec("nvim-neotest/nvim-nio"),
   spec("nvim-neotest/neotest-jest"),
   spec("marilari88/neotest-vitest"),

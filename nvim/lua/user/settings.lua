@@ -65,6 +65,12 @@ return {
     default_env = "dev",
   },
 
+  coverage = {
+    -- Command that produces coverage/lcov.info, run by :CoverageRun; the report
+    -- is loaded as soon as it finishes. NestJS projects ship a `test:cov` script.
+    command = { "npm", "run", "test:cov" },
+  },
+
   database = {
     -- Side of the vim-dadbod-ui drawer: "left" | "right".
     position = "left",

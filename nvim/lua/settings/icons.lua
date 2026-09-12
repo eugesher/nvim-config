@@ -128,6 +128,11 @@ M.ui = {
   check = "✓",
 }
 
+-- Test coverage bars in the sign column (nvim-coverage).
+M.coverage = {
+  bar = "▎",
+}
+
 -- Keymap namespaces (which-key group icons; colors live in settings/whichkey.lua).
 M.keymap_groups = {
   buffers = "󰈔",
