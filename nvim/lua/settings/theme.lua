@@ -170,6 +170,18 @@ M.opts = {
       NeotestWinSelect = { fg = float_fg, bold = true },
       NeotestBorder = { bg = float_bg, fg = float_fg },
 
+      -- Multiple cursors (multicursor.nvim, задача 25). The plugin defines the
+      -- same groups with `default = true`, so these win. `MultiCursorCursor`
+      -- must read as a cursor rather than a selection: inverted `peach` instead
+      -- of the `Visual` background the other groups link to.
+      MultiCursorCursor = { bg = colors.peach, fg = window_bg },
+      MultiCursorVisual = { link = "Visual" },
+      MultiCursorSign = { fg = colors.peach },
+      MultiCursorMatchPreview = { link = "Search" },
+      MultiCursorDisabledCursor = { bg = colors.overlay0, fg = window_bg },
+      MultiCursorDisabledVisual = { bg = colors.surface1 },
+      MultiCursorDisabledSign = { fg = colors.overlay0 },
+
       -- Problems panel (trouble.nvim, задача 20).
       TroubleNormal = { bg = window_bg },
       TroubleNormalNC = { bg = window_bg },
