@@ -3,7 +3,7 @@
 GET {{baseUrl}}/health
 Accept: application/json
 
-### Log in and capture the token
+### Log in and remember the token
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
@@ -13,8 +13,16 @@ Content-Type: application/json
   "password": "{{password}}"
 }
 
+> {%
+  // Chaining goes through the script store: kulala-core runs this after the
+  // response and substitutes the value as {{TOKEN}} in later requests.
+  // `{{login.response.body.$.token}}` does NOT work in kulala 6.x — the
+  // request-variable store of kulala-core stays empty (verified in task 15).
+  client.global.set("TOKEN", response.body.token);
+%}
+
 ### Reuse the token from the login response
 # @name profile
 GET {{baseUrl}}/profile
-Authorization: Bearer {{login.response.body.$.token}}
+Authorization: Bearer {{TOKEN}}
 Accept: application/json
