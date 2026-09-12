@@ -61,10 +61,11 @@ function M.config()
 
   -- Only while cursors exist. `<Tab>` is `<C-i>` in a terminal, so the jump
   -- list gives way to cursor rotation for as long as the cursors are there.
+  -- `layer` takes the arguments of `vim.keymap.set`, descriptions included.
   multicursor.addKeymapLayer(function(layer)
-    layer(nx, "<Tab>", multicursor.nextCursor)
-    layer(nx, "<S-Tab>", multicursor.prevCursor)
-    layer(nx, "<C-q>", multicursor.toggleCursor)
+    layer(nx, "<Tab>", multicursor.nextCursor, { desc = "Next cursor" })
+    layer(nx, "<S-Tab>", multicursor.prevCursor, { desc = "Previous cursor" })
+    layer(nx, "<C-q>", multicursor.toggleCursor, { desc = "Disable / enable cursors" })
     -- First `<Esc>`: bring disabled cursors back or drop them all. With no
     -- cursors left the layer is gone, so the next `<Esc>` is the global one
     -- again and clears the search highlight (core/keymaps.lua).
@@ -74,7 +75,7 @@ function M.config()
       else
         multicursor.clearCursors()
       end
-    end)
+    end, { desc = "Enable or clear cursors" })
   end)
 end
 

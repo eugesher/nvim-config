@@ -20,7 +20,8 @@ local function rename()
 end
 
 M.keys = {
-  { "<leader>rn", rename, expr = true, desc = "Rename symbol" },
+  -- The same description as `grn` / `<leader>cr`: one action, three keys.
+  { "<leader>rn", rename, expr = true, desc = "Rename symbol (live preview)" },
 }
 
 M.opts = {

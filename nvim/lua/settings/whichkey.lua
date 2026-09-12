@@ -52,6 +52,10 @@ end
 groups[#groups + 1] =
   { "<leader>h", group = "http", mode = "n", icon = { icon = glyphs.http, color = "blue" } }
 
+-- Read by scripts/audit-keymaps.lua: a key that is a prefix of other keys is
+-- fine only when it is one of these groups.
+M.groups = groups
+
 M.opts = {
   preset = "modern",
   -- 200 ms: well under 'timeoutlen' (400, core/options.lua), so the popup is up
