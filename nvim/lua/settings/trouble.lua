@@ -49,11 +49,22 @@ local function close_all()
   end
 end
 
+-- "(Trouble)" tells the lists apart from the fzf-lua pickers over the same data
+-- (`<leader>fd`, `<leader>fq`), as in `grr` "References (Trouble)" — the keymap
+-- audit flags two keys sharing one description (task 27).
 M.keys = {
-  { "<leader>xx", "<cmd>Trouble diagnostics_buffer toggle<cr>", desc = "Buffer diagnostics" },
-  { "<leader>xX", "<cmd>Trouble project_diagnostics toggle<cr>", desc = "Project diagnostics" },
-  { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix list" },
-  { "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location list" },
+  {
+    "<leader>xx",
+    "<cmd>Trouble diagnostics_buffer toggle<cr>",
+    desc = "Buffer diagnostics (Trouble)",
+  },
+  {
+    "<leader>xX",
+    "<cmd>Trouble project_diagnostics toggle<cr>",
+    desc = "Project diagnostics (Trouble)",
+  },
+  { "<leader>xq", "<cmd>Trouble qflist toggle<cr>", desc = "Quickfix list (Trouble)" },
+  { "<leader>xl", "<cmd>Trouble loclist toggle<cr>", desc = "Location list (Trouble)" },
   { "<leader>xr", "<cmd>Trouble lsp toggle<cr>", desc = "LSP references / definitions" },
   { "<leader>xc", close_all, desc = "Close all Trouble windows" },
 }

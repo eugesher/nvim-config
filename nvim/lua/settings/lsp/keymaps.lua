@@ -109,7 +109,8 @@ local function on_attach(event)
       vim.lsp.codelens.enable(not vim.lsp.codelens.is_enabled({ bufnr = buf }), { bufnr = buf })
     end, "Toggle code lenses")
   end
-  bmap("n", "<leader>cR", "<cmd>lsp restart<CR>", "Restart LSP")
+  -- Restarting servers is `<leader>lr` (settings/lsp/init.lua), global: a copy
+  -- here as `<leader>cR` was removed by the keymap audit (task 27).
   if supports("textDocument/inlayHint") then
     vim.lsp.inlay_hint.enable(user.lsp.inlay_hints, { bufnr = buf })
     bmap("n", "<leader>ui", function()

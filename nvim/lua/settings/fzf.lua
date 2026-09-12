@@ -251,8 +251,8 @@ M.keys = {
   { "<leader>fc", pick("commands"), desc = "Commands" },
   { "<leader>fq", pick("quickfix"), desc = "Quickfix list" },
   { "<leader>fR", pick("resume"), desc = "Resume last picker" },
-  -- Not a picker: `:lsp` needs a subcommand in 0.12, client info is here.
-  { "<leader>fp", "<cmd>checkhealth vim.lsp<CR>", desc = "LSP clients" },
+  -- LSP client info is `<leader>li` (settings/lsp/init.lua): not a picker, and
+  -- the second copy that lived here was removed by the keymap audit (task 27).
   { "<leader>gs", pick("git_status"), desc = "Git status" },
   { "<leader>gC", pick("git_commits"), desc = "Git commits" },
   { "<leader>gb", pick("git_branches"), desc = "Git branches" },
