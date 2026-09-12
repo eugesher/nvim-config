@@ -168,8 +168,17 @@ M.opts = {
     -- <leader>xX: every buffer, every severity. No severity filter on purpose —
     -- a language server only reports diagnostics for files that are open, so the
     -- list is short enough as it is, and hiding warnings would only lose them.
+    -- The files have to be the project's own, though: vtsls also reports on the
+    -- TypeScript library sources it loads behind the scenes, and lib.dom.d.ts
+    -- alone contributes some eighty deprecation hints (measured in task 21).
     project_diagnostics = vim.tbl_extend("error", {
       mode = "diagnostics",
+      filter = function(items)
+        local root = vim.uv.cwd()
+        return vim.tbl_filter(function(item)
+          return item.filename ~= nil and item.filename:find(root, 1, true) == 1
+        end, items)
+      end,
     }, DIAGNOSTICS),
   },
   icons = {

@@ -144,11 +144,40 @@ Request collections live in `http/` at the repository root, outside `nvim/`, so
   Clear the variables with `<leader>hX` in an `.http` buffer; delete the file to
   drop the history.
 
+## Spell checking
+
+Spelling is checked by **codebook**, a language server — not a plugin. It splits
+`camelCase`, `PascalCase`, `snake_case` and `SCREAMING_SNAKE_CASE` itself and
+suggests fixes in the original case, and it knows identifiers from strings and
+comments. Mason installs it automatically.
+
+- **Diagnostics are hints, never errors** (`diagnosticSeverity = "hint"`), so
+  spelling never inflates the error counters in the status line, the buffer tabs
+  or the problems panel.
+- **`<leader>ca` on a flagged word** offers `Add to dictionary` (the project's
+  `codebook.toml`) and `Add to global dictionary` (the global one), along with
+  the spelling suggestions.
+- **`<leader>us`** turns the checker off and on for the session.
+- **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
+  wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
+  one is `codebook.toml` at the project root.
+- **`ignore_paths` takes glob patterns.** A bare `"node_modules"` matches only a
+  file with that exact name — use `"**/node_modules/**"`. The server rewrites the
+  file whenever a word is added and drops keys that hold their default value.
+- **Migrating from cspell:** `scripts/cspell-to-codebook.sh` merges
+  `~/.config/cspell/user-words.txt` into the `words` array of the global config,
+  leaving every other setting alone. Running it twice changes nothing.
+
+`install.sh` still creates the old `~/.config/cspell/user-words.txt`; replacing
+that with `~/.config/codebook/codebook.toml` happens when the installer itself is
+reworked.
+
 ## Repository layout
 
 ```
 .
 ├── install.sh   # copies nvim/ → ~/.config/nvim
 ├── nvim/        # the configuration itself (becomes ~/.config/nvim)
+├── scripts/     # one-off maintenance scripts (cspell → codebook migration)
 └── http/        # .http request collections, kept outside nvim/ on purpose
 ```
