@@ -168,6 +168,28 @@ local function on_detach(event)
 end
 
 function M.setup()
+  -- Capabilities can arrive long after a client has attached: the Neovim help
+  -- (`:help LspAttach`) suggests exactly this wrapper for it, and
+  -- docker-language-server needs it — it registers `textDocument/rename` some
+  -- three seconds in, when the keymap pass below has long finished, so
+  -- `<leader>cr` would never appear in a compose buffer (task 22). Repeating the
+  -- pass is safe: every keymap it creates overwrites its own earlier version.
+  vim.lsp.handlers["client/registerCapability"] = (function(overridden)
+    return function(err, res, ctx)
+      local result = overridden(err, res, ctx)
+      local client = vim.lsp.get_client_by_id(ctx.client_id)
+      if not client then
+        return result
+      end
+      for buf in pairs(client.attached_buffers) do
+        if vim.api.nvim_buf_is_valid(buf) then
+          on_attach({ buf = buf, data = { client_id = client.id } })
+        end
+      end
+      return result
+    end
+  end)(vim.lsp.handlers["client/registerCapability"])
+
   local group = vim.api.nvim_create_augroup("settings_lsp_attach", { clear = true })
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
