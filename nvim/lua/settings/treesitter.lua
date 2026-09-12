@@ -43,6 +43,7 @@ local parsers = {
   "markdown",
   "markdown_inline",
   "dockerfile",
+  "hcl", -- docker-bake.hcl (task 22)
   "sql",
   "http",
   "graphql",

@@ -45,8 +45,8 @@ directory will be linked here if it is added.
 ### Installed automatically via `:Mason`
 
 `vtsls`, `eslint-lsp`, `lua-language-server`, `json-lsp`, `yaml-language-server`,
-`docker-language-server`, `codebook`, `bash-language-server`, `prettierd`,
-`prettier`, `stylua`, `js-debug-adapter`.
+`docker-language-server`, `dockerfile-language-server`, `codebook`,
+`bash-language-server`, `prettierd`, `prettier`, `stylua`, `js-debug-adapter`.
 
 ## Installation
 
