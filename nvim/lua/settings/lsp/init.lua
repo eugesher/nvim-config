@@ -13,7 +13,7 @@ M.event = { "BufReadPre", "BufNewFile" }
 -- mason-lspconfig's `automatic_enable` enables installed servers as well —
 -- harmless, vim.lsp.enable() is idempotent. Never add ts_ls next to vtsls
 -- (double diagnostics).
-M.servers = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls" }
+M.servers = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls", "codebook" }
 
 -- Feeds every settings/lsp/servers/<name>.lua into vim.lsp.config(<name>, …),
 -- so a new server is a new file (plus its name above and in ensure_installed).
@@ -55,6 +55,15 @@ M.keys = {
   { "<leader>lc", "<cmd>checkhealth<CR>", desc = "Check health" },
   { "<leader>lp", "<cmd>Lazy profile<CR>", desc = "Lazy profile" },
   { "<leader>lu", "<cmd>Lazy update<CR>", desc = "Lazy update" },
+  -- `<leader>u`: UI toggles. Global, not buffer-local like the LspAttach keys —
+  -- the spell checker is toggled for the whole session (settings/lsp/servers/codebook.lua).
+  {
+    "<leader>us",
+    function()
+      require("settings.lsp.servers.codebook").toggle()
+    end,
+    desc = "Toggle spell checking",
+  },
 }
 
 return M

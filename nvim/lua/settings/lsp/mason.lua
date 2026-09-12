@@ -74,9 +74,9 @@ M.opts = {
 local lspconfig_opts = {
   -- Language servers to install automatically, by their vim.lsp config names
   -- (Mason packages: vtsls, eslint-lsp, lua-language-server, json-lsp,
-  -- yaml-language-server, bash-language-server). docker-language-server and
-  -- codebook arrive with tasks 22 and 21.
-  ensure_installed = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls" },
+  -- yaml-language-server, bash-language-server, codebook).
+  -- docker-language-server arrives with task 22.
+  ensure_installed = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls", "codebook" },
   -- The default, stated explicitly: every installed server gets vim.lsp.enable().
   -- Harmless next to the explicit list in settings/lsp/init.lua: enable() is idempotent.
   automatic_enable = true,
