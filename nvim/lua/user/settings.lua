@@ -17,6 +17,10 @@ return {
     -- Border style for floating windows: "none" | "single" | "double" |
     -- "rounded" | "solid" | "shadow" | "bold". Feeds 'winborder'.
     border = "rounded",
+    -- Height of the bottom panels, in lines. One value for all of them —
+    -- the debugger panel (dap-view), the test output and the problems list
+    -- share the same split, and different heights make them jump.
+    panel_height = 12,
   },
 
   colorscheme = {

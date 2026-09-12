@@ -100,6 +100,16 @@ M.keys = {
   { "<leader>dk", dap_call("up"), desc = "Up the stack" },
   { "<leader>df", widget("frames"), desc = "Frames" },
   { "<leader>ds", widget("scopes"), desc = "Scopes" },
+  -- The panel and the inline values (settings/dap-view.lua,
+  -- settings/dap-virtual-text.lua).
+  { "<leader>du", "<cmd>DapViewToggle<cr>", desc = "Toggle debugger panel" },
+  {
+    "<leader>dw",
+    "<cmd>DapViewWatch<cr>",
+    mode = { "n", "x" },
+    desc = "Watch expression under cursor",
+  },
+  { "<leader>dv", "<cmd>DapVirtualTextToggle<cr>", desc = "Toggle inline values" },
 }
 
 -- The five signs nvim-dap draws. Colors come from catppuccin's `dap`
@@ -191,6 +201,30 @@ local function node_configurations()
   }
 end
 
+-- Opening the panel takes the bottom split; trouble is closed first, but only
+-- when it is already loaded — never pulled in just to be closed.
+local function open_panel()
+  local trouble = package.loaded["trouble"]
+  if trouble then
+    pcall(trouble.close)
+  end
+  vim.cmd("DapViewOpen")
+end
+
+-- The bang hides the debugee's terminal too, but js-debug spawns a child
+-- session per process and each gets a terminal window, of which the command
+-- only hides one. The rest are closed here, so the layout returns to what it
+-- was before the session.
+local function close_panel()
+  vim.cmd("DapViewClose!")
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.bo[buf].filetype == "dap-view-term" and #vim.api.nvim_tabpage_list_wins(0) > 1 then
+      pcall(vim.api.nvim_win_close, win, true)
+    end
+  end
+end
+
 function M.config()
   local dap = require("dap")
 
@@ -231,7 +265,20 @@ function M.config()
   fallback.exception_breakpoints = { "uncaught" }
   fallback.focus_terminal = false -- the debugee's terminal does not steal focus
   fallback.switchbuf = "usevisible,usetab,uselast" -- no jumps within a visible frame
-  fallback.terminal_win_cmd = "belowright new"
+  -- `terminal_win_cmd` is deliberately not set: nvim-dap's help warns that UI
+  -- extensions drive it, and dap-view points the debugee's terminal at its own
+  -- window. Overriding it leaves a second terminal window behind after the
+  -- session ends (task 17).
+
+  -- The panel follows the session. dap-view's own `auto_toggle` stays off: the
+  -- bottom split is shared with trouble (task 20) and the test output
+  -- (task 18), and deciding who gets it is this config's business.
+  -- The key must not be "dap-view": the plugin registers its own listeners
+  -- under that name and ours would silently replace each other.
+  dap.listeners.before.launch["settings_dap_panel"] = open_panel
+  dap.listeners.before.attach["settings_dap_panel"] = open_panel
+  dap.listeners.before.event_terminated["settings_dap_panel"] = close_panel
+  dap.listeners.before.event_exited["settings_dap_panel"] = close_panel
 end
 
 return M
