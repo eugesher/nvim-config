@@ -74,13 +74,8 @@ M.opts = {
         highlight = "Directory",
         separator = true,
       },
-      {
-        filetype = "trouble", -- задача 20
-        text = "Problems",
-        text_align = "left",
-        highlight = "Directory",
-        separator = true,
-      },
+      -- No entry for trouble (задача 20): `offsets` reserves room in the
+      -- tab line for a *side* panel, and the problems list is a bottom split.
     },
     color_icons = true,
     show_buffer_icons = true,

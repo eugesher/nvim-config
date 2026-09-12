@@ -133,7 +133,8 @@ M.opts = {
   --   diff_opts        — derived from 'diffopt' and follows its changes;
   --   status_formatter — formats `b:gitsigns_status` (lualine reads `b:gitsigns_status_dict`);
   --   blame_formatter  — the built-in layout;
-  --   trouble          — true once trouble.nvim is installed (task 20): setqflist opens it.
+  --   trouble          — true, and trouble.nvim is installed (task 20), so
+  --                      `:Gitsigns setqflist` opens the problems panel.
 }
 
 return M

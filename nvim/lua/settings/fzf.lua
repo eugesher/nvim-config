@@ -118,8 +118,11 @@ function M.opts()
         ["enter"] = actions.file_edit_or_qf, -- one entry opens, several go to quickfix
         ["ctrl-s"] = actions.file_split,
         ["ctrl-v"] = actions.file_vsplit,
-        -- TODO(задача 20): отправлять в Trouble; до тех пор — в quickfix.
-        ["ctrl-t"] = actions.file_sel_to_qf,
+        -- The selection — or the whole list when nothing is selected — goes to
+        -- the problems panel (settings/trouble.lua). The action is a table with
+        -- an fzf `prefix`, not a plain function, so it cannot be wrapped to defer
+        -- the require: trouble loads together with the first picker.
+        ["ctrl-t"] = require("trouble.sources.fzf").actions.open,
         ["ctrl-q"] = actions.file_sel_to_qf,
       },
     },
