@@ -133,6 +133,17 @@ M.coverage = {
   bar = "▎",
 }
 
+-- TODO/FIXME keywords (todo-comments): signs, highlights and search results.
+M.todo = {
+  fix = "",
+  todo = "",
+  hack = "",
+  warn = "",
+  perf = "",
+  note = "",
+  test = "⏲",
+}
+
 -- Keymap namespaces (which-key group icons; colors live in settings/whichkey.lua).
 M.keymap_groups = {
   buffers = "󰈔",

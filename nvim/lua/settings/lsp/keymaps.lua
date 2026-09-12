@@ -12,9 +12,9 @@
 -- function in settings/lsp/servers/<name>.lua is called from here for that client.
 -- Every keymap remembers which clients registered it and disappears when the
 -- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
--- gd / grr / gri / grt open fzf-lua pickers (settings/fzf.lua); a single
--- result jumps straight to it. Neovim's own functions serve as the fallback.
---   TODO(задача 20): references / implementations into the trouble panel.
+-- gd / gri / grt open fzf-lua pickers (settings/fzf.lua); a single result jumps
+-- straight to it. Neovim's own functions serve as the fallback. References are
+-- the exception — they go to trouble (task 20), see `grr` below.
 
 local user = require("user.settings")
 
@@ -67,7 +67,10 @@ local function on_attach(event)
     bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
   end
   if supports("textDocument/references") then
-    bmap("n", "grr", picker("lsp_references", vim.lsp.buf.references), "References")
+    -- Trouble instead of the picker (task 20): a symbol with dozens of uses is
+    -- easier to walk through in a list that stays open and previews every hit.
+    -- Decided deliberately — gd / gri / grt keep their fzf-lua pickers.
+    bmap("n", "grr", "<cmd>Trouble lsp_references toggle focus=true<cr>", "References (Trouble)")
   end
   if supports("textDocument/implementation") then
     bmap("n", "gri", picker("lsp_implementations", vim.lsp.buf.implementation), "Implementations")
