@@ -93,6 +93,7 @@ nvim
 | HTTP client | kulala |
 | Debugging | nvim-dap |
 | Tests | neotest |
+| Sessions | auto-session |
 | Spelling | codebook |
 | Diagnostics panel | trouble.nvim |
 

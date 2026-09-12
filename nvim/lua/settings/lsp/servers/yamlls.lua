@@ -27,10 +27,33 @@ M.config = {
   before_init = function(_, config)
     config.settings.yaml.schemas = require("schemastore").yaml.schemas()
   end,
-  -- nvim-lspconfig forces formatting on; with `format.enable = false` it would
-  -- only offer empty edits.
   on_init = function(client)
+    -- nvim-lspconfig forces formatting on; with `format.enable = false` it would
+    -- only offer empty edits.
     client.server_capabilities.documentFormattingProvider = false
+
+    -- Rename is hidden in compose buffers. This server renames YAML anchors, of
+    -- which compose files have none, so its `prepareRename` comes back empty —
+    -- but `vim.lsp.buf.rename()` walks every client that claims the capability,
+    -- so `grn` on a service name ended with a stray "Nothing to rename" after
+    -- docker-language-server had already renamed it (task 22).
+    -- Capabilities belong to the client, not the buffer, and the same client
+    -- serves plain YAML: hence the per-buffer answer here instead of clearing
+    -- `renameProvider` outright.
+    local supports_method = client.supports_method
+    ---@diagnostic disable-next-line: duplicate-set-field
+    client.supports_method = function(self, method, bufnr)
+      if method == "textDocument/rename" or method == "textDocument/prepareRename" then
+        if type(bufnr) == "table" then -- the deprecated `{ bufnr = … }` form
+          bufnr = bufnr.bufnr
+        end
+        local buf = bufnr or vim.api.nvim_get_current_buf()
+        if vim.api.nvim_buf_is_valid(buf) and vim.bo[buf].filetype == "yaml.docker-compose" then
+          return false
+        end
+      end
+      return supports_method(self, method, bufnr)
+    end
   end,
 }
 
