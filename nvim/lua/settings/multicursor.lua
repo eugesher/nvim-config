@@ -2,7 +2,7 @@
 --
 -- Multiple cursors without the GUI key layer: everything lives under
 -- `<leader>m`. `<C-n>` is deliberately not used — it belongs to the completion
--- menu (task 08), and this config does not imitate Sublime or VS Code.
+-- menu, and this config does not imitate Sublime or VS Code.
 --
 -- Two layers of keys:
 --   * the `<leader>m` ones create cursors and are always available;

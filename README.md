@@ -154,7 +154,7 @@ plain data the rest of the config reads:
 | `ui.border` | `"rounded"` | border of every floating window (`'winborder'`) |
 | `ui.panel_height` | `12` | height of the bottom panels: Trouble, debugger, test output |
 | `ui.nerd_font` | `true` | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you |
-| `colorscheme.flavour` | `"mocha"` | catppuccin flavour: latte, frappe, macchiato, mocha |
+| `colorscheme.flavour` | `"mocha"` | catppuccin flavor: latte, frappe, macchiato, mocha |
 | `colorscheme.transparent` | `false` | let the terminal background show through |
 | `colorscheme.window_bg` | `"#000000"` | base background of windows, panels and floats |
 | `treesitter.max_filesize`, `max_line_length` | 1.5 MB, 2000 | larger files get no treesitter |

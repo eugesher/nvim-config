@@ -1,6 +1,6 @@
 -- defaults verified against dockerfile-language-server 0.15.0 and nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-12)
 --
--- The other half of the Dockerfile experience. docker-language-server (task 22)
+-- The other half of the Dockerfile experience. docker-language-server
 -- only lints through BuildKit and shows Docker Scout data on hover; it answers
 -- `textDocument/completion` and `textDocument/hover` for Dockerfiles with
 -- nothing at all (measured against v0.20.1). This server supplies exactly that:

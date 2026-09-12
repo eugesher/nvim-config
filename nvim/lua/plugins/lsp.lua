@@ -1,4 +1,4 @@
--- LSP: server catalogue (nvim-lspconfig), installer (Mason v2 + mason-lspconfig v2),
+-- LSP: server catalog (nvim-lspconfig), installer (Mason v2 + mason-lspconfig v2),
 -- JSON / YAML schemas.
 
 local spec = require("settings").spec
@@ -14,6 +14,6 @@ return {
   }),
   -- Set up from settings/lsp/mason.lua, right after mason itself.
   spec("mason-org/mason-lspconfig.nvim"),
-  -- JSON / YAML schema catalogue for jsonls and yamlls (settings/lsp/servers/).
+  -- JSON / YAML schema catalog for jsonls and yamlls (settings/lsp/servers/).
   spec("b0o/SchemaStore.nvim"),
 }

@@ -1,7 +1,7 @@
 -- defaults verified against nvim-coverage @a939e42 (2026-09-12)
 --
 -- Coverage bars in the sign column and a per-file summary: neotest runs tests
--- but does not read coverage reports, so this is a separate plugin (task 19).
+-- but does not read coverage reports, so this is a separate plugin.
 -- For JS/TS the report is lcov — `coverage/lcov.info`, written by
 -- `npx jest --coverage --coverageReporters=lcov`, by `npm run test:cov`, or by
 -- the :CoverageRun command below.
@@ -99,8 +99,8 @@ function M.init()
 end
 
 function M.opts()
-  -- Colours from the active catppuccin flavour: hard-coded hex values would
-  -- become unreadable as soon as the flavour changes (settings/theme.lua).
+  -- Colors from the active catppuccin flavor: hard-coded hex values would
+  -- become unreadable as soon as the flavor changes (settings/theme.lua).
   local ok, palettes = pcall(require, "catppuccin.palettes")
   local colors = ok and palettes.get_palette() or {}
   local bar = icons.coverage.bar
@@ -141,7 +141,7 @@ function M.opts()
       height_percentage = 0.7,
       borders = summary_borders(),
       window = {},
-      -- Colour only: nothing is blocked below this percentage.
+      -- Color only: nothing is blocked below this percentage.
       min_coverage = 80.0,
     },
 

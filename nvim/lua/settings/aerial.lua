@@ -12,7 +12,7 @@ local M = {}
 
 -- Loaded with the first file, not on the first `<leader>o`: `{` / `}` come from
 -- `on_attach`, and with a key-only load they would stay paragraph motions until
--- the tree is opened once, then change meaning mid-session (task 26).
+-- the tree is opened once, then change meaning mid-session.
 M.event = { "BufReadPost", "BufNewFile" }
 M.cmd = { "AerialToggle", "AerialOpen", "AerialNavToggle" }
 
@@ -61,12 +61,11 @@ local function post_parse_symbol(_, item, ctx)
 end
 
 M.opts = {
-  -- LSP first, although task 26 asked for treesitter first: aerial's TypeScript
-  -- treesitter query has no Property / Field, so class fields and NestJS
-  -- injections never showed up, and a buffer attached to treesitter stays there
-  -- after vtsls starts. With this order the tree is still filled at once — on
-  -- first attach every backend races and treesitter answers first — and moves
-  -- to vtsls when it attaches (~0.4 s later, measured).
+  -- LSP first: aerial's TypeScript treesitter query has no Property / Field, so
+  -- class fields and NestJS injections would be missing, and a buffer attached
+  -- to treesitter stays there after vtsls starts. With this order the tree is
+  -- still filled at once — on first attach every backend races and treesitter
+  -- answers first — and moves to vtsls when it attaches (~0.4 s later).
   -- Upstream quirk: the switch is computed for the *current* buffer, so it is
   -- missed when the tree window has focus at the moment vtsls attaches. Loading
   -- on BufReadPost (above) makes that rare: the server comes up while the

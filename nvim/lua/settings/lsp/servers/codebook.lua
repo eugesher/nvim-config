@@ -3,8 +3,7 @@
 -- Spell checking for code. codebook is a language server (Rust + tree-sitter +
 -- Spellbook), not a plugin: it splits camelCase / PascalCase / snake_case /
 -- SCREAMING_SNAKE_CASE itself, suggests fixes in the original case, and tells
--- identifiers, strings and comments apart — so the hand-written "definitions
--- only" filter of the old config is gone and is not coming back.
+-- identifiers, strings and comments apart, so no filtering is needed here.
 -- cspell.nvim (archived) and cspell-lsp (deprecated) are not part of this config.
 --
 -- Dictionaries live outside ~/.config/nvim, which install.sh overwrites whole:
@@ -17,7 +16,7 @@ local M = {}
 M.config = {
   cmd = { "codebook-lsp", "serve" },
   -- The filetypes of this stack, not the language list of the server: TS/JS
-  -- sources, configs and documents. `http` and `sql` are ours (tasks 14, 15).
+  -- sources, configs and documents, plus `sql` and `http`.
   filetypes = {
     "typescript",
     "typescriptreact",
@@ -45,8 +44,8 @@ M.config = {
     logLevel = "info",
     checkWhileTyping = true,
     -- Spelling is not an error. HINT keeps it out of the error and warning
-    -- counters of the status line and the buffer tabs (task 03) and sorts it
-    -- below real problems in the panel (task 20). Done on the server, not by
+    -- counters of the status line and the buffer tabs and sorts it below real
+    -- problems in the panel. Done on the server, not by
     -- rewriting diagnostics afterwards: one option instead of a handler that
     -- would have to cover both push and pull diagnostics. The server's own
     -- default is "information".

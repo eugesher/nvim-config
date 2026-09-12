@@ -8,7 +8,7 @@ opt.expandtab = true -- insert spaces instead of <Tab>
 opt.shiftwidth = user.editor.indent_width -- width of one indent step (>>, <<, ==)
 opt.tabstop = user.editor.indent_width -- display width of a real <Tab>
 opt.softtabstop = user.editor.indent_width -- <Tab>/<BS> in insert mode move this far
-opt.smartindent = true -- auto-indent after `{` etc. (treesitter indent takes over later)
+opt.smartindent = true -- auto-indent after `{` etc. until a treesitter parser takes over
 opt.breakindent = true -- wrapped lines keep the indent of their first line
 
 -- Interface -------------------------------------------------------------------
@@ -37,7 +37,7 @@ opt.ignorecase = true
 opt.smartcase = true -- ...unless the pattern contains uppercase
 opt.hlsearch = true
 opt.incsearch = true
--- Live preview of :substitute in the buffer. Required by inc-rename (task 24).
+-- Live preview of :substitute in the buffer. Required by inc-rename.
 opt.inccommand = "nosplit"
 
 -- Files -----------------------------------------------------------------------
@@ -56,14 +56,13 @@ vim.schedule(function()
 end)
 
 -- Folds -----------------------------------------------------------------------
--- Treesitter folds; parsers beyond the bundled ones arrive in task 05.
 opt.foldmethod = "expr"
 opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
 opt.foldlevel = 99 -- start with everything unfolded
 opt.foldtext = "" -- closed fold shows the first line with its highlighting
 
 -- Sessions --------------------------------------------------------------------
--- `localoptions` is required by auto-session (task 23).
+-- `localoptions` is required by auto-session.
 opt.sessionoptions = {
   "blank",
   "buffers",

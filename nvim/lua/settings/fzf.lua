@@ -251,8 +251,7 @@ M.keys = {
   { "<leader>fc", pick("commands"), desc = "Commands" },
   { "<leader>fq", pick("quickfix"), desc = "Quickfix list" },
   { "<leader>fR", pick("resume"), desc = "Resume last picker" },
-  -- LSP client info is `<leader>li` (settings/lsp/init.lua): not a picker, and
-  -- the second copy that lived here was removed by the keymap audit (task 27).
+  -- LSP client info is `<leader>li` (settings/lsp/init.lua), not a picker.
   { "<leader>gs", pick("git_status"), desc = "Git status" },
   { "<leader>gC", pick("git_commits"), desc = "Git commits" },
   { "<leader>gb", pick("git_branches"), desc = "Git branches" },

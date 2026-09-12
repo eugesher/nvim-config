@@ -1,7 +1,6 @@
 -- User-tunable values: the single place to personalize the editor.
 -- Pure data — no `vim.*` calls and no functions, so it is safe to require
--- from anywhere and at any time. New groups (`explorer`, `http`, `database`, …)
--- are added by the tasks that introduce the plugins.
+-- from anywhere and at any time.
 
 return {
   editor = {
@@ -28,7 +27,7 @@ return {
   },
 
   colorscheme = {
-    -- Catppuccin flavour: "latte" | "frappe" | "macchiato" | "mocha".
+    -- Catppuccin flavor: "latte" | "frappe" | "macchiato" | "mocha".
     flavour = "mocha",
     -- Let the terminal background show through the editor surfaces
     -- (replaces `window_bg`).

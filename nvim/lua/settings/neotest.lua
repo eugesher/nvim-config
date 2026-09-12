@@ -2,11 +2,10 @@
 -- and neotest-vitest v0.2.0-35-gc3c6971 (2026-09-12)
 --
 -- Test panel: a tree of tests, per-test statuses in the sign column, failures
--- as diagnostics, watch mode and debugging a test through nvim-dap (task 16).
--- vim-test is not used (decision recorded in task 18).
+-- as diagnostics, watch mode and debugging a test through nvim-dap.
 --
 -- Both adapters are registered at once; neotest asks each one whether it
--- recognises the project, so a Jest repo and a Vitest repo both work.
+-- recognizes the project, so a Jest repo and a Vitest repo both work.
 
 local user = require("user.settings")
 local icons = require("settings.icons")
@@ -33,7 +32,7 @@ local function jest_adapter()
     -- npx resolves the project's own jest. No trailing `--`: the adapter
     -- appends --json / --outputFile / --testLocationInResults itself, and
     -- after a `--` jest would take them as path patterns — the results file
-    -- is then never written and every test comes back "failed" (task 18).
+    -- is then never written and every test comes back "failed".
     jestCommand = "npx jest",
     -- In a monorepo the config sits next to the package, not at the root.
     jestConfigFile = function(file)
@@ -45,7 +44,7 @@ local function jest_adapter()
       local package_json = nearest({ "package.json" }, file)
       return package_json and vim.fs.dirname(package_json) or vim.fn.getcwd()
     end,
-    env = { CI = true }, -- no watch mode, no coloured output
+    env = { CI = true }, -- no watch mode, no colored output
     -- Discovery of `it.each` tables runs jest once per file; off for speed.
     jest_test_discovery = false,
   })

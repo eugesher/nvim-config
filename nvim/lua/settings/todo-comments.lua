@@ -20,8 +20,8 @@ local function jump(direction)
   end
 end
 
--- `]td` / `[td`, not `]t` / `[t`: those belong to neotest (task 18). The longer
--- sequence costs one 'timeoutlen' after `]t` — checked again in task 27.
+-- `]td` / `[td`, not `]t` / `[t`: those belong to neotest. The longer sequence
+-- costs one 'timeoutlen' after `]t`.
 M.keys = {
   { "]td", jump("next"), desc = "Next todo comment" },
   { "[td", jump("prev"), desc = "Previous todo comment" },
@@ -29,7 +29,7 @@ M.keys = {
 }
 
 function M.opts()
-  -- The palette, not hex literals: with a different flavour the keyword colors
+  -- The palette, not hex literals: with a different flavor the keyword colors
   -- have to keep their contrast against the new background (settings/theme.lua).
   local ok, palettes = pcall(require, "catppuccin.palettes")
   local colors = ok and palettes.get_palette() or {}

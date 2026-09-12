@@ -1,9 +1,8 @@
 -- Debugger: the DAP client core, its UI panel and inline variable values.
 -- The adapter itself (js-debug-adapter, the Mason package of
 -- microsoft/vscode-js-debug) is configured directly in settings/dap.lua —
--- nvim-dap-vscode-js is not used (decision recorded in task 16).
--- nvim-dap-ui is not used either: dap-view is lighter and does not rearrange
--- windows (decision recorded in task 17).
+-- nvim-dap-vscode-js is not used. Neither is nvim-dap-ui: dap-view is lighter
+-- and does not rearrange windows.
 
 local spec = require("settings").spec
 

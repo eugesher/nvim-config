@@ -3,7 +3,7 @@
 Guidance for Claude Code in this repository: the source of a Neovim 0.12
 configuration for NestJS backend work. `nvim/` is the configuration itself;
 `install.sh` copies it to `~/.config/nvim`. README.md explains usage — this file
-explains how the code is organised and which decisions must not be "fixed".
+explains how the code is organized and which decisions must not be "fixed".
 
 ## Commands
 
@@ -68,7 +68,7 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 - Values a user may want to change go into `lua/user/settings.lua` and are read
   from there, never hard-coded in a settings file.
 - Highlights go into `custom_highlights` in `settings/theme.lua` (never
-  `color_overrides`), colours from the catppuccin palette.
+  `color_overrides`), colors from the catppuccin palette.
 - Glyphs come from `settings/icons.lua` only (Nerd Fonts v3, no padding).
 - A new panel filetype has to be added to every exclusion list: `PANELS` in
   `settings/autosession.lua`, `EXCLUDED_FILETYPES` in `settings/dropbar.lua`,

@@ -20,40 +20,40 @@ local out = common.out
 local LIST = vim.tbl_contains(arg, "--list")
 
 -- Whitelist ---------------------------------------------------------------------
--- Every entry is a decision made in an earlier task. `lhs` is written the way
--- the config writes it; `mode` and `source` (a substring of the defining file)
--- narrow an entry down when given.
+-- Every entry is a deliberate decision. `lhs` is written the way the config
+-- writes it; `mode` and `source` (a substring of the defining file) narrow an
+-- entry down when given.
 
 local ALLOWED_DUPLICATES = {
   -- One rename (inc-rename, live preview), three keys: Neovim's own `grn` and
-  -- aliases in the Code and Refactor namespaces (task 24).
+  -- aliases in the Code and Refactor namespaces.
   { lhs = "grn" },
   { lhs = "<leader>cr" },
   { lhs = "<leader>rn" },
-  -- Neovim's LSP defaults replaced on LspAttach by the fzf-lua pickers (task 10)
-  -- and, for references, by Trouble (task 20). `gra` stays Neovim's.
+  -- Neovim's LSP defaults replaced on LspAttach by the fzf-lua pickers and, for
+  -- references, by Trouble. `gra` stays Neovim's.
   { lhs = "gri", source = "settings/lsp/keymaps.lua" },
   { lhs = "grr", source = "settings/lsp/keymaps.lua" },
   { lhs = "grt", source = "settings/lsp/keymaps.lua" },
-  -- `<leader>q` closes the buffer like `<leader>bd` (task 03).
+  -- `<leader>q` closes the buffer like `<leader>bd`.
   { lhs = "<leader>q" },
   { lhs = "<leader>bd" },
-  -- gitsigns has a single hunk text object; `ih` and `ah` both select it (task 13).
+  -- gitsigns has a single hunk text object; `ih` and `ah` both select it.
   { lhs = "ih" },
   { lhs = "ah" },
   -- Neovim defaults given another meaning:
-  -- `<C-l>` redraw → window to the right (task 02; `<Esc>` clears the search highlight);
+  -- `<C-l>` redraw → window to the right (`<Esc>` clears the search highlight);
   { lhs = "<C-l>", mode = "n", source = "core/keymaps.lua" },
-  -- `[b` / `]b` :bprevious / :bnext → the same, in bufferline's order (task 03);
+  -- `[b` / `]b` :bprevious / :bnext → the same, in bufferline's order;
   { lhs = "[b", mode = "n" },
   { lhs = "]b", mode = "n" },
-  -- `[a` / `]a` argument list → previous / next parameter (treesitter, task 05);
+  -- `[a` / `]a` argument list → previous / next parameter (treesitter);
   { lhs = "[a", mode = "n" },
   { lhs = "]a", mode = "n" },
-  -- `[t` / `]t` tag stack → previous / next failed test (neotest, task 18).
+  -- `[t` / `]t` tag stack → previous / next failed test (neotest).
   { lhs = "[t", mode = "n" },
   { lhs = "]t", mode = "n" },
-  -- blink.cmp (task 08): `<C-j>` / `<C-k>` move through the completion menu like
+  -- blink.cmp: `<C-j>` / `<C-k>` move through the completion menu like
   -- `<C-n>` / `<C-p>`, and `<Tab>` / `<S-Tab>` jump through snippet fields
   -- instead of Neovim's own `vim.snippet` keys, falling back to them otherwise.
   { lhs = "<C-j>", mode = "i", source = "blink/cmp/keymap" },
@@ -75,12 +75,12 @@ local ALLOWED_WITHOUT_DESC = {
   -- Filetype plugins bundled with Neovim, e.g. the section jumps `[[`, `]]`,
   -- `[{`, `]"` of ftplugin/sql.vim.
   { source = "$VIMRUNTIME/ftplugin/" },
-  -- bufferline's hover handler; 'mousemoveevent' is on for it (task 03).
+  -- bufferline's hover handler; 'mousemoveevent' is on for it.
   { lhs = "<MouseMove>", source = "bufferline/hover.lua" },
-  -- multicursor.nvim keeps insert-mode cursor movement in sync (task 25).
+  -- multicursor.nvim keeps insert-mode cursor movement in sync.
   { lhs = "<Left>", mode = "i", source = "multicursor-nvim/core.lua" },
   { lhs = "<Right>", mode = "i", source = "multicursor-nvim/core.lua" },
-  -- LuaSnip's `cut_selection_keys`: a selection cut into `$TM_SELECTED_TEXT` (task 08).
+  -- LuaSnip's `cut_selection_keys`: a selection cut into `$TM_SELECTED_TEXT`.
   { lhs = "<Tab>", mode = "x", source = "luasnip/config.lua" },
 }
 
@@ -88,7 +88,7 @@ local ALLOWED_WITHOUT_DESC = {
 local ALLOWED_PREFIXES = {
   -- `]t` / `[t` (neotest) and `]td` / `[td` (todo-comments): the short ones
   -- wait 'timeoutlen' (400 ms) before jumping to a failed test, the long ones
-  -- jump to a TODO at once (tasks 18 and 20).
+  -- jump to a TODO at once.
   { lhs = "]t", mode = "n" },
   { lhs = "[t", mode = "n" },
 }
@@ -361,11 +361,11 @@ end
 local free = vim.tbl_map(common.key, { "<leader>a", "<leader>gL" })
 local alt_allowed = { ["<M-j>"] = true, ["<M-k>"] = true }
 each_map(function(map, label)
-  -- Rule 5: the Alt layer holds nothing but moving lines.
+  -- The Alt layer holds nothing but moving lines.
   if map.key:find("<M%-") and not alt_allowed[map.key] then
     policy[#policy + 1] = "Alt layer (only <A-j> / <A-k>): " .. describe(map, label)
   end
-  -- Rule 7: keys that belong to Neovim itself.
+  -- Keys that belong to Neovim itself.
   if reserved[map.key] and not map.default then
     policy[#policy + 1] = "reserved for Neovim: " .. describe(map, label)
   end
@@ -377,7 +377,7 @@ each_map(function(map, label)
   end
 end)
 -- which-key: groups only, each with an icon; keymap descriptions live next to
--- their plugin (task 04).
+-- their plugin.
 for _, group in ipairs(require("settings.whichkey").groups) do
   if not group.group or not group.icon or group[2] ~= nil or group.desc ~= nil then
     policy[#policy + 1] = "settings/whichkey.lua declares a keymap, not a group: " .. group[1]

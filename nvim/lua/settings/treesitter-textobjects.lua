@@ -66,7 +66,7 @@ M.keys = {
     mode = nxo,
     desc = "Previous parameter",
   },
-  -- swap (the `refactor` namespace, task 24)
+  -- swap (the `refactor` namespace)
   { "<leader>ra", swap("swap_next", "@parameter.inner"), desc = "Swap parameter with next" },
   {
     "<leader>rA",

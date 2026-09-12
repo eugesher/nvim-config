@@ -1,7 +1,7 @@
 -- Database client: vim-dadbod (the :DB command and adapters for mysql, redis,
 -- postgres, …), vim-dadbod-ui (connections drawer, saved queries, result
 -- buffers) and vim-dadbod-completion (tables and columns of the active
--- connection). nvim-dbee is not used (decision recorded in task 14).
+-- connection). nvim-dbee is not used.
 
 local spec = require("settings").spec
 

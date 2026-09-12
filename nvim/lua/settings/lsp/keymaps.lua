@@ -15,7 +15,7 @@
 -- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
 -- gd / gri / grt open fzf-lua pickers (settings/fzf.lua); a single result jumps
 -- straight to it. Neovim's own functions serve as the fallback. References are
--- the exception — they go to trouble (task 20), see `grr` below.
+-- the exception — they go to trouble, see `grr` below.
 
 local user = require("user.settings")
 
@@ -69,7 +69,7 @@ local function on_attach(event)
     bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
   end
   if supports("textDocument/references") then
-    -- Trouble instead of the picker (task 20): a symbol with dozens of uses is
+    -- Trouble instead of the picker: a symbol with dozens of uses is
     -- easier to walk through in a list that stays open and previews every hit.
     -- Decided deliberately — gd / gri / grt keep their fzf-lua pickers.
     bmap("n", "grr", "<cmd>Trouble lsp_references toggle focus=true<cr>", "References (Trouble)")
@@ -91,8 +91,8 @@ local function on_attach(event)
     -- occurrence in the project updates live while the new name is typed
     -- (settings/inc-rename.lua). `grn` keeps Neovim's own meaning and only gains
     -- the preview; `<leader>cr` is its alias in the code namespace and
-    -- `<leader>rn` the one in the refactor namespace — a deliberate duplicate
-    -- (task 24), not an oversight to be cleaned up.
+    -- `<leader>rn` the one in the refactor namespace — a deliberate duplicate,
+    -- not an oversight to be cleaned up.
     local function rename()
       return ":IncRename " .. vim.fn.expand("<cword>")
     end
@@ -109,8 +109,6 @@ local function on_attach(event)
       vim.lsp.codelens.enable(not vim.lsp.codelens.is_enabled({ bufnr = buf }), { bufnr = buf })
     end, "Toggle code lenses")
   end
-  -- Restarting servers is `<leader>lr` (settings/lsp/init.lua), global: a copy
-  -- here as `<leader>cR` was removed by the keymap audit (task 27).
   if supports("textDocument/inlayHint") then
     vim.lsp.inlay_hint.enable(user.lsp.inlay_hints, { bufnr = buf })
     bmap("n", "<leader>ui", function()
@@ -184,7 +182,7 @@ function M.setup()
   -- (`:help LspAttach`) suggests exactly this wrapper for it, and
   -- docker-language-server needs it — it registers `textDocument/rename` some
   -- three seconds in, when the keymap pass below has long finished, so
-  -- `<leader>cr` would never appear in a compose buffer (task 22). Repeating the
+  -- `<leader>cr` would never appear in a compose buffer. Repeating the
   -- pass is safe: every keymap it creates overwrites its own earlier version.
   vim.lsp.handlers["client/registerCapability"] = (function(overridden)
     return function(err, res, ctx)

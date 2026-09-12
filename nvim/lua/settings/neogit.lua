@@ -8,7 +8,7 @@
 --   and ]c / [c, reserved by diff mode (→ ]o / [o).
 -- Not set on purpose: `auto_refresh` and `filewatcher.interval` are still in
 -- the README but no longer read by the code; `telescope_sorter` — telescope is
--- not used (task 10). neogit also adds a few undocumented keys of its own
+-- not used. neogit also adds a few undocumented keys of its own
 -- (R, zC/zO/zc in status, L in popups, x in refs view, o in commit view).
 
 local user = require("user.settings")
@@ -18,7 +18,7 @@ local M = {}
 
 M.cmd = "Neogit"
 
--- <leader>gL stays free (it was reserved for lazygit, which is not used).
+-- <leader>gL is left free on purpose.
 M.keys = {
   { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit (status)" },
   { "<leader>gc", "<cmd>Neogit commit<cr>", desc = "Commit" },
@@ -140,7 +140,7 @@ M.opts = {
     item = fold_signs,
     section = fold_signs,
   },
-  -- The picker decision is recorded in task 10: fzf-lua only.
+  -- fzf-lua is the only picker.
   integrations = {
     telescope = false,
     diffview = true,

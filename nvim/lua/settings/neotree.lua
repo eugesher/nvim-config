@@ -3,7 +3,7 @@
 -- Side panel with the project tree (WebStorm's Project view): git statuses and
 -- diagnostics right in the tree. Bulk file operations live in oil
 -- (settings/oil.lua). Source `document_symbols` is enabled but has no keymap —
--- the outline is aerial's job (`<leader>o`, task 26): `:Neotree document_symbols`.
+-- the outline is aerial's job (`<leader>o`): `:Neotree document_symbols`.
 
 local user = require("user.settings")
 local icons = require("settings.icons")
@@ -191,7 +191,7 @@ function M.opts()
     sources = { "filesystem", "buffers", "git_status", "document_symbols" },
     default_source = "filesystem",
     add_blank_line_at_top = false,
-    -- Sessions (auto-session) are wired in their own task.
+    -- settings/autosession.lua keeps the tree out of sessions.
     auto_clean_after_session_restore = false,
     clipboard = { sync = "none" },
     close_if_last_window = true,
@@ -215,7 +215,7 @@ function M.opts()
     log_level = vim.log.levels.INFO,
     log_to_file = false,
     open_files_in_last_window = true,
-    -- Windows a file opened from the tree never replaces (trouble — task 20).
+    -- Windows a file opened from the tree never replaces.
     open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
     open_files_using_relative_paths = false,
     popup_border_style = POPUP_BORDERS[user.ui.border] and user.ui.border or "",
@@ -223,7 +223,7 @@ function M.opts()
     sort_case_insensitive = true,
     use_popups_for_input = true,
     use_default_mappings = true,
-    -- Tabs would take the winbar, which belongs to dropbar (task 26).
+    -- Tabs would take the winbar, which belongs to dropbar.
     source_selector = { winbar = false, statusline = false },
 
     default_component_configs = {

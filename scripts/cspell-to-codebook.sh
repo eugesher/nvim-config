@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 # One-off migration: cspell user dictionary -> codebook dictionary.
 #
-# The old config kept its words in ~/.config/cspell/user-words.txt, one word per
+# cspell keeps its user words in ~/.config/cspell/user-words.txt, one word per
 # line. codebook keeps them in the `words` array of its global config,
-# ~/.config/codebook/codebook.toml (task 21). This script merges the former into
+# ~/.config/codebook/codebook.toml. This script merges the former into
 # the latter without touching any other setting in the file.
 #
 # Safe to run repeatedly: the word list is merged, sorted and de-duplicated, so a
 # second run leaves the file byte-for-byte identical. Missing input is not an
 # error — there is simply nothing to convert.
 #
-# Both paths can be overridden, which is what the tests do:
+# Both paths can be overridden:
 #   CSPELL_WORDS=/tmp/words.txt CODEBOOK_CONFIG=/tmp/codebook.toml ./cspell-to-codebook.sh
 
 set -euo pipefail
@@ -78,7 +78,7 @@ mkdir -p "$(dirname "$DEST")"
 
 if [[ ! -f "$DEST" ]]; then
   # First run on a machine that has no codebook config yet: write the same
-  # defaults install.sh will create (task 28), with the converted words in place.
+  # defaults install.sh creates, with the converted words in place.
   {
     echo '# codebook — global dictionary and spell-check settings.'
     echo '# Project-level overrides go into codebook.toml at the project root.'

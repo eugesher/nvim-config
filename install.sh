@@ -84,7 +84,7 @@ else
   echo "Kept existing codebook dictionary: $CODEBOOK_CONFIG"
 fi
 
-# A dictionary left over from the previous config can be merged in.
+# An old cspell word list can be merged in.
 OLD_WORDS="${XDG_CONFIG_HOME:-$HOME/.config}/cspell/user-words.txt"
 if [[ -s "$OLD_WORDS" ]]; then
   echo "Found an old word list at $OLD_WORDS — merge it with scripts/cspell-to-codebook.sh"

@@ -17,18 +17,18 @@ M.lazy = false
 -- empty tree, a dead debugger panel or an empty problems list is worse than no
 -- session at all. **Extend this list whenever a new panel joins the config.**
 local PANELS = {
-  "neo-tree", -- task 11
-  "oil", -- task 12
-  "dbui", -- task 14
+  "neo-tree",
+  "oil",
+  "dbui",
   "dbout",
-  "dap-view", -- task 17
+  "dap-view",
   "dap-view-term",
   "dap-repl",
-  "neotest-summary", -- task 18
+  "neotest-summary",
   "neotest-output-panel",
-  "coverage", -- task 19
-  "trouble", -- task 20
-  "aerial", -- task 26
+  "coverage",
+  "trouble",
+  "aerial",
   "lazy",
   "mason",
   "checkhealth",
@@ -100,7 +100,7 @@ M.opts = {
   auto_delete_empty_sessions = true,
   purge_after_minutes = nil, -- sessions are kept until `<leader>sp`
 
-  -- Saving extra data: DAP breakpoints travel with the session (task 16).
+  -- Saving extra data: DAP breakpoints travel with the session.
   save_extra_data = function(_)
     local ok, breakpoints = pcall(require, "dap.breakpoints")
     if not ok then
@@ -179,7 +179,7 @@ M.opts = {
   },
 
   -- Hooks. Empty on purpose: `close_filetypes_on_save` already closes every
-  -- panel before the session is written (verified in task 23), so there is
+  -- panel before the session is written, so there is
   -- nothing left for a pre-save command to do.
   pre_save_cmds = {},
   post_save_cmds = {},

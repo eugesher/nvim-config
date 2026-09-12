@@ -5,12 +5,12 @@
 -- rewrite of v2 — none of its options or API carry over, so pre-2024 recipes
 -- do not apply here.
 --
--- The bottom split is shared with dap-view (task 17) and the neotest output
--- panel (task 18). All three take their height from `user.ui.panel_height`, and
--- a starting debug session closes trouble first (settings/dap.lua).
+-- The bottom split is shared with dap-view and the neotest output panel. All
+-- three take their height from `user.ui.panel_height`, and a starting debug
+-- session closes trouble first (settings/dap.lua).
 --
 -- The `symbols` mode is deliberately left alone: the structure view is aerial's
--- job (task 26), and two symbol trees would only duplicate each other.
+-- job, and two symbol trees would only duplicate each other.
 
 local user = require("user.settings")
 local icons = require("settings.icons")
@@ -51,7 +51,7 @@ end
 
 -- "(Trouble)" tells the lists apart from the fzf-lua pickers over the same data
 -- (`<leader>fd`, `<leader>fq`), as in `grr` "References (Trouble)" — the keymap
--- audit flags two keys sharing one description (task 27).
+-- audit flags two keys sharing one description.
 M.keys = {
   {
     "<leader>xx",
@@ -106,7 +106,7 @@ M.opts = {
     preview = { ms = 100, debounce = true },
   },
   -- Window-local keys of the list. `<c-s>` / `<c-v>` open a split the same way
-  -- they do in the fzf-lua window (task 10) — inside a list they are actions,
+  -- they do in the fzf-lua window — inside a list they are actions,
   -- not the editor-wide save / paste of a GUI.
   keys = {
     ["?"] = "help",
@@ -181,7 +181,7 @@ M.opts = {
     -- list is short enough as it is, and hiding warnings would only lose them.
     -- The files have to be the project's own, though: vtsls also reports on the
     -- TypeScript library sources it loads behind the scenes, and lib.dom.d.ts
-    -- alone contributes some eighty deprecation hints (measured in task 21).
+    -- alone contributes some eighty deprecation hints.
     project_diagnostics = vim.tbl_extend("error", {
       mode = "diagnostics",
       filter = function(items)

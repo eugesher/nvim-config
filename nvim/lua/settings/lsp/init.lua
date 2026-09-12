@@ -1,7 +1,7 @@
 -- defaults verified against nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-11)
 --
 -- LSP foundation (servers: settings/lsp/servers/). nvim-lspconfig only
--- contributes its catalogue of `lsp/<server>.lua` defaults on 'runtimepath':
+-- contributes its catalog of `lsp/<server>.lua` defaults on 'runtimepath':
 -- configuration goes through Neovim's own vim.lsp.config() / vim.lsp.enable().
 -- The old `require("lspconfig").<server>.setup{}` pattern is not used anywhere.
 

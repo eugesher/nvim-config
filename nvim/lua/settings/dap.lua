@@ -3,8 +3,7 @@
 -- Debug Adapter Protocol client: breakpoints, stepping, stack and variables for
 -- Node.js and TypeScript. The adapter is js-debug-adapter (the Mason package of
 -- microsoft/vscode-js-debug), configured directly — nvim-dap-vscode-js has been
--- unmaintained since 2022 (decision recorded in task 16). The debugger UI
--- (panels, watches) arrives with task 17.
+-- unmaintained since 2022. The panel is settings/dap-view.lua.
 --
 -- nvim-dap has no setup(): everything is assigned in `config`, which lazy.nvim
 -- runs on the first <leader>d key.
@@ -156,8 +155,7 @@ local function node_configurations()
     }),
     -- `nest start --debug` on this machine. No localRoot / remoteRoot here:
     -- the pair tells js-debug the process runs somewhere else, and against a
-    -- local process breakpoints then stay "provisional" and never fire
-    -- (verified in task 16 — with the pair no stopped event ever arrives).
+    -- local process breakpoints then stay "provisional" and never fire.
     with_common({
       type = "pwa-node",
       request = "attach",
@@ -262,7 +260,7 @@ function M.config()
     dap.configurations[filetype] = node_configurations()
   end
 
-  -- Client behaviour (dap.defaults), stated explicitly.
+  -- Client behavior (dap.defaults), stated explicitly.
   local fallback = dap.defaults.fallback
   fallback.exception_breakpoints = { "uncaught" }
   fallback.focus_terminal = false -- the debugee's terminal does not steal focus
@@ -270,11 +268,11 @@ function M.config()
   -- `terminal_win_cmd` is deliberately not set: nvim-dap's help warns that UI
   -- extensions drive it, and dap-view points the debugee's terminal at its own
   -- window. Overriding it leaves a second terminal window behind after the
-  -- session ends (task 17).
+  -- session ends.
 
   -- The panel follows the session. dap-view's own `auto_toggle` stays off: the
-  -- bottom split is shared with trouble (task 20) and the test output
-  -- (task 18), and deciding who gets it is this config's business.
+  -- bottom split is shared with trouble and the test output, and deciding who
+  -- gets it is this config's business.
   -- The key must not be "dap-view": the plugin registers its own listeners
   -- under that name and ours would silently replace each other.
   dap.listeners.before.launch["settings_dap_panel"] = open_panel

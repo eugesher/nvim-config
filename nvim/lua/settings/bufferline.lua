@@ -68,13 +68,13 @@ M.opts = {
     end,
     offsets = {
       {
-        filetype = "neo-tree", -- задача 11
+        filetype = "neo-tree",
         text = "Explorer",
         text_align = "left",
         highlight = "Directory",
         separator = true,
       },
-      -- No entry for trouble (задача 20): `offsets` reserves room in the
+      -- No entry for trouble: `offsets` reserves room in the
       -- tab line for a *side* panel, and the problems list is a bottom split.
     },
     color_icons = true,
@@ -101,8 +101,8 @@ function M.config(_, opts)
   local bufferline = require("bufferline")
   opts.options.style_preset = bufferline.style_preset.default
   -- Built here, not at import time: needs catppuccin's options, and catppuccin
-  -- is loaded first (`lazy = false`, `priority = 1000`). No italics on the
-  -- selected tab — carried over from the old config.
+  -- is loaded first (`lazy = false`, `priority = 1000`). The selected tab is
+  -- bold, not italic.
   opts.highlights = require("catppuccin.special.bufferline").get_theme({ styles = { "bold" } })
   bufferline.setup(opts)
 end

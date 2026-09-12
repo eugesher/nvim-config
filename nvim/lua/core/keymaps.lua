@@ -2,12 +2,12 @@
 -- buffer-local ones in after/ftplugin/*.
 --
 -- Not defined here on purpose:
---   * `<leader>q` (close buffer) — task 03, together with bufdelete.nvim.
+--   * `<leader>q` (close buffer) — settings/bufferline.lua, with bufdelete.nvim.
 --   * `]q` / `[q` — native since Neovim 0.11 (`:cnext` / `:cprevious` with
 --     count support); redefining them would only lose the count.
 --
 -- `<A-j>` / `<A-k>` (move line/selection) are the only Alt mappings in the
--- config — a deliberate exception to the "no Alt layer" rule (task 02).
+-- config — a deliberate exception to the "no Alt layer" rule.
 
 local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { desc = desc, silent = true })

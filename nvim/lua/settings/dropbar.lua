@@ -61,7 +61,7 @@ end
 -- symbol: centering is all that is left to do. Through the view, not
 -- `:normal! zz` — the preview also runs while `i` opens the fuzzy prompt, and a
 -- `:normal` at that moment takes the focus off the prompt, which then closes
--- at once (measured in task 26).
+-- at once.
 local function center(win, range)
   local view = vim.fn.winsaveview()
   view.topline =
@@ -229,7 +229,7 @@ function M.opts()
         -- (named after its first line: `private readonly cacheTtl`),
         -- `property_identifier` (every method twice) and Lua's `table_constructor`,
         -- and statements such as `return` or `call` push the class and the method
-        -- out of `max_depth`. Measured in task 26, inside a method of a service:
+        -- out of `max_depth`. Inside a method of a service:
         --   defaults: private readonly cacheTtl › findOne › return this.findAll › …
         --   this list: class UsersService › findOne
         -- LSP symbols replace these as soon as the server answers.

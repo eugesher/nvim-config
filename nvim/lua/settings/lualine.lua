@@ -1,9 +1,9 @@
 -- defaults verified against lualine.nvim 221ce6b (2026-09-11)
 --
 -- Status line: a single global bar (`laststatus = 3`, core/options.lua).
--- Components for plugins that arrive in later tasks (nvim-dap, neotest)
--- check `package.loaded` / `pcall` first and stay empty until then.
--- `winbar` stays empty on purpose: dropbar owns it (task 26).
+-- The nvim-dap and neotest components check `package.loaded` first: they stay
+-- empty until those plugins load and never load them themselves.
+-- `winbar` stays empty on purpose: dropbar owns it.
 
 local icons = require("settings.icons")
 
@@ -31,7 +31,7 @@ local function lsp_progress()
   return (lsp_message:gsub("%%", "%%%%"))
 end
 
--- nvim-dap (task 16): only while a debug session exists.
+-- nvim-dap: only while a debug session exists.
 local function dap_active()
   return package.loaded["dap"] ~= nil and require("dap").session() ~= nil
 end
@@ -39,7 +39,7 @@ local function dap_status()
   return icons.dap.stopped .. " " .. require("dap").status()
 end
 
--- neotest (task 18): running / failed / passed counts for the current buffer.
+-- neotest: running / failed / passed counts for the current buffer.
 local function neotest_status()
   if not package.loaded["neotest"] then
     return ""

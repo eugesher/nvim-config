@@ -1,7 +1,6 @@
 -- Tests: the neotest framework with adapters for Jest and Vitest. Both are
 -- registered at once — neotest picks the one that matches the project.
--- vim-test is not used: no test tree, no inline statuses, no watch panel
--- (decision recorded in task 18).
+-- vim-test is not used: no test tree, no inline statuses, no watch panel.
 
 local spec = require("settings").spec
 

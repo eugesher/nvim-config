@@ -1,12 +1,11 @@
 -- defaults verified against nvim-dap-view v1.2.1-6-ge766b3d (2026-09-12)
 --
 -- Debugger panel: variables, watches, breakpoints, threads and the REPL in one
--- bottom split, plus the debugee's terminal beside it. nvim-dap-ui is not used
--- (decision recorded in task 17).
+-- bottom split, plus the debugee's terminal beside it.
 --
 -- The panel is opened and closed by the session listeners in settings/dap.lua,
--- not by `auto_toggle`: the bottom split is shared with trouble (task 20) and
--- the test output (task 18).
+-- not by `auto_toggle`: the bottom split is shared with trouble and the test
+-- output.
 
 local user = require("user.settings")
 

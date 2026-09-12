@@ -151,10 +151,10 @@ describe('{subject}', () => {{
     "nit",
     "Jest: it block (async)",
     [[
-it('should {behaviour}', async () => {{
+it('should {behavior}', async () => {{
   {body}
 }});]],
-    { behaviour = i(1, "work"), body = i(0) }
+    { behavior = i(1, "work"), body = i(0) }
   ),
 
   nest(

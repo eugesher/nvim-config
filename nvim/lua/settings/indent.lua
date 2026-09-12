@@ -1,7 +1,7 @@
 -- defaults verified against indent-blankline.nvim v3.10.1 (2026-09-11)
 --
--- Indent guides with the current scope highlighted. Scope needs a treesitter
--- parser: the bundled ones work now, the rest arrive in task 05.
+-- Indent guides with the current scope highlighted (scope needs a treesitter
+-- parser).
 
 local M = {}
 

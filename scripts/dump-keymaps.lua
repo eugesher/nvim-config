@@ -15,7 +15,7 @@ local START = "<!-- keymaps:start -->"
 local FINISH = "<!-- keymaps:end -->"
 
 -- Neovim's own keys that are part of the scheme although nothing redefines
--- them: the native LSP keys stay (rule 6), diagnostics and quickfix jumps are
+-- them: the native LSP keys stay, diagnostics and quickfix jumps are
 -- the ones the config builds on.
 local NATIVE = {
   n = { "gra", "gO", "grx", "]d", "[d", "]D", "[D", "<C-W>d", "]q", "[q" },

@@ -5,7 +5,7 @@
 -- it registers its own dap listeners at setup.
 --
 -- Variables are found through the treesitter `locals.scm` queries, which
--- nvim-treesitter ships for typescript and javascript (task 05). Without the
+-- nvim-treesitter ships for typescript and javascript. Without the
 -- parser and those queries there is simply no virtual text.
 --
 -- nvim-dap-view has a virtual-text implementation of its own; it stays off
@@ -24,11 +24,11 @@ M.opts = {
   -- `enable_commands` — the latter is what actually works.
   enable_commands = true,
   highlight_changed_variables = true, -- changed values get NvimDapVirtualTextChanged
-  -- With js-debug this is what actually colours the values. The plugin looks
+  -- With js-debug this is what actually colors the values. The plugin looks
   -- up previous values by `stackframe.id`, and js-debug hands out a new id on
   -- every stop, so the cache is never hit and nothing is ever "changed". With
   -- this on, every inline value gets the NvimDapVirtualTextChanged highlight —
-  -- read it as "here is a value", not as "this value changed" (task 17).
+  -- read it as "here is a value", not as "this value changed".
   highlight_new_as_changed = true,
   show_stop_reason = true, -- the exception that stopped the debugger
   commented = false, -- no comment prefix: the values are not code

@@ -28,7 +28,7 @@ M.config = {
         semicolon = "SameLine", -- only where a statement shares its line
       },
       codeLens = { enable = true },
-      format = { enable = false }, -- stylua formats Lua (task 09)
+      format = { enable = false }, -- stylua formats Lua
       completion = { callSnippet = "Replace" },
       -- No `telemetry`: lua-language-server 3.19 has no such setting any more.
     },

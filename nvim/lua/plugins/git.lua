@@ -1,6 +1,6 @@
 -- Git: hunks in the sign column, hunk actions and blame (gitsigns); the git
 -- client (neogit) with diffs, history and the merge tool (diffview).
--- lazygit, vim-fugitive and snacks.nvim are not used (decision recorded in task 13).
+-- lazygit, vim-fugitive and snacks.nvim are not used.
 
 local spec = require("settings").spec
 

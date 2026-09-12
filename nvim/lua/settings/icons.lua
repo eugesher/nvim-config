@@ -168,7 +168,7 @@ M.keymap_groups = {
   prev = "",
 }
 
--- Package states (Mason UI). Plain Unicode, carried over from the old config.
+-- Package states (Mason UI). Plain Unicode.
 M.packages = {
   installed = "✓",
   pending = "➜",

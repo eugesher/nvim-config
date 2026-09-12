@@ -36,8 +36,8 @@ local KEYMAPS = {
   { "n", "<leader>hc", kulala("copy"), "Copy as curl" },
   { "n", "<leader>hi", kulala("inspect"), "Inspect request (dry run)" },
   { "n", "<leader>hS", kulala("scratchpad"), "Scratchpad" },
-  -- OpenAPI explorer replaces the collection import: kulala 6.x imports
-  -- neither Postman nor Bruno collections (task 15).
+  -- OpenAPI explorer instead of a collection import: kulala 6.x imports
+  -- neither Postman nor Bruno collections.
   { "n", "<leader>hI", kulala("open_openapi_explorer"), "OpenAPI explorer" },
   { "n", "<leader>hE", kulala("export"), "Export to Postman" },
   -- Values stored by post-request scripts (client.global.set) persist in

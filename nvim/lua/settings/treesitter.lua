@@ -16,9 +16,9 @@ M.lazy = false
 -- Installed on startup; `install()` skips what is already there. Notes:
 --   * no `jsonc`: that parser is gone on `main`, and nvim-treesitter maps the
 --     `jsonc` filetype to the `json` parser;
---   * `http` is required by kulala.nvim (task 15);
+--   * `http` is required by kulala.nvim;
 --   * typescript / tsx / javascript are needed by neotest and
---     nvim-dap-virtual-text (tasks 17–18).
+--     nvim-dap-virtual-text.
 local parsers = {
   "typescript",
   "tsx",
@@ -43,7 +43,7 @@ local parsers = {
   "markdown",
   "markdown_inline",
   "dockerfile",
-  "hcl", -- docker-bake.hcl (task 22)
+  "hcl", -- docker-bake.hcl
   "sql",
   "http",
   "graphql",

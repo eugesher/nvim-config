@@ -1,7 +1,7 @@
 -- Code structure: the symbol tree of the current file (aerial, WebStorm's
 -- Structure view) and interactive breadcrumbs in the winbar (dropbar).
 --
--- Rejected (decision recorded in task 26): outline.nvim — LSP is its only real
+-- Rejected: outline.nvim — LSP is its only real
 -- provider and it has no nav window; barbecue.nvim + nvim-navic — breadcrumbs
 -- that cannot be clicked or picked. dropbar is the only winbar plugin here.
 

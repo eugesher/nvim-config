@@ -2,7 +2,7 @@
 --
 -- `:checkhealth <name>` looks for `lua/<name>/health.lua`, hence `myconfig/`.
 -- A `core/health.lua` would be a second report, `:checkhealth core`, and plain
--- `:checkhealth` would run both (task 28).
+-- `:checkhealth` would run both.
 --
 -- Lists are read from the settings that use them where such a list exists
 -- (language servers, Mason tools, the debug adapter path, the sessions

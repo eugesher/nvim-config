@@ -10,7 +10,7 @@ return {
     dependencies = { "lewis6991/async.nvim" },
   }),
   spec("lewis6991/async.nvim"),
-  -- vim-visual-multi was considered and rejected: vimscript, and known trouble
-  -- with LSP and completion plugins (decision recorded in task 25).
+  -- Not vim-visual-multi: vimscript, and known trouble with LSP and completion
+  -- plugins.
   spec("jake-stewart/multicursor.nvim", "multicursor"),
 }

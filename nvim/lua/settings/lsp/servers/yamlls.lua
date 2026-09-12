@@ -1,6 +1,6 @@
 -- defaults verified against yaml-language-server 1.24.0 and nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-11)
 --
--- YAML with the SchemaStore catalogue (GitHub workflows, docker-compose, …).
+-- YAML with the SchemaStore catalog (GitHub workflows, docker-compose, …).
 
 local M = {}
 
@@ -10,20 +10,20 @@ M.config = {
   -- `yaml.docker-compose` stays: core/filetypes.lua gives it to compose files,
   -- and this server is the only one that validates them against the Compose
   -- Specification schema — docker-language-server reports YAML syntax errors
-  -- and nothing else there (measured in task 22).
+  -- and nothing else there.
   filetypes = { "yaml", "yaml.docker-compose" },
   settings = {
     redhat = { telemetry = { enabled = false } },
     yaml = {
-      schemaStore = { enable = false, url = "" }, -- the catalogue comes from SchemaStore.nvim
+      schemaStore = { enable = false, url = "" }, -- the catalog comes from SchemaStore.nvim
       validate = true,
       hover = true,
       completion = true,
-      format = { enable = false }, -- Prettier formats YAML (task 09)
+      format = { enable = false }, -- Prettier formats YAML
       keyOrdering = false, -- otherwise every mapping must be sorted alphabetically
     },
   },
-  -- The catalogue is large: resolve it when the server starts, not at startup.
+  -- The catalog is large: resolve it when the server starts, not at startup.
   before_init = function(_, config)
     config.settings.yaml.schemas = require("schemastore").yaml.schemas()
   end,
@@ -36,7 +36,7 @@ M.config = {
     -- which compose files have none, so its `prepareRename` comes back empty —
     -- but `vim.lsp.buf.rename()` walks every client that claims the capability,
     -- so `grn` on a service name ended with a stray "Nothing to rename" after
-    -- docker-language-server had already renamed it (task 22).
+    -- docker-language-server had already renamed it.
     -- Capabilities belong to the client, not the buffer, and the same client
     -- serves plain YAML: hence the per-buffer answer here instead of clearing
     -- `renameProvider` outright.

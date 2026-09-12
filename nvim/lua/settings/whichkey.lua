@@ -3,12 +3,12 @@
 -- Popup with the available keys after a prefix, and the one place where the
 -- keymap namespaces of the leader map are declared.
 --
--- Разделение ответственности:
---   * `desc` конкретных кеймапов пишутся в settings/<плагин>.lua, рядом с самим
---     кеймапом: `desc` в поле `keys`, а для кеймапов, которые создаёт сам
---     плагин, — поле `which_key` модуля (собирается `settings.which_key()`).
---   * Этот файл содержит ТОЛЬКО группы, их иконки и порядок. Отдельные кеймапы
---     сюда не дописываются — иначе появится второй источник правды.
+-- Division of responsibility:
+--   * a keymap's `desc` lives in settings/<plugin>.lua next to the keymap: in
+--     its `keys` entry, or in the module's `which_key` field for keymaps the
+--     plugin creates itself (collected by `settings.which_key()`).
+--   * this file holds ONLY the groups, their icons and order. Individual
+--     keymaps never go here — that would be a second source of truth.
 --
 -- which-key v3: only `require("which-key").add()`; v2's `register()` is gone.
 -- A group without mappings is not drawn: each namespace shows up in the popup
@@ -21,7 +21,7 @@ local M = {}
 
 M.event = "VeryLazy"
 
--- Namespaces of the leader map, in display-independent declaration order.
+-- Namespaces of the leader map.
 -- n + x: code actions, refactors, hunks and multicursor also act on selections.
 local groups = {
   { "<leader>b", group = "buffers", icon = { icon = glyphs.buffers, color = "cyan" } },
@@ -47,7 +47,7 @@ local groups = {
 for _, spec in ipairs(groups) do
   spec.mode = { "n", "x" }
 end
--- HTTP: normal mode only; its keymaps are buffer-local in .http buffers (task 15),
+-- HTTP: normal mode only; its keymaps are buffer-local in .http buffers,
 -- so globally the group stays empty and hidden.
 groups[#groups + 1] =
   { "<leader>h", group = "http", mode = "n", icon = { icon = glyphs.http, color = "blue" } }
@@ -66,7 +66,7 @@ M.opts = {
   filter = function()
     return true -- show every mapping, described or not
   end,
-  spec = {}, -- groups are added in `config`, see above
+  spec = {}, -- groups are added in `config`
   notify = true, -- warn about problems in the mappings
   triggers = {
     { "<auto>", mode = "nxso" },
@@ -104,7 +104,6 @@ M.opts = {
     bo = {},
     wo = { winblend = 0 },
   },
-  -- v3 has no `layout.align` (a v2 option).
   layout = {
     width = { min = 20 },
     spacing = 3,
