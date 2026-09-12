@@ -13,7 +13,17 @@ M.event = { "BufReadPre", "BufNewFile" }
 -- mason-lspconfig's `automatic_enable` enables installed servers as well —
 -- harmless, vim.lsp.enable() is idempotent. Never add ts_ls next to vtsls
 -- (double diagnostics).
-M.servers = { "vtsls", "eslint", "lua_ls", "jsonls", "yamlls", "bashls", "codebook" }
+M.servers = {
+  "vtsls",
+  "eslint",
+  "lua_ls",
+  "jsonls",
+  "yamlls",
+  "bashls",
+  "codebook",
+  "docker_language_server",
+  "dockerls",
+}
 
 -- Feeds every settings/lsp/servers/<name>.lua into vim.lsp.config(<name>, …),
 -- so a new server is a new file (plus its name above and in ensure_installed).

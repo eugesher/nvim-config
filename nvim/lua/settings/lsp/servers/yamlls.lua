@@ -7,7 +7,10 @@ local M = {}
 M.config = {
   -- nvim-lspconfig also lists `yaml.gitlab` / `yaml.helm-values`: filetypes
   -- Neovim never produces, which `:checkhealth vim.lsp` reports as unknown.
-  -- `yaml.docker-compose` stays: core/filetypes.lua gives it to compose files.
+  -- `yaml.docker-compose` stays: core/filetypes.lua gives it to compose files,
+  -- and this server is the only one that validates them against the Compose
+  -- Specification schema — docker-language-server reports YAML syntax errors
+  -- and nothing else there (measured in task 22).
   filetypes = { "yaml", "yaml.docker-compose" },
   settings = {
     redhat = { telemetry = { enabled = false } },
