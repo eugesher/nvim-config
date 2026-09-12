@@ -21,6 +21,10 @@ return {
     -- the debugger panel (dap-view), the test output and the problems list
     -- share the same split, and different heights make them jump.
     panel_height = 12,
+    -- The terminal uses a Nerd Font (v3): icons everywhere assume one. Neovim
+    -- cannot see the terminal's font, so `:checkhealth myconfig` only trusts
+    -- this flag — set it to false on a machine without such a font.
+    nerd_font = true,
   },
 
   colorscheme = {

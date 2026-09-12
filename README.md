@@ -4,29 +4,22 @@ An IDE-grade Neovim configuration for backend development on NestJS: TypeScript,
 RabbitMQ, MySQL/TypeORM and API-gateway services. It bundles LSP, debugging,
 tests, database and HTTP clients into a single keyboard-driven workflow.
 
-## Status
-
-⚠️ **The configuration is being rewritten from scratch.** The repository is in the
-middle of that rewrite: the old config has been removed and the new one is landing
-task by task, so on any given commit parts of the stack described below may not
-exist yet. Task descriptions live outside the repository for now; a `tasks/`
-directory will be linked here if it is added.
-
 ## Environment requirements
 
 ### Required
 
 | Dependency | Why | Install |
 | --- | --- | --- |
-| **Neovim 0.12+** | Core editor; required by refactoring.nvim, kulala, nvim-dap | `sudo snap install nvim --classic` |
-| **Git 2.31+** | Plugin management, gitsigns, diffview.nvim | `sudo apt install git` |
-| **Node.js 20+** and npm | TS/JS language servers, tree-sitter-cli | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm` |
-| **tree-sitter-cli ≥ 0.26.1** | Required by the `main` branch of nvim-treesitter | `npm install -g tree-sitter-cli` |
-| **build-essential** (gcc, make) | Builds `jsregexp` for LuaSnip | `sudo apt install build-essential` |
+| **Neovim 0.12+** | Core editor; the config uses 0.12 APIs throughout | `sudo snap install nvim --classic` |
+| **Git 2.31+** | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+ | `sudo apt install git` |
+| **Node.js 20+** and npm | TS/JS language servers, prettierd, js-debug-adapter, tree-sitter-cli | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm` |
+| **tree-sitter-cli ≥ 0.26.1** | The `main` branch of nvim-treesitter builds parsers with it | `npm install -g tree-sitter-cli` |
+| **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential` |
+| **curl** | Downloads by Mason and by kulala for its backend | `sudo apt install curl` |
 | **ripgrep** | Live grep in fzf-lua | `sudo apt install ripgrep` |
 | **fd-find** | File traversal in fzf-lua (ships as `fdfind`, needs an `fd` symlink) | `sudo apt install fd-find` |
 | **fzf > 0.36** | Picker engine behind fzf-lua | `sudo apt install fzf` |
-| **A Nerd Font** | Icons in the file tree, status line and picker | [nerdfonts.com](https://www.nerdfonts.com/) — then select it in your terminal |
+| **A Nerd Font** (v3) | Icons in the file tree, status line, pickers and breadcrumbs | [nerdfonts.com](https://www.nerdfonts.com/) — select it in your terminal; `ui.nerd_font` in `lua/user/settings.lua` records that |
 | **wl-clipboard** or **xclip** | System clipboard integration | `sudo apt install wl-clipboard` |
 
 ### Optional — per feature
@@ -50,128 +43,132 @@ directory will be linked here if it is added.
 
 ## Installation
 
-On Debian/Ubuntu `fd` and `bat` are installed under different binary names, so
-create the symlinks the config expects:
+1. **Prepare the environment.** Install the required dependencies above. On
+   Debian/Ubuntu `fd` and `bat` are installed under different binary names, so
+   create the symlinks the config expects, and install the Tree-sitter CLI:
 
-```bash
-mkdir -p ~/.local/bin
-ln -s "$(command -v fdfind)" ~/.local/bin/fd
-ln -s "$(command -v batcat)" ~/.local/bin/bat
-```
+   ```bash
+   mkdir -p ~/.local/bin
+   ln -s "$(command -v fdfind)" ~/.local/bin/fd
+   ln -s "$(command -v batcat)" ~/.local/bin/bat
+   npm install -g tree-sitter-cli
+   ```
 
-Install the Tree-sitter CLI (needed by the `main` branch of nvim-treesitter):
+2. **Install the configuration.** The script checks for Neovim 0.12+, backs an
+   existing `~/.config/nvim` up to `~/.config/nvim.backup.<timestamp>`, copies
+   `nvim/` into its place and creates `~/.config/codebook/codebook.toml` unless it
+   already exists:
 
-```bash
-npm install -g tree-sitter-cli
-```
+   ```bash
+   ./install.sh
+   ```
 
-Install the configuration into `~/.config/nvim` (the existing config is backed up
-to `~/.config/nvim.backup.<timestamp>`):
+3. **Start Neovim once.** lazy.nvim installs the plugins at the commits pinned in
+   `nvim/lazy-lock.json`, nvim-treesitter builds the parsers, and Mason installs
+   the language servers and tools in the background. Wait until `:Mason` lists
+   every package as installed.
 
-```bash
-./install.sh
-```
+   ```bash
+   nvim
+   ```
 
-Then launch the editor and let the plugin manager bootstrap itself:
+4. **Check the result** with `:checkhealth myconfig`. It covers Neovim itself,
+   the required and optional tools (with their versions), Mason packages,
+   treesitter parsers, the files kept across reinstalls, the font and the debug
+   adapter. A missing optional tool is a warning with its install command; an
+   error is something the config cannot work without.
 
-```bash
-nvim
-```
+Running `./install.sh` again replaces `~/.config/nvim` and nothing else. What
+has to survive lives outside it: the codebook dictionary in
+`~/.config/codebook/`, vim-dadbod-ui connections and saved queries in
+`~/.local/share/nvim/db_ui/`, sessions in `~/.local/state/nvim/sessions/`, and
+the `http/` collections in this repository.
 
 ## What's inside
 
 | Area | Tooling |
 | --- | --- |
-| Plugin manager | lazy.nvim |
-| LSP | vtsls (TypeScript), servers managed by Mason |
-| Completion | blink.cmp |
-| Picker | fzf-lua |
-| File tree | neo-tree |
-| File operations | oil.nvim (directory as an editable buffer) |
-| Git | neogit, diffview.nvim, gitsigns |
-| Database | vim-dadbod |
-| HTTP client | kulala |
-| Debugging | nvim-dap |
-| Tests | neotest |
+| Plugin manager | lazy.nvim, versions pinned by `nvim/lazy-lock.json` |
+| Colorscheme and UI | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons |
+| LSP | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
+| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets |
+| Formatting | conform.nvim with prettierd / prettier and stylua |
+| Treesitter | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context |
+| Picker | fzf-lua, also behind `vim.ui.select` |
+| Files | neo-tree (project tree), oil.nvim (directory as an editable buffer) |
+| Code structure | aerial (symbol tree), dropbar (breadcrumbs in the winbar) |
+| Git | gitsigns, neogit, diffview.nvim, git-conflict.nvim |
+| Database | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion |
+| HTTP client | kulala.nvim |
+| Debugging | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter |
+| Tests and coverage | neotest (jest, vitest adapters), nvim-coverage |
+| Problems | trouble.nvim, todo-comments.nvim |
+| Refactoring | inc-rename.nvim, refactoring.nvim, multicursor.nvim |
 | Sessions | auto-session |
-| Spelling | codebook |
-| Diagnostics panel | trouble.nvim |
+| Spelling | codebook — a language server |
 
-Details are intentionally omitted — they will appear as the rewrite progresses.
+## Configuration structure
 
-## Databases
+```
+nvim/
+├── init.lua              # leaders, version guard, vim.loader, then core and lazy.nvim
+├── lazy-lock.json        # exact plugin commits — part of the config
+├── stylua.toml           # formatting of every Lua file (2 spaces, width 100)
+├── lua/
+│   ├── core/             # the editor itself, no plugins: options, keymaps,
+│   │                     # autocmds, diagnostics, filetypes, lazy.nvim bootstrap
+│   ├── plugins/          # thin lazy.nvim specs, one file per area
+│   ├── settings/         # the configuration of every plugin, one file per plugin
+│   │   └── lsp/          # servers list, Mason, capabilities, LspAttach keymaps,
+│   │                     # servers/<name>.lua per language server
+│   ├── user/settings.lua # the values meant to be changed (next section)
+│   └── myconfig/health.lua  # :checkhealth myconfig
+└── after/ftplugin/       # buffer-local keymaps of .http and .sql buffers
+```
 
-**No credentials live in this repository.** Connections added with
-`:DBUIAddConnection` (`<leader>Da`) and saved queries are stored in
-`~/.local/share/nvim/db_ui/` — outside the repository and outside
-`~/.config/nvim`, so `install.sh` never touches them.
+The layers never mix:
 
-- **MySQL passwords go to `~/.my.cnf`, not into the URL.** A password in the URL
-  ends up in plain text in `connections.json`, and the MySQL 8+ client prints
-  "Using a password on the command line interface can be insecure" into every
-  result. Keep it in the client option file (`chmod 600 ~/.my.cnf`):
+- **`lua/plugins/`** only says *which* plugin: repository, dependencies, build
+  step, branch or version. Each spec is built with
+  `require("settings").spec("folke/trouble.nvim", "trouble")`.
+- **`lua/settings/<name>.lua`** says *how*: it returns
+  `{ event / ft / cmd / keys, opts, init, config, which_key }`, and everything a
+  plugin is configured with lives there — options, keymaps with their
+  descriptions, highlights are the one exception and sit in `settings/theme.lua`.
+  Options are written out in full, defaults included, but only the documented
+  ones; the first line of every file names the plugin version they were checked
+  against.
+- **`lua/core/`** holds what Neovim does without any plugin.
+- **`after/ftplugin/`** holds keymaps that belong to one filetype.
 
-  ```ini
-  [client]
-  user=app
-  password=secret
-  ```
+## Customization
 
-  and add the connection without it: `mysql://app@127.0.0.1:3306/app_db`.
-- **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
-  MySQL client ignores the port and connects to the local Unix socket.
-- Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
-  or one variable per connection, `DB_UI_<NAME>=mysql://…`.
-- **Redis** has no browser in the drawer. One-off commands go through `:DB`, and
-  the result opens in a buffer: `:DB redis://127.0.0.1:6379 KEYS user:*`,
-  `:DB redis://127.0.0.1:6379 TTL session:abc`. Interactive work happens in
-  `redis-cli` in a separate terminal window.
+`nvim/lua/user/settings.lua` is the single place meant for personal values —
+plain data the rest of the config reads:
 
-## HTTP client
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `editor.indent_width` | `2` | `'shiftwidth'`, `'tabstop'`, `'softtabstop'` |
+| `editor.scrolloff` | `8` | lines kept above and below the cursor |
+| `editor.relative_number` | `true` | relative line numbers |
+| `ui.border` | `"rounded"` | border of every floating window (`'winborder'`) |
+| `ui.panel_height` | `12` | height of the bottom panels: Trouble, debugger, test output |
+| `ui.nerd_font` | `true` | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you |
+| `colorscheme.flavour` | `"mocha"` | catppuccin flavour: latte, frappe, macchiato, mocha |
+| `colorscheme.transparent` | `false` | let the terminal background show through |
+| `colorscheme.window_bg` | `"#000000"` | base background of windows, panels and floats |
+| `treesitter.max_filesize`, `max_line_length` | 1.5 MB, 2000 | larger files get no treesitter |
+| `formatting.format_on_save` | `true` | toggle with `<leader>uf` (buffer) / `<leader>uF` (global) |
+| `formatting.timeout_ms`, `max_filesize` | 3000, 1 MB | how long a formatter may block a save; larger files are not formatted |
+| `explorer.position`, `width`, `hide_gitignored` | `"left"`, 34, `true` | neo-tree panel |
+| `http.default_env` | `"dev"` | kulala environment on startup |
+| `coverage.command` | `npm run test:cov` | what `:CoverageRun` executes |
+| `database.position`, `width` | `"left"`, 40 | vim-dadbod-ui drawer |
+| `lsp.inlay_hints` | `true` | inlay hints; `<leader>ui` toggles per buffer |
+| `lsp.disable_watchers` | `false` | stop file watching to save CPU in huge monorepos |
 
-Request collections live in `http/` at the repository root, outside `nvim/`, so
-`install.sh` never overwrites them. Public values (`baseUrl`, usernames) go to
-`http-client.env.json`; secrets belong in `http-client.private.env.json`, which
-`http/.gitignore` keeps out of the repository.
-
-- **Chaining requests goes through a post-request script.** `client.global.set`
-  stores a value that later requests use as `{{VAR}}` — see `http/example.http`.
-  The documented `{{request.response.body.$.field}}` syntax does not work in
-  kulala 6.x: requests are executed by the kulala-core binary, and its store for
-  those values stays empty. The scripts need no Node.js — kulala-core runs them.
-- **kulala-core keeps a local history.** `~/.local/share/kulala-core/kulala.db`
-  (SQLite) stores request history with headers and response bodies, plus the
-  variables set from scripts — tokens included, in plain text, surviving restarts.
-  Clear the variables with `<leader>hX` in an `.http` buffer; delete the file to
-  drop the history.
-
-## Spell checking
-
-Spelling is checked by **codebook**, a language server — not a plugin. It splits
-`camelCase`, `PascalCase`, `snake_case` and `SCREAMING_SNAKE_CASE` itself and
-suggests fixes in the original case, and it knows identifiers from strings and
-comments. Mason installs it automatically.
-
-- **Diagnostics are hints, never errors** (`diagnosticSeverity = "hint"`), so
-  spelling never inflates the error counters in the status line, the buffer tabs
-  or the problems panel.
-- **`<leader>ca` on a flagged word** offers `Add to dictionary` (the project's
-  `codebook.toml`) and `Add to global dictionary` (the global one), along with
-  the spelling suggestions.
-- **`<leader>us`** turns the checker off and on for the session.
-- **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
-  wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
-  one is `codebook.toml` at the project root.
-- **`ignore_paths` takes glob patterns.** A bare `"node_modules"` matches only a
-  file with that exact name — use `"**/node_modules/**"`. The server rewrites the
-  file whenever a word is added and drops keys that hold their default value.
-- **Migrating from cspell:** `scripts/cspell-to-codebook.sh` merges
-  `~/.config/cspell/user-words.txt` into the `words` array of the global config,
-  leaving every other setting alone. Running it twice changes nothing.
-
-`install.sh` still creates the old `~/.config/cspell/user-words.txt`; replacing
-that with `~/.config/codebook/codebook.toml` happens when the installer itself is
-reworked.
+Edit the file in the repository and run `./install.sh` again — an edit made in
+`~/.config/nvim` is lost on the next reinstall.
 
 ## Key bindings
 
@@ -216,8 +213,8 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>w` | n | Write buffer |  |
 | `<M-j>` | n | Move line down |  |
 | `<M-j>` | x | Move selection down |  |
-| `<M-k>` | x | Move selection up |  |
 | `<M-k>` | n | Move line up |  |
+| `<M-k>` | x | Move selection up |  |
 | `>` | x | Indent right, keep selection |  |
 | `a=` | x o | Around assignment |  |
 | `aa` | x o | Around parameter |  |
@@ -592,11 +589,103 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 <!-- keymaps:end -->
 
+## Databases
+
+**No credentials live in this repository.** Connections added with
+`:DBUIAddConnection` (`<leader>Da`) and saved queries are stored in
+`~/.local/share/nvim/db_ui/` — outside the repository and outside
+`~/.config/nvim`, so `install.sh` never touches them.
+
+- **MySQL passwords go to `~/.my.cnf`, not into the URL.** A password in the URL
+  ends up in plain text in `connections.json`, and the MySQL 8+ client prints
+  "Using a password on the command line interface can be insecure" into every
+  result. Keep it in the client option file (`chmod 600 ~/.my.cnf`):
+
+  ```ini
+  [client]
+  user=app
+  password=secret
+  ```
+
+  and add the connection without it: `mysql://app@127.0.0.1:3306/app_db`.
+- **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
+  MySQL client ignores the port and connects to the local Unix socket.
+- Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
+  or one variable per connection, `DB_UI_<NAME>=mysql://…`.
+- **Redis** has no browser in the drawer. One-off commands go through `:DB`, and
+  the result opens in a buffer: `:DB redis://127.0.0.1:6379 KEYS user:*`,
+  `:DB redis://127.0.0.1:6379 TTL session:abc`. Interactive work happens in
+  `redis-cli` in a separate terminal window.
+
+## HTTP client
+
+Request collections live in `http/` at the repository root, outside `nvim/`, so
+`install.sh` never overwrites them. Public values (`baseUrl`, usernames) go to
+`http-client.env.json`; secrets belong in `http-client.private.env.json`, which
+`http/.gitignore` keeps out of the repository.
+
+- **Chaining requests goes through a post-request script.** `client.global.set`
+  stores a value that later requests use as `{{VAR}}` — see `http/example.http`.
+  The documented `{{request.response.body.$.field}}` syntax does not work in
+  kulala 6.x: requests are executed by the kulala-core binary, and its store for
+  those values stays empty. The scripts need no Node.js — kulala-core runs them.
+- **kulala-core keeps a local history.** `~/.local/share/kulala-core/kulala.db`
+  (SQLite) stores request history with headers and response bodies, plus the
+  variables set from scripts — tokens included, in plain text, surviving restarts.
+  Clear the variables with `<leader>hX` in an `.http` buffer; delete the file to
+  drop the history.
+
+## Spell checking
+
+Spelling is checked by **codebook**, a language server — not a plugin. It splits
+`camelCase`, `PascalCase`, `snake_case` and `SCREAMING_SNAKE_CASE` itself and
+suggests fixes in the original case, and it knows identifiers from strings and
+comments. Mason installs it automatically.
+
+- **Diagnostics are hints, never errors** (`diagnosticSeverity = "hint"`), so
+  spelling never inflates the error counters in the status line, the buffer tabs
+  or the problems panel.
+- **`<leader>ca` on a flagged word** offers `Add to dictionary` (the project's
+  `codebook.toml`) and `Add to global dictionary` (the global one), along with
+  the spelling suggestions.
+- **`<leader>us`** turns the checker off and on for the session.
+- **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
+  wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
+  one is `codebook.toml` at the project root.
+- **`ignore_paths` takes glob patterns.** A bare `"node_modules"` matches only a
+  file with that exact name — use `"**/node_modules/**"`. The server rewrites the
+  file whenever a word is added and drops keys that hold their default value.
+- **Migrating from cspell:** `scripts/cspell-to-codebook.sh` merges
+  `~/.config/cspell/user-words.txt` into the `words` array of the global config,
+  leaving every other setting alone. Running it twice changes nothing.
+
+`install.sh` creates `~/.config/codebook/codebook.toml` with these defaults when
+the file does not exist, and leaves an existing one alone.
+
+## Known limitations
+
+- **blink.cmp is pinned to 1.x** (`version = "1.*"`): v2 is still under heavy
+  development, breaks this config and needs the separate blink.lib package.
+- **nvim-treesitter follows the `main` branch**, a rewrite of the old `master`:
+  it only installs parsers and queries, built locally with tree-sitter-cli, and
+  the config switches highlighting, folds and indentation on per buffer.
+- **No AI integration**, on purpose: no AI completion source, chat or ghost text.
+- **Redis has no browser**: one-off commands go through `:DB redis://…`, and
+  interactive work happens in `redis-cli` outside the editor.
+- **Trouble, the debugger panel and the test output share one bottom split.**
+  Starting a debug session closes Trouble, the panels take each other's place
+  instead of stacking, and all of them use `ui.panel_height`.
+- **The first HTTP request needs the network**: kulala downloads its backend
+  (kulala-core, ~100 MB) and that request fails while the download runs.
+- **The keymap scripts read the installed copy** in `~/.config/nvim`, not the
+  checkout — run `./install.sh` before them.
+
 ## Repository layout
 
 ```
 .
-├── install.sh   # copies nvim/ → ~/.config/nvim
+├── install.sh   # checks Neovim, copies nvim/ → ~/.config/nvim, creates codebook.toml
+├── CLAUDE.md    # notes for Claude Code: architecture, rules, non-obvious decisions
 ├── nvim/        # the configuration itself (becomes ~/.config/nvim)
 ├── scripts/     # maintenance: keymap audit and tables, cspell → codebook migration
 └── http/        # .http request collections, kept outside nvim/ on purpose
