@@ -1,6 +1,6 @@
 -- defaults verified against Neovim v0.12.5 and blink.cmp v1.10.2 (2026-09-11)
 --
--- Client capabilities advertised to every language server (settings/lsp/init.lua):
+-- Client capabilities advertised to every language server (settings/lsp/lspconfig.lua):
 -- Neovim's defaults, blink.cmp's completion capabilities on top, then ours.
 
 local user = require("user.settings")

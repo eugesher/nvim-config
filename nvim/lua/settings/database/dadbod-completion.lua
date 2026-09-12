@@ -9,7 +9,7 @@ local M = {}
 
 -- SQL filetypes: the drawer opens MySQL queries as `mysql`, Oracle ones as
 -- `plsql`, the rest as `sql`. The single list for both paired places — this
--- lazy-loading trigger and blink's `sources.per_filetype` (settings/blink.lua
+-- lazy-loading trigger and blink's `sources.per_filetype` (settings/completion/blink.lua
 -- builds it from here), so they cannot drift apart.
 M.ft = { "sql", "mysql", "plsql" }
 

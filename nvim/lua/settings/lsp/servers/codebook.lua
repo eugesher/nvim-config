@@ -53,13 +53,13 @@ M.config = {
   },
 }
 
--- `<leader>us` (settings/lsp/init.lua). Stops the server instead of hiding its
+-- `<leader>us` (settings/lsp/lspconfig.lua). Stops the server instead of hiding its
 -- diagnostics: a disabled diagnostic namespace still shows up in
 -- `vim.diagnostic.get()` and `vim.diagnostic.count()`, so the status line and
 -- the problems list would keep counting spelling items that are no longer drawn
 -- anywhere (checked against Neovim 0.12.5). Stopping the client clears them
 -- everywhere; switching back on re-attaches to the open buffers.
-local enabled = true -- settings/lsp/init.lua enables codebook at startup
+local enabled = true -- settings/lsp/lspconfig.lua enables codebook at startup
 
 function M.toggle()
   enabled = not enabled

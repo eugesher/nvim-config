@@ -3,7 +3,7 @@
 -- Git hunks in the sign column, hunk staging / reset / preview and blame.
 -- All keymaps are buffer-local, created in `on_attach` — they exist only in
 -- buffers of files tracked by git. Groups `<leader>gh` / `<leader>gt` live in
--- settings/whichkey.lua.
+-- settings/whichkey/whichkey.lua.
 
 local user = require("user.settings")
 local icons = require("settings.icons")

@@ -1,10 +1,10 @@
 -- SQL query buffers: run the statement under the cursor, the selection or the
 -- whole buffer; save a query opened from the drawer. vim-dadbod-ui's own
--- <Leader>S / <Leader>W / <Leader>E are off (settings/dadbod.lua), and :w never
+-- <Leader>S / <Leader>W / <Leader>E are off (settings/database/dadbod.lua), and :w never
 -- runs anything. Also sourced for mysql and plsql buffers
 -- (after/ftplugin/mysql.lua, plsql.lua).
 
-local db = require("settings.dadbod")
+local db = require("settings.database.dadbod")
 
 local KEYMAPS = {
   { "n", "<localleader>x", db.execute_statement, "Execute statement under cursor" },

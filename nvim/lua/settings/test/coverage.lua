@@ -100,7 +100,7 @@ end
 
 function M.opts()
   -- Colors from the active catppuccin flavor: hard-coded hex values would
-  -- become unreadable as soon as the flavor changes (settings/theme.lua).
+  -- become unreadable as soon as the flavor changes (settings/ui/theme.lua).
   local ok, palettes = pcall(require, "catppuccin.palettes")
   local colors = ok and palettes.get_palette() or {}
   local bar = icons.coverage.bar
@@ -127,7 +127,7 @@ function M.opts()
       summary_fail = { link = "CoverageUncovered" },
     },
 
-    -- Priority below gitsigns' 6 (settings/gitsigns.lua): 'signcolumn' is one
+    -- Priority below gitsigns' 6 (settings/git/gitsigns.lua): 'signcolumn' is one
     -- column wide, so the higher priority would hide the git signs on changed
     -- lines. The plugin's own default is 10.
     signs = {

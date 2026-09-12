@@ -118,9 +118,13 @@ nvim/
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
 │   │                     # autocmds, diagnostics, filetypes, lazy.nvim bootstrap
 │   ├── plugins/          # thin lazy.nvim specs, one file per area
-│   ├── settings/         # the configuration of every plugin, one file per plugin
-│   │   └── lsp/          # servers list, Mason, capabilities, LspAttach keymaps,
-│   │                     # servers/<name>.lua per language server
+│   ├── settings/         # the configuration of every plugin
+│   │   ├── init.lua      # settings.spec(): a lazy.nvim spec from a settings module
+│   │   ├── icons.lua     # every glyph of the config
+│   │   ├── <group>/      # one folder per plugins/<group>.lua, one file per plugin:
+│   │   │                 # completion/blink.lua, git/neogit.lua, ui/theme.lua, …
+│   │   └── lsp/          # lspconfig.lua (server list), mason.lua, capabilities,
+│   │                     # LspAttach keymaps, servers/<name>.lua per language server
 │   ├── user/settings.lua # the values meant to be changed (next section)
 │   └── myconfig/health.lua  # :checkhealth myconfig
 └── after/ftplugin/       # buffer-local keymaps of .http and .sql buffers
@@ -130,11 +134,12 @@ The layers never mix:
 
 - **`lua/plugins/`** only says *which* plugin: repository, dependencies, build
   step, branch or version. Each spec is built with
-  `require("settings").spec("folke/trouble.nvim", "trouble")`.
-- **`lua/settings/<name>.lua`** says *how*: it returns
+  `require("settings").spec("folke/trouble.nvim", "problems.trouble")`, where
+  `problems` is the name of the plugins file the spec sits in.
+- **`lua/settings/<group>/<name>.lua`** says *how*: it returns
   `{ event / ft / cmd / keys, opts, init, config, which_key }`, and everything a
   plugin is configured with lives there — options, keymaps with their
-  descriptions, highlights are the one exception and sit in `settings/theme.lua`.
+  descriptions, highlights are the one exception and sit in `settings/ui/theme.lua`.
   Options are written out in full, defaults included, but only the documented
   ones; the first line of every file names the plugin version they were checked
   against.
@@ -183,7 +188,7 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
   start of longer ones without being a which-key group, a keymap without a
   description, and the key policy — nothing on Alt but `<A-j>` / `<A-k>`,
   `]n` `[n` `an` `in` `]c` `[c` left to Neovim, `<leader>a` and `<leader>gL`
-  kept free, only groups in `settings/whichkey.lua`. Deliberate exceptions sit
+  kept free, only groups in `settings/whichkey/whichkey.lua`. Deliberate exceptions sit
   in the whitelist at the top of the script, each with its reason; exit code 1
   means a new problem. `--list` prints every keymap it looked at.
 - **`nvim --headless -l scripts/dump-keymaps.lua --readme`** rebuilds the tables

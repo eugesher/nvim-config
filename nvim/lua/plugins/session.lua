@@ -5,5 +5,5 @@
 local spec = require("settings").spec
 
 return {
-  spec("rmagatti/auto-session", "autosession"),
+  spec("rmagatti/auto-session", "session.autosession"),
 }

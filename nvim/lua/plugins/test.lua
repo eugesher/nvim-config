@@ -5,7 +5,7 @@
 local spec = require("settings").spec
 
 return {
-  spec("nvim-neotest/neotest", "neotest", {
+  spec("nvim-neotest/neotest", "test.neotest", {
     dependencies = {
       "nvim-neotest/nvim-nio",
       "nvim-lua/plenary.nvim",
@@ -15,7 +15,7 @@ return {
     },
   }),
   -- Coverage is a separate plugin: neotest does not read lcov reports.
-  spec("andythigpen/nvim-coverage", "coverage", {
+  spec("andythigpen/nvim-coverage", "test.coverage", {
     dependencies = { "nvim-lua/plenary.nvim" },
   }),
   spec("nvim-neotest/nvim-nio"),

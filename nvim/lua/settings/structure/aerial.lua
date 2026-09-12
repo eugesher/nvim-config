@@ -3,7 +3,7 @@
 -- Structure view: the symbol tree of the current file in a side panel (like
 -- WebStorm's Structure tool window), a miller-columns nav float and a symbol
 -- picker through fzf-lua. Breadcrumbs in the winbar are dropbar's job
--- (settings/dropbar.lua); trouble's `symbols` mode is deliberately unused.
+-- (settings/structure/dropbar.lua); trouble's `symbols` mode is deliberately unused.
 
 local user = require("user.settings")
 local icons = require("settings.icons")
@@ -94,7 +94,7 @@ M.opts = {
     ["g?"] = "actions.show_help",
     ["<CR>"] = "actions.jump",
     ["<2-LeftMouse>"] = "actions.jump",
-    -- The same split keys as in fzf-lua (settings/fzf.lua).
+    -- The same split keys as in fzf-lua (settings/finder/fzf.lua).
     ["<C-v>"] = "actions.jump_vsplit",
     ["<C-s>"] = "actions.jump_split",
     ["p"] = "actions.scroll",

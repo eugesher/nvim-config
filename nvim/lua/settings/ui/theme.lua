@@ -208,7 +208,7 @@ function M.config(_, opts)
   vim.cmd.colorscheme("catppuccin")
 end
 
--- lualine theme for settings/lualine.lua: catppuccin's theme as a table, with
+-- lualine theme for settings/ui/lualine.lua: catppuccin's theme as a table, with
 -- the `b` / `c` sections (mirrored to `y` / `x`) on the base black; `a` keeps
 -- its catppuccin blue.
 function M.lualine_theme()
@@ -224,7 +224,7 @@ function M.lualine_theme()
   return theme
 end
 
--- neo-tree event handler for settings/neotree.lua. Neo-tree's own
+-- neo-tree event handler for settings/explorer/neotree.lua. Neo-tree's own
 -- `winhighlight` has no `CursorLine` remap, so without this handler
 -- `NeoTreeCursorLine` is never used. The remap is appended, not assigned, to
 -- keep neo-tree's `Normal` / `NormalNC` / `EndOfBuffer` remaps.

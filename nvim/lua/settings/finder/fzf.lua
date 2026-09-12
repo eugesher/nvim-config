@@ -120,7 +120,7 @@ function M.opts()
         ["ctrl-s"] = actions.file_split,
         ["ctrl-v"] = actions.file_vsplit,
         -- The selection — or the whole list when nothing is selected — goes to
-        -- the problems panel (settings/trouble.lua). The action is a table with
+        -- the problems panel (settings/problems/trouble.lua). The action is a table with
         -- an fzf `prefix`, not a plain function, so it cannot be wrapped to defer
         -- the require: trouble loads together with the first picker.
         ["ctrl-t"] = require("trouble.sources.fzf").actions.open,
@@ -251,7 +251,7 @@ M.keys = {
   { "<leader>fc", pick("commands"), desc = "Commands" },
   { "<leader>fq", pick("quickfix"), desc = "Quickfix list" },
   { "<leader>fR", pick("resume"), desc = "Resume last picker" },
-  -- LSP client info is `<leader>li` (settings/lsp/init.lua), not a picker.
+  -- LSP client info is `<leader>li` (settings/lsp/lspconfig.lua), not a picker.
   { "<leader>gs", pick("git_status"), desc = "Git status" },
   { "<leader>gC", pick("git_commits"), desc = "Git commits" },
   { "<leader>gb", pick("git_branches"), desc = "Git branches" },

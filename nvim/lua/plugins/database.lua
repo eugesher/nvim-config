@@ -6,7 +6,7 @@
 local spec = require("settings").spec
 
 return {
-  spec("kristijanhusak/vim-dadbod-ui", "dadbod", {
+  spec("kristijanhusak/vim-dadbod-ui", "database.dadbod", {
     dependencies = {
       "tpope/vim-dadbod",
       "kristijanhusak/vim-dadbod-completion",
@@ -15,7 +15,7 @@ return {
   spec("tpope/vim-dadbod"),
   -- Also loads by itself in SQL buffers not opened from the drawer; it calls
   -- vim-dadbod's functions, hence the dependency.
-  spec("kristijanhusak/vim-dadbod-completion", "dadbod-completion", {
+  spec("kristijanhusak/vim-dadbod-completion", "database.dadbod-completion", {
     dependencies = { "tpope/vim-dadbod" },
   }),
 }

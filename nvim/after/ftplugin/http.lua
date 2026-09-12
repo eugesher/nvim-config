@@ -1,9 +1,9 @@
 -- .http request buffers: the whole <leader>h namespace. Buffer-local on
--- purpose — kulala's own global keymaps are off (settings/kulala.lua), so in
+-- purpose — kulala's own global keymaps are off (settings/http/kulala.lua), so in
 -- other buffers the group stays empty.
 --
 -- The result window has its own keys (B / H / A / V / S / ] / [ / q …),
--- listed in settings/kulala.lua.
+-- listed in settings/http/kulala.lua.
 
 -- Loaded lazily: this file runs on FileType, kulala itself loads through the
 -- same event, so the module is required only when a key is pressed.

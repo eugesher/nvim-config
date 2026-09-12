@@ -15,7 +15,7 @@ local health = vim.health
 -- External tools ----------------------------------------------------------------
 
 -- `bin` may list alternatives: Debian ships fd and bat as `fdfind` / `batcat`,
--- and settings/fzf.lua accepts either name.
+-- and settings/finder/fzf.lua accepts either name.
 local REQUIRED = {
   {
     bin = "git",
@@ -212,7 +212,7 @@ local function check_mason()
   -- On a fresh machine the mapping stays empty until Mason has downloaded its
   -- registry; guessing the package from the server name would report an
   -- installed `lua-language-server` as a missing `lua_ls`.
-  for _, server in ipairs(require("settings.lsp").servers) do
+  for _, server in ipairs(require("settings.lsp.lspconfig").servers) do
     local name = mapped and to_package and to_package[server]
     if name then
       packages[#packages + 1] = { name = name, role = "language server " .. server }
@@ -326,7 +326,7 @@ local function check_files()
     end
   end
 
-  local sessions = require("settings.autosession").opts.root_dir:gsub("/+$", "")
+  local sessions = require("settings.session.autosession").opts.root_dir:gsub("/+$", "")
   if outside_config("sessions", sessions) then
     if vim.fn.isdirectory(sessions) == 1 then
       if vim.fn.filewritable(sessions) == 2 then
@@ -358,7 +358,7 @@ end
 
 local function check_debug_adapter()
   health.start("Debug adapter")
-  local server = require("settings.dap").server_path()
+  local server = require("settings.dap.dap").server_path()
   if vim.uv.fs_stat(server) then
     health.ok("js-debug-adapter: " .. server)
   else

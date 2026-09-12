@@ -8,10 +8,10 @@
 local spec = require("settings").spec
 
 return {
-  spec("stevearc/aerial.nvim", "aerial", {
+  spec("stevearc/aerial.nvim", "structure.aerial", {
     dependencies = { "nvim-tree/nvim-web-devicons" },
   }),
-  spec("Bekaboo/dropbar.nvim", "dropbar", {
+  spec("Bekaboo/dropbar.nvim", "structure.dropbar", {
     dependencies = { "nvim-tree/nvim-web-devicons", "nvim-telescope/telescope-fzf-native.nvim" },
   }),
   -- Not telescope: the C port of fzf's matching algorithm (`fzf_lib`), which

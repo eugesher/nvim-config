@@ -88,7 +88,7 @@ local lspconfig_opts = {
     "dockerls",
   },
   -- The default, stated explicitly: every installed server gets vim.lsp.enable().
-  -- Harmless next to the explicit list in settings/lsp/init.lua: enable() is idempotent.
+  -- Harmless next to the explicit list in settings/lsp/lspconfig.lua: enable() is idempotent.
   automatic_enable = true,
 }
 
@@ -97,7 +97,7 @@ local lspconfig_opts = {
 -- another plugin (mason-tool-installer).
 -- prettier is the fallback when prettierd is missing and serves files outside
 -- projects; inside a project conform and prettierd use the project's own Prettier.
--- js-debug-adapter is the debug adapter for Node and TypeScript (settings/dap.lua).
+-- js-debug-adapter is the debug adapter for Node and TypeScript (settings/dap/dap.lua).
 M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter" }
 
 local function ensure_extra_tools()

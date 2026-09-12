@@ -6,7 +6,7 @@
 
 local user = require("user.settings")
 local icons = require("settings.icons")
-local sql_filetypes = require("settings.dadbod-completion").ft
+local sql_filetypes = require("settings.database.dadbod-completion").ft
 
 local M = {}
 
@@ -241,7 +241,7 @@ M.opts = {
           enable_in_ex_commands = false, -- would switch off 'inccommand' previews
         },
       },
-      -- vim-dadbod-completion's own blink source (settings/dadbod-completion.lua).
+      -- vim-dadbod-completion's own blink source (settings/database/dadbod-completion.lua).
       dadbod = {
         name = "Dadbod",
         module = "vim_dadbod_completion.blink",
@@ -250,7 +250,7 @@ M.opts = {
     },
   },
 
-  -- LuaSnip expands and jumps (settings/luasnip.lua).
+  -- LuaSnip expands and jumps (settings/completion/luasnip.lua).
   snippets = { preset = "luasnip", score_offset = -3 },
 
   cmdline = {

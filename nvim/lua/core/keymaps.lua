@@ -2,7 +2,7 @@
 -- buffer-local ones in after/ftplugin/*.
 --
 -- Not defined here on purpose:
---   * `<leader>q` (close buffer) — settings/bufferline.lua, with bufdelete.nvim.
+--   * `<leader>q` (close buffer) — settings/ui/bufferline.lua, with bufdelete.nvim.
 --   * `]q` / `[q` — native since Neovim 0.11 (`:cnext` / `:cprevious` with
 --     count support); redefining them would only lose the count.
 --

@@ -1,8 +1,10 @@
 -- Glue between thin plugin specs (lua/plugins/*) and plugin settings
 -- (lua/settings/*).
 --
--- Contract of a settings module `lua/settings/<name>.lua` — it returns a table
--- with any of these fields, all optional:
+-- Settings modules live in `lua/settings/<group>/<name>.lua`, where <group> is
+-- the file in lua/plugins/ that declares the plugin; the spec names the module
+-- as "<group>.<name>". A module returns a table with any of these fields, all
+-- optional:
 --
 --   enabled, cond      boolean|fun(): boolean — same as in a lazy.nvim spec
 --   event, ft, cmd,    lazy-loading triggers, passed to lazy.nvim as is
@@ -14,7 +16,7 @@
 --                      creates itself (so there is no `keys` entry to carry a
 --                      `desc`); collected by M.which_key(), never passed to
 --                      lazy.nvim. Groups are NOT declared here — they live
---                      only in settings/whichkey.lua.
+--                      only in settings/whichkey/whichkey.lua.
 --
 -- Anything else in the module (helpers, exported functions) is ignored here.
 -- Repository-level fields (`dependencies`, `build`, `version`, `commit`) belong
@@ -52,15 +54,19 @@ function M.load(name)
   return mod
 end
 
+-- Names of the settings modules behind the plugin specs, filled by M.spec().
+local loaded = {}
+
 --- Builds a lazy.nvim spec for `repo` from settings module `name`.
 ---@param repo string plugin repository, e.g. "folke/which-key.nvim"
----@param name? string settings module name ("whichkey" → settings.whichkey); nil for none
+---@param name? string settings module name ("ui.theme" → settings/ui/theme.lua); nil for none
 ---@param extra? table spec fields merged on top (dependencies, build, version, …)
 ---@return table
 function M.spec(repo, name, extra)
   local spec = { repo }
   if name then
     local mod = M.load(name)
+    loaded[name] = true
     for _, field in ipairs(SPEC_FIELDS) do
       spec[field] = mod[field]
     end
@@ -81,29 +87,18 @@ local function is_enabled(mod)
   return true
 end
 
---- Collects the `which_key` fields of all enabled settings modules of this
---- config (in module-name order) into one flat list of which-key specs.
---- Scans `settings/<name>.lua` and package modules `settings/<name>/init.lua`.
+--- Collects the `which_key` fields of the enabled settings modules behind the
+--- plugin specs (in module-name order) into one flat list of which-key specs.
+--- Helper modules nothing builds a spec from (icons, lsp/keymaps, …) are skipped.
 ---@return table[]
 function M.which_key()
-  local dir = vim.fn.stdpath("config") .. "/lua/settings"
-  local names = {}
-  for file, kind in vim.fs.dir(dir) do
-    local name = file:match("^(.+)%.lua$")
-    if kind == "file" and name and name ~= "init" then
-      names[#names + 1] = name
-    elseif kind == "directory" and vim.uv.fs_stat(dir .. "/" .. file .. "/init.lua") then
-      names[#names + 1] = file
-    end
-  end
+  local names = vim.tbl_keys(loaded)
   table.sort(names)
 
   local specs = {}
   for _, name in ipairs(names) do
-    local ok, mod = pcall(M.load, name)
-    if not ok then
-      vim.notify(mod, vim.log.levels.ERROR)
-    elseif mod.which_key and is_enabled(mod) then
+    local mod = M.load(name)
+    if mod.which_key and is_enabled(mod) then
       vim.list_extend(specs, mod.which_key)
     end
   end

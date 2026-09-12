@@ -4,9 +4,9 @@
 -- keymap namespaces of the leader map are declared.
 --
 -- Division of responsibility:
---   * a keymap's `desc` lives in settings/<plugin>.lua next to the keymap: in
---     its `keys` entry, or in the module's `which_key` field for keymaps the
---     plugin creates itself (collected by `settings.which_key()`).
+--   * a keymap's `desc` lives in settings/<group>/<plugin>.lua next to the
+--     keymap: in its `keys` entry, or in the module's `which_key` field for
+--     keymaps the plugin creates itself (collected by `settings.which_key()`).
 --   * this file holds ONLY the groups, their icons and order. Individual
 --     keymaps never go here — that would be a second source of truth.
 --

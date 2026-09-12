@@ -7,7 +7,7 @@
 --
 -- The bottom split is shared with dap-view and the neotest output panel. All
 -- three take their height from `user.ui.panel_height`, and a starting debug
--- session closes trouble first (settings/dap.lua).
+-- session closes trouble first (settings/dap/dap.lua).
 --
 -- The `symbols` mode is deliberately left alone: the structure view is aerial's
 -- job, and two symbol trees would only duplicate each other.
@@ -193,7 +193,7 @@ M.opts = {
     }, DIAGNOSTICS),
   },
   icons = {
-    -- Same tree glyphs as the file explorer (settings/neotree.lua).
+    -- Same tree glyphs as the file explorer (settings/explorer/neotree.lua).
     indent = {
       top = "│ ",
       middle = "├╴",

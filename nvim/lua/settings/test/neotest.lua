@@ -201,7 +201,7 @@ function M.opts()
     -- free for grep and LSP results.
     quickfix = { enabled = false, open = false },
     status = { enabled = true, signs = true, virtual_text = false },
-    state = { enabled = true }, -- the status line component reads this (settings/lualine.lua)
+    state = { enabled = true }, -- the status line component reads this (settings/ui/lualine.lua)
     benchmark = { enabled = true },
     jump = { enabled = true },
 

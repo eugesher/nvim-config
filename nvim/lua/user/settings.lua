@@ -38,7 +38,7 @@ return {
 
   treesitter = {
     -- Buffers above these limits get no treesitter highlighting, indentation or
-    -- folds: parsing them stalls the editor (settings/treesitter.lua).
+    -- folds: parsing them stalls the editor (settings/treesitter/treesitter.lua).
     max_filesize = 1536 * 1024, -- bytes (~1.5 MB)
     max_line_length = 2000, -- characters in the longest line
   },

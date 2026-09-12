@@ -13,7 +13,7 @@
 -- function in settings/lsp/servers/<name>.lua is called from here for that client.
 -- Every keymap remembers which clients registered it and disappears when the
 -- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
--- gd / gri / grt open fzf-lua pickers (settings/fzf.lua); a single result jumps
+-- gd / gri / grt open fzf-lua pickers (settings/finder/fzf.lua); a single result jumps
 -- straight to it. Neovim's own functions serve as the fallback. References are
 -- the exception — they go to trouble, see `grr` below.
 
@@ -89,7 +89,7 @@ local function on_attach(event)
   if supports("textDocument/rename") then
     -- Renaming goes through inc-rename: the same LSP rename, but every
     -- occurrence in the project updates live while the new name is typed
-    -- (settings/inc-rename.lua). `grn` keeps Neovim's own meaning and only gains
+    -- (settings/refactor/inc-rename.lua). `grn` keeps Neovim's own meaning and only gains
     -- the preview; `<leader>cr` is its alias in the code namespace and
     -- `<leader>rn` the one in the refactor namespace — a deliberate duplicate,
     -- not an oversight to be cleaned up.

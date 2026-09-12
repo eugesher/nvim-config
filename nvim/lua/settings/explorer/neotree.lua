@@ -2,7 +2,7 @@
 --
 -- Side panel with the project tree (WebStorm's Project view): git statuses and
 -- diagnostics right in the tree. Bulk file operations live in oil
--- (settings/oil.lua). Source `document_symbols` is enabled but has no keymap —
+-- (settings/explorer/oil.lua). Source `document_symbols` is enabled but has no keymap —
 -- the outline is aerial's job (`<leader>o`): `:Neotree document_symbols`.
 
 local user = require("user.settings")
@@ -191,7 +191,7 @@ function M.opts()
     sources = { "filesystem", "buffers", "git_status", "document_symbols" },
     default_source = "filesystem",
     add_blank_line_at_top = false,
-    -- settings/autosession.lua keeps the tree out of sessions.
+    -- settings/session/autosession.lua keeps the tree out of sessions.
     auto_clean_after_session_restore = false,
     clipboard = { sync = "none" },
     close_if_last_window = true,
@@ -436,7 +436,7 @@ function M.opts()
     -- `file_opened` handler calling
     -- `require("neo-tree.command").execute({ action = "close" })`.
     event_handlers = {
-      require("settings.theme").neo_tree_cursorline(),
+      require("settings.ui.theme").neo_tree_cursorline(),
       { event = "file_renamed", handler = did_rename_files },
       { event = "file_moved", handler = did_rename_files },
     },

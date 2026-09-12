@@ -5,12 +5,12 @@
 local spec = require("settings").spec
 
 return {
-  spec("smjonas/inc-rename.nvim", "inc-rename"),
-  spec("ThePrimeagen/refactoring.nvim", "refactoring", {
+  spec("smjonas/inc-rename.nvim", "refactor.inc-rename"),
+  spec("ThePrimeagen/refactoring.nvim", "refactor.refactoring", {
     dependencies = { "lewis6991/async.nvim" },
   }),
   spec("lewis6991/async.nvim"),
   -- Not vim-visual-multi: vimscript, and known trouble with LSP and completion
   -- plugins.
-  spec("jake-stewart/multicursor.nvim", "multicursor"),
+  spec("jake-stewart/multicursor.nvim", "refactor.multicursor"),
 }

@@ -65,7 +65,7 @@ local function neotest_status()
   return ok and text or ""
 end
 
--- Diff counts from gitsigns (settings/gitsigns.lua); empty outside git buffers.
+-- Diff counts from gitsigns (settings/git/gitsigns.lua); empty outside git buffers.
 local function gitsigns_diff()
   local status = vim.b.gitsigns_status_dict
   if status then
@@ -80,8 +80,8 @@ function M.opts()
   return {
     options = {
       icons_enabled = true,
-      -- Catppuccin theme with the `b`/`c` sections on the base black (settings/theme.lua).
-      theme = require("settings.theme").lualine_theme(),
+      -- Catppuccin theme with the `b`/`c` sections on the base black (settings/ui/theme.lua).
+      theme = require("settings.ui.theme").lualine_theme(),
       component_separators = { left = "│", right = "│" },
       section_separators = { left = "", right = "" },
       disabled_filetypes = { statusline = {}, winbar = {} },

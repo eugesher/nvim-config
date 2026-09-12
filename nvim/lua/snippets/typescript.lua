@@ -1,5 +1,5 @@
 -- NestJS snippets for TypeScript, loaded by LuaSnip's from_lua loader
--- (settings/luasnip.lua). Placeholders with the same name are mirrored
+-- (settings/completion/luasnip.lua). Placeholders with the same name are mirrored
 -- (`repeat_duplicates`). Imports a snippet does not bring along come from
 -- `<leader>cm` (add missing imports).
 

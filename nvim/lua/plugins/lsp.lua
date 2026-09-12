@@ -6,7 +6,7 @@ local spec = require("settings").spec
 return {
   -- Loads mason first: its PATH entry and `automatic_enable` must be in place
   -- before the first buffer's FileType starts a client.
-  spec("neovim/nvim-lspconfig", "lsp", {
+  spec("neovim/nvim-lspconfig", "lsp.lspconfig", {
     dependencies = { "mason-org/mason.nvim", "b0o/SchemaStore.nvim" },
   }),
   spec("mason-org/mason.nvim", "lsp.mason", {

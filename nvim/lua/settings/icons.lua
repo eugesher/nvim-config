@@ -144,7 +144,7 @@ M.todo = {
   test = "⏲",
 }
 
--- Keymap namespaces (which-key group icons; colors live in settings/whichkey.lua).
+-- Keymap namespaces (which-key group icons; colors live in settings/whichkey/whichkey.lua).
 M.keymap_groups = {
   buffers = "󰈔",
   code = "",

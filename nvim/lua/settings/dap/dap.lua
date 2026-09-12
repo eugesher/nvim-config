@@ -3,7 +3,7 @@
 -- Debug Adapter Protocol client: breakpoints, stepping, stack and variables for
 -- Node.js and TypeScript. The adapter is js-debug-adapter (the Mason package of
 -- microsoft/vscode-js-debug), configured directly — nvim-dap-vscode-js has been
--- unmaintained since 2022. The panel is settings/dap-view.lua.
+-- unmaintained since 2022. The panel is settings/dap/dap-view.lua.
 --
 -- nvim-dap has no setup(): everything is assigned in `config`, which lazy.nvim
 -- runs on the first <leader>d key.
@@ -101,8 +101,8 @@ M.keys = {
   { "<leader>dk", dap_call("up"), desc = "Up the stack" },
   { "<leader>df", widget("frames"), desc = "Frames" },
   { "<leader>ds", widget("scopes"), desc = "Scopes" },
-  -- The panel and the inline values (settings/dap-view.lua,
-  -- settings/dap-virtual-text.lua).
+  -- The panel and the inline values (settings/dap/dap-view.lua,
+  -- settings/dap/dap-virtual-text.lua).
   { "<leader>du", "<cmd>DapViewToggle<cr>", desc = "Toggle debugger panel" },
   {
     "<leader>dw",
@@ -115,7 +115,7 @@ M.keys = {
 
 -- The five signs nvim-dap draws. Colors come from catppuccin's `dap`
 -- integration; only the line of the stopped frame needs a group of its own
--- (settings/theme.lua).
+-- (settings/ui/theme.lua).
 local SIGNS = {
   DapBreakpoint = { text = icons.breakpoint, texthl = "DapBreakpoint" },
   DapBreakpointCondition = { text = icons.condition, texthl = "DapBreakpointCondition" },

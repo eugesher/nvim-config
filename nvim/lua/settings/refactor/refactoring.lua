@@ -59,7 +59,7 @@ M.keys = {
   { "<leader>rI", refactor("inline_func", "iw"), expr = true, desc = "Inline function" },
 
   -- The menu of everything the plugin can do here; `vim.ui.select` is fzf-lua
-  -- (settings/fzf.lua), so it opens as a picker. Not an `expr` mapping, unlike
+  -- (settings/finder/fzf.lua), so it opens as a picker. Not an `expr` mapping, unlike
   -- the rest: this one is not an operator — it opens the picker itself and then
   -- feeds the keys of whatever was chosen. As an `expr` mapping the picker would
   -- try to open a window while Neovim is evaluating the mapping, which fails

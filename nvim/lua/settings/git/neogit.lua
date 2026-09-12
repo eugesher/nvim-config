@@ -1,7 +1,7 @@
 -- defaults verified against neogit v3.0.0-221-g5adc81b2 (2026-09-12)
 --
 -- Git client (magit-like): staging, commits, branches, stash, rebase, merge.
--- Diffs and the merge tool go to diffview (settings/diffview.lua), menus
+-- Diffs and the merge tool go to diffview (settings/git/diffview.lua), menus
 -- (branch selection, …) to fzf-lua. Default keys against the config's key
 -- philosophy are moved to the localleader layer (`\`), as in oil:
 --   GUI combos <c-c><c-c> / <c-c><c-k> / <c-s> / <c-v> and the Alt layer <m-…>,

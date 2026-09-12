@@ -281,7 +281,7 @@ section("Duplicates", duplicates, true)
 -- 3. A key that is a keymap and a whole prefix of other keymaps, without being a
 -- declared which-key group: the shorter one waits for 'timeoutlen' first.
 local groups = {}
-for _, group in ipairs(require("settings.whichkey").groups) do
+for _, group in ipairs(require("settings.whichkey.whichkey").groups) do
   groups[common.key(group[1])] = true
 end
 local collisions = {}
@@ -378,9 +378,10 @@ each_map(function(map, label)
 end)
 -- which-key: groups only, each with an icon; keymap descriptions live next to
 -- their plugin.
-for _, group in ipairs(require("settings.whichkey").groups) do
+for _, group in ipairs(require("settings.whichkey.whichkey").groups) do
   if not group.group or not group.icon or group[2] ~= nil or group.desc ~= nil then
-    policy[#policy + 1] = "settings/whichkey.lua declares a keymap, not a group: " .. group[1]
+    policy[#policy + 1] = "settings/whichkey/whichkey.lua declares a keymap, not a group: "
+      .. group[1]
   end
 end
 section("Policy violations", policy, true)

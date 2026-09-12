@@ -3,7 +3,7 @@
 -- A directory as an editable buffer: rename, move, create and delete files by
 -- editing lines, applied on `:w`. Renames go through LSP
 -- `workspace/willRenameFiles`, so vtsls fixes imports in other files.
--- Directories themselves open in neo-tree (settings/neotree.lua).
+-- Directories themselves open in neo-tree (settings/explorer/neotree.lua).
 
 local user = require("user.settings")
 

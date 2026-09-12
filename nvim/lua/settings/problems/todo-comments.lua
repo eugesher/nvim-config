@@ -30,7 +30,7 @@ M.keys = {
 
 function M.opts()
   -- The palette, not hex literals: with a different flavor the keyword colors
-  -- have to keep their contrast against the new background (settings/theme.lua).
+  -- have to keep their contrast against the new background (settings/ui/theme.lua).
   local ok, palettes = pcall(require, "catppuccin.palettes")
   local colors = ok and palettes.get_palette() or {}
 

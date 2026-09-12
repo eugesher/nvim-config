@@ -162,7 +162,7 @@ M.opts = {
   session_lens = {
     picker = "fzf", -- telescope is not part of this config
     load_on_setup = true, -- telescope-only, stated for completeness
-    picker_opts = nil, -- fzf-lua's own window options apply (settings/fzf.lua)
+    picker_opts = nil, -- fzf-lua's own window options apply (settings/finder/fzf.lua)
     previewer = "summary", -- the files and the layout the session would restore
     shorten_paths = true, -- `~` instead of the home directory
     -- Keys inside the picker, in insert mode — the same layer fzf-lua itself

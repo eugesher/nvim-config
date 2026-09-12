@@ -3,7 +3,7 @@
 -- Breadcrumbs in the winbar: the file path and the class / method under the
 -- cursor. Every component opens a menu of its siblings with a preview — by
 -- mouse or with `<leader>;`. The only winbar plugin of this config: lualine's
--- `winbar` stays empty (settings/lualine.lua).
+-- `winbar` stays empty (settings/ui/lualine.lua).
 --
 -- Option tables are deep-merged into the defaults of lua/dropbar/configs.lua —
 -- the file the README names as the reference. Where a default is a function
@@ -114,7 +114,7 @@ function M.opts()
         },
         global = { "DirChanged", "VimResized" },
       },
-      hover = true, -- 'mousemoveevent' is on (settings/bufferline.lua)
+      hover = true, -- 'mousemoveevent' is on (settings/ui/bufferline.lua)
       -- The path, then the symbols: LSP when it answers, treesitter until then
       -- — the crumbs are there the moment the file opens, before vtsls starts.
       sources = function(buf, _)
@@ -196,7 +196,7 @@ function M.opts()
     symbol = {
       on_click = defaults.symbol.on_click, -- open the menu of siblings
       -- Previewed and jumped-to symbols land in the middle of the window, as
-      -- after a jump from aerial (`post_jump_cmd`, settings/aerial.lua).
+      -- after a jump from aerial (`post_jump_cmd`, settings/structure/aerial.lua).
       preview = { reorient = center },
       jump = { reorient = center },
     },

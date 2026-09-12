@@ -3,7 +3,7 @@
 -- Resolve merge conflicts right in the buffer: highlighted markers, jumps and
 -- choosing a side, without opening diffview. A file counts as conflicted when
 -- `git diff --diff-filter=U` lists it. Keys match diffview's merge tool
--- (settings/diffview.lua): ]x / [x and the <leader>gx group; they exist only
+-- (settings/git/diffview.lua): ]x / [x and the <leader>gx group; they exist only
 -- while the buffer still has conflict markers.
 
 local M = {}

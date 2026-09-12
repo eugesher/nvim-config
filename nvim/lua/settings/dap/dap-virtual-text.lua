@@ -9,7 +9,7 @@
 -- parser and those queries there is simply no virtual text.
 --
 -- nvim-dap-view has a virtual-text implementation of its own; it stays off
--- (settings/dap-view.lua), otherwise every value would be shown twice.
+-- (settings/dap/dap-view.lua), otherwise every value would be shown twice.
 
 local M = {}
 

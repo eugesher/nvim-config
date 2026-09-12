@@ -41,18 +41,20 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | --- | --- |
 | `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, filetypes, the lazy.nvim bootstrap |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
-| `lua/settings/<name>.lua` | **Everything** a plugin is configured with, one file per plugin or domain |
-| `lua/settings/lsp/` | `init.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `servers/<name>.lua` |
+| `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
+| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
 
-A spec is built with `require("settings").spec(repo, name, extra)`. The settings
-module `settings/<name>.lua` returns any of `enabled`, `cond`, `event`, `ft`,
+A spec is built with `require("settings").spec(repo, name, extra)`, where `name`
+is `"<group>.<name>"` (`"ui.theme"`). The settings module
+`settings/<group>/<name>.lua` returns any of `enabled`, `cond`, `event`, `ft`,
 `cmd`, `keys`, `opts`, `init`, `config`, `priority`, `lazy`, `which_key`; those
 fields go into the lazy.nvim spec, anything else is ignored. Modules use that to
-export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
-`M.extra_tools` in lsp/mason).
+export helpers other code reads (`M.groups` in whichkey/whichkey,
+`M.server_path` in dap/dap, `M.servers` in lsp/lspconfig, `M.extra_tools` in
+lsp/mason).
 
 `:checkhealth myconfig` lives under `lua/myconfig/` because checkhealth finds
 `lua/<name>/health.lua`; a `core/health.lua` would add a second, duplicate
@@ -63,18 +65,19 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 - **Options explicitly, defaults included — but only documented ones** (README,
   `:help`, or the config file the plugin's docs name as the reference). Never dig
   out undocumented internal fields.
-- The first line of every `settings/*.lua`:
+- The first line of every settings module:
   `-- defaults verified against <plugin> vX.Y.Z (YYYY-MM-DD)` (or `@<commit>`).
 - Values a user may want to change go into `lua/user/settings.lua` and are read
   from there, never hard-coded in a settings file.
-- Highlights go into `custom_highlights` in `settings/theme.lua` (never
+- Highlights go into `custom_highlights` in `settings/ui/theme.lua` (never
   `color_overrides`), colors from the catppuccin palette.
 - Glyphs come from `settings/icons.lua` only (Nerd Fonts v3, no padding).
 - A new panel filetype has to be added to every exclusion list: `PANELS` in
-  `settings/autosession.lua`, `EXCLUDED_FILETYPES` in `settings/dropbar.lua`,
-  `disable.ft` in `settings/whichkey.lua`, `panels` in `settings/lualine.lua`,
-  and the lists in `treesitter-context.lua` and `indent.lua`. Bottom panels use
-  `user.ui.panel_height`.
+  `settings/session/autosession.lua`, `EXCLUDED_FILETYPES` in
+  `settings/structure/dropbar.lua`, `disable.ft` in `settings/whichkey/whichkey.lua`,
+  `panels` in `settings/ui/lualine.lua`, and the lists in
+  `settings/treesitter/treesitter-context.lua` and `settings/ui/indent.lua`.
+  Bottom panels use `user.ui.panel_height`.
 
 ## Keymaps
 
@@ -87,7 +90,7 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 - Never map `]n` / `[n`, `an` / `in` (Neovim 0.12 treesitter selection) or
   `]c` / `[c` (diff mode).
 - Every keymap has a `desc`, written next to its plugin (`keys` or the module's
-  `which_key` field). `settings/whichkey.lua` declares groups only.
+  `which_key` field). `settings/whichkey/whichkey.lua` declares groups only.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
   collision goes into its whitelist with the reason; then regenerate the README
   tables.
@@ -152,8 +155,8 @@ These look like mistakes or omissions and are not. Change them only on request.
 - **nvim-treesitter is on the `main` branch** (textobjects too). It is a
   different plugin from the old `master`: it installs parsers and queries (built
   with tree-sitter-cli) and nothing more. `configs.setup{ highlight, indent }`
-  does not exist; `settings/treesitter.lua` starts highlighting, folds and indent
-  per buffer, and incremental selection is Neovim's own.
+  does not exist; `settings/treesitter/treesitter.lua` starts highlighting, folds
+  and indent per buffer, and incremental selection is Neovim's own.
 
 Further decisions recorded in the code, each with its measurement:
 

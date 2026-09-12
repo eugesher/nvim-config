@@ -3,7 +3,7 @@
 -- Debugger panel: variables, watches, breakpoints, threads and the REPL in one
 -- bottom split, plus the debugee's terminal beside it.
 --
--- The panel is opened and closed by the session listeners in settings/dap.lua,
+-- The panel is opened and closed by the session listeners in settings/dap/dap.lua,
 -- not by `auto_toggle`: the bottom split is shared with trouble and the test
 -- output.
 
@@ -79,13 +79,13 @@ M.opts = {
 
   -- nvim-dap-view ships a minimal virtual-text implementation of its own.
   -- Off: inline values come from nvim-dap-virtual-text
-  -- (settings/dap-virtual-text.lua), and two of them would double every value.
+  -- (settings/dap/dap-virtual-text.lua), and two of them would double every value.
   virtual_text = { enabled = false },
 
   -- Jumping from a breakpoint or a stack frame: reuse a window in this tab,
   -- otherwise open a new tab instead of splitting the debugging layout.
   switchbuf = "usetab,newtab",
-  auto_toggle = false, -- the listeners in settings/dap.lua do this
+  auto_toggle = false, -- the listeners in settings/dap/dap.lua do this
   follow_tab = false, -- the panel stays in the tab where the session started
 }
 
