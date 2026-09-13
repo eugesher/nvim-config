@@ -50,7 +50,8 @@ M.opts = {
   end,
 
   -- End of line, not inline: inline values shift the code sideways while
-  -- stepping, and this config keeps 'signcolumn' and diagnostics there too.
+  -- stepping, and this config keeps the sign segments (settings/ui/statuscol.lua)
+  -- and diagnostics from doing that too.
   virt_text_pos = "eol",
 
   -- Experimental upstream, off on purpose: `all_frames` walks the whole stack

@@ -1,4 +1,5 @@
--- UI foundation: colorscheme, status line, buffer tabs, icons, indent guides.
+-- UI foundation: colorscheme, status line, buffer tabs, icons, indent guides,
+-- the column beside the text.
 
 local spec = require("settings").spec
 
@@ -14,4 +15,5 @@ return {
   spec("famiu/bufdelete.nvim"),
   spec("nvim-tree/nvim-web-devicons", "ui.devicons"),
   spec("lukas-reineke/indent-blankline.nvim", "ui.indent", { main = "ibl" }),
+  spec("luukvbaal/statuscol.nvim", "ui.statuscol"),
 }

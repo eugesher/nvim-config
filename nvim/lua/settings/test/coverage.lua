@@ -133,9 +133,10 @@ function M.opts()
       summary_fail = { link = "CoverageUncovered" },
     },
 
-    -- Priority below gitsigns' 6 (settings/git/gitsigns.lua): 'signcolumn' is one
-    -- column wide, so the higher priority would hide the git signs on changed
-    -- lines. The plugin's own default is 10.
+    -- Priority below gitsigns' 6 (settings/git/gitsigns.lua): coverage shares the
+    -- one-cell git segment of the status column (settings/ui/statuscol.lua), so
+    -- the higher priority would hide the git signs on changed lines. The
+    -- plugin's own default is 10.
     signs = {
       covered = { hl = "CoverageCovered", text = bar, priority = 5 },
       uncovered = { hl = "CoverageUncovered", text = bar, priority = 5 },

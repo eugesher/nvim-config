@@ -14,7 +14,9 @@ opt.breakindent = true -- wrapped lines keep the indent of their first line
 -- Interface -------------------------------------------------------------------
 opt.number = true
 opt.relativenumber = user.editor.relative_number
-opt.signcolumn = "yes" -- always reserve the column: no text shift when signs appear
+-- Always reserve the column: no text shift when signs appear. statuscol.nvim
+-- replaces it with per-source segments and turns it off (settings/ui/statuscol.lua).
+opt.signcolumn = "yes"
 opt.cursorline = true
 opt.termguicolors = true
 opt.showmode = false -- the mode is shown by the status line

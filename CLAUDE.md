@@ -82,7 +82,8 @@ lsp/mason).
 - A new panel filetype has to be added to every exclusion list: `PANELS` in
   `settings/session/autosession.lua`, `EXCLUDED_FILETYPES` in
   `settings/structure/dropbar.lua`, `disable.ft` in `settings/whichkey/whichkey.lua`,
-  `panels` in `settings/ui/lualine.lua`, and the lists in
+  `panels` in `settings/ui/lualine.lua`, `ft_ignore` in `settings/ui/statuscol.lua`,
+  and the lists in
   `settings/treesitter/treesitter-context.lua` and `settings/ui/indent.lua`.
   Bottom panels use `user.ui.panel_height`.
 
