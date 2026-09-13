@@ -170,7 +170,7 @@ plain data the rest of the config reads:
 | `http.default_env` | `"dev"` | kulala environment on startup |
 | `coverage.command` | `npm run test:cov` | what `:CoverageRun` executes |
 | `database.position`, `width` | `"left"`, 40 | vim-dadbod-ui drawer |
-| `lsp.inlay_hints` | `true` | inlay hints; `<leader>ui` toggles per buffer |
+| `lsp.inlay_hints` | `false` | inlay hints on attach; `<leader>ui` toggles per buffer |
 | `lsp.disable_watchers` | `false` | stop file watching to save CPU in huge monorepos |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in

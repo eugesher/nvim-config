@@ -86,9 +86,10 @@ return {
   },
 
   lsp = {
-    -- Inlay hints (parameter names, inferred types) where the server supports them.
-    -- Toggle per buffer with `<leader>ui`.
-    inlay_hints = true,
+    -- Inlay hints (parameter names, inferred types) shown as soon as a server
+    -- that supports them attaches. false: off until `<leader>ui` turns them on
+    -- in a buffer.
+    inlay_hints = false,
     -- Stop advertising file watching (workspace/didChangeWatchedFiles). Cuts the
     -- CPU load of ESLint / TS servers in large monorepos, at the price of not
     -- noticing files changed outside the editor.
