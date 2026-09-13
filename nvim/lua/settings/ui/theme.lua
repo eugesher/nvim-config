@@ -80,108 +80,16 @@ M.opts = {
   -- Per-flavor variant of `custom_highlights`; unused — one scheme for all flavors.
   highlight_overrides = {},
   custom_highlights = function(colors)
-    local window_bg = black
-    local window_cursor_bg = colors.crust
-    local float_bg = black
-    local float_cursor_bg = colors.mantle
-    local float_fg = colors.blue
-
     return {
-      -- Editor surfaces.
-      Normal = { bg = window_bg },
-      NormalNC = { bg = window_bg },
-      SignColumn = { bg = window_bg },
-      LineNr = { bg = window_bg },
-      CursorLineNr = { bg = window_cursor_bg },
-      CursorLine = { bg = window_cursor_bg },
-      StatusLine = { bg = window_bg },
-      StatusLineNC = { bg = window_bg },
-
-      -- Neo-tree surfaces. Neo-tree's built-in `winhighlight` already
-      -- remaps these, so defining the groups is enough. `CursorLine` is
-      -- the exception — appended in the event handler below.
-      NeoTreeNormal = { bg = window_bg },
-      NeoTreeNormalNC = { bg = window_bg },
-      NeoTreeEndOfBuffer = { bg = window_bg },
-      NeoTreeWinSeparator = { bg = window_bg },
-      NeoTreeCursorLine = { bg = window_cursor_bg },
-
-      -- Generic floating-window baseline: LSP hover, `vim.ui.select` and any
-      -- plugin that uses the stock groups. blink.cmp falls back to `Pmenu` /
-      -- `NormalFloat`, so its own groups are set explicitly below.
-      NormalFloat = { bg = float_bg },
-      FloatBorder = { bg = float_bg, fg = float_fg },
-      FloatTitle = { bg = float_bg, fg = float_fg },
-
-      -- Picker windows (fzf-lua). The selected row of the list uses
-      -- `FzfLuaFzfCursorLine`, which links to `FzfLuaCursorLine` — the group of
-      -- the preview's cursor line too, so one group colors both.
-      FzfLuaNormal = { bg = float_bg },
-      FzfLuaPreviewNormal = { bg = float_bg },
-      FzfLuaBorder = { bg = float_bg, fg = float_fg },
-      FzfLuaPreviewBorder = { bg = float_bg, fg = float_fg },
-      FzfLuaCursorLine = { bg = float_cursor_bg },
-      FzfLuaCursorLineNr = { bg = float_cursor_bg },
-
-      -- Plugin surfaces below follow the same scheme: base black background,
-      -- `crust` / `mantle` for the cursor row, `blue` for borders and titles.
-
-      -- Completion menu, docs and signature help (blink.cmp).
-      BlinkCmpMenu = { bg = float_bg },
-      BlinkCmpMenuBorder = { bg = float_bg, fg = float_fg },
-      BlinkCmpMenuSelection = { bg = float_cursor_bg },
-      BlinkCmpDoc = { bg = float_bg },
-      BlinkCmpDocBorder = { bg = float_bg, fg = float_fg },
-      BlinkCmpSignatureHelp = { bg = float_bg },
-      BlinkCmpSignatureHelpBorder = { bg = float_bg, fg = float_fg },
-
-      -- Git panels (neogit, diffview).
-      NeogitNormal = { bg = window_bg },
-      NeogitCursorLine = { bg = window_cursor_bg },
-      DiffviewNormal = { bg = window_bg },
-      DiffviewEndOfBuffer = { bg = window_bg },
-      DiffviewWinSeparator = { bg = window_bg },
-      DiffviewCursorLine = { bg = window_cursor_bg },
-
-      -- Debugger (nvim-dap). Catppuccin's `dap` integration colors
-      -- the signs themselves (DapBreakpoint, DapStopped, …); the line the
-      -- debugger stopped on has no group of its own — it must stand out more
-      -- than `CursorLine`, hence `surface1` instead of `crust`.
-      DapStoppedLine = { bg = colors.surface1 },
-
-      -- Debugger panels (nvim-dap-view). Its windows use plain `Normal` /
-      -- `NormalFloat`; only the tab bar has groups of its own.
-      NvimDapViewTabFill = { bg = window_bg },
-      NvimDapViewTab = { bg = window_bg },
-      NvimDapViewTabSelected = { bg = window_cursor_bg, fg = float_fg },
-
-      -- Test runner (neotest): window-picker label, float borders.
-      NeotestWinSelect = { fg = float_fg, bold = true },
-      NeotestBorder = { bg = float_bg, fg = float_fg },
-
-      -- Multiple cursors (multicursor.nvim). The plugin defines the
-      -- same groups with `default = true`, so these win. `MultiCursorCursor`
-      -- must read as a cursor rather than a selection: inverted `peach` instead
-      -- of the `Visual` background the other groups link to.
-      MultiCursorCursor = { bg = colors.peach, fg = window_bg },
-      MultiCursorVisual = { link = "Visual" },
-      MultiCursorSign = { fg = colors.peach },
-      MultiCursorMatchPreview = { link = "Search" },
-      MultiCursorDisabledCursor = { bg = colors.overlay0, fg = window_bg },
-      MultiCursorDisabledVisual = { bg = colors.surface1 },
-      MultiCursorDisabledSign = { fg = colors.overlay0 },
-
-      -- Problems panel (trouble.nvim).
-      TroubleNormal = { bg = window_bg },
-      TroubleNormalNC = { bg = window_bg },
-
-      -- Outline and breadcrumbs (aerial, dropbar). dropbar's menu is
-      -- a float: the group is `DropBarMenuNormalFloat`, `DropBarMenuNormal` doesn't exist.
-      AerialNormal = { bg = window_bg },
-      AerialLine = { bg = window_cursor_bg },
-      DropBarMenuNormalFloat = { bg = float_bg },
-      DropBarMenuFloatBorder = { bg = float_bg, fg = float_fg },
-      DropBarMenuHoverEntry = { bg = float_cursor_bg },
+      -- A rule under the winbar, so the breadcrumbs (dropbar) don't blend into
+      -- the code: the same one catppuccin draws under the sticky context
+      -- (`TreesitterContextBottom`). Merged into catppuccin's `WinBar`, which
+      -- keeps its foreground; winbar items stack on this group, so the rule
+      -- spans the window. `WinBarNC` links here, and dropbar dims nothing.
+      WinBar = {
+        sp = user.colorscheme.transparent and colors.dim or colors.surface0,
+        style = { "underline" },
+      },
     }
   end,
   -- The list below is the single source of truth — nothing is enabled just

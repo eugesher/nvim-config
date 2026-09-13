@@ -36,7 +36,7 @@ return {
     flavour = "mocha",
     -- Let the terminal background show through the editor surfaces
     -- (replaces `window_bg`).
-    transparent = false,
+    transparent = true,
     -- Base background of editor surfaces, side panels, floats and the status line.
     window_bg = "#000000",
   },
