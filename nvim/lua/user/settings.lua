@@ -62,7 +62,7 @@ return {
     position = "left",
     -- Panel width: a number of columns, or a share of the editor width as a
     -- percentage string ("25%"), taken each time the panel opens.
-    width = "25%",
+    width = "20%",
     -- Columns the panel never goes below, whatever `width` gives.
     min_width = 36,
     -- Hide files matched by .gitignore (`H` in the tree shows them anyway).
