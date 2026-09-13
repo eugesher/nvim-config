@@ -37,6 +37,9 @@ return {
     -- Let the terminal background show through the editor surfaces
     -- (replaces `window_bg`).
     transparent = true,
+    -- The same for floating windows: which-key, pickers, hover docs, menus.
+    -- The completion menu follows `transparent` instead.
+    transparent_floats = true,
     -- Base background of editor surfaces, side panels, floats and the status line.
     window_bg = "#000000",
   },

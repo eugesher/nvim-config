@@ -34,7 +34,9 @@ M.opts = {
   compile_path = vim.fn.stdpath("cache") .. "/catppuccin",
   transparent_background = user.colorscheme.transparent,
   float = {
-    transparent = false, -- floats keep their own (black) background
+    -- `NormalFloat` / `FloatBorder` / `FloatTitle` without a background, and with
+    -- them which-key, fzf-lua, hover and dropbar's menu. Needs 'winblend' 0.
+    transparent = user.colorscheme.transparent_floats,
     solid = false, -- keep the 'winborder' borders
   },
   term_colors = true, -- :terminal buffers (debug console, test output) use the palette
@@ -88,8 +90,9 @@ M.opts = {
       -- spans the window. `WinBarNC` links here, and dropbar dims nothing.
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,
-        style = { "underline" },
+        -- style = { "underline" },
       },
+      -- TabLineFill = { underline = true },
     }
   end,
   -- The list below is the single source of truth — nothing is enabled just

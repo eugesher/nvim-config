@@ -48,10 +48,10 @@ M.opts = {
     right_trunc_marker = icons.ui.arrow_right,
     -- `name_formatter`, `custom_filter`, `get_element_icon` stay unset:
     -- plain file names, every listed buffer, icons from nvim-web-devicons.
-    max_name_length = 18,
-    max_prefix_length = 15, -- prefix shown when two buffers share a name
+    max_name_length = 24,
+    max_prefix_length = 18, -- prefix shown when two buffers share a name
     truncate_names = true,
-    tab_size = 18,
+    tab_size = 24,
     diagnostics = "nvim_lsp",
     diagnostics_update_in_insert = false,
     diagnostics_update_on_event = true,
@@ -86,7 +86,7 @@ M.opts = {
     duplicates_across_groups = true,
     persist_buffer_sort = true,
     move_wraps_at_ends = false,
-    separator_style = "slant",
+    separator_style = "thick",
     enforce_regular_tabs = false,
     always_show_bufferline = true,
     auto_toggle_bufferline = true,
