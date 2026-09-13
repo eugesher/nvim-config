@@ -9,7 +9,7 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 ### Required
 
 | Dependency                      | Why                                                                                                                                                                   | Install                                                                                                                          |
-|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Neovim 0.12+**                | Core editor; the config uses 0.12 APIs throughout                                                                                                                     | `sudo snap install nvim --classic`                                                                                               |
 | **Git 2.31+**                   | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+                                                                                                        | `sudo apt install git`                                                                                                           |
 | **Node.js 20+** and npm         | TS/JS language servers, prettierd, js-debug-adapter, tree-sitter-cli                                                                                                  | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
@@ -25,7 +25,7 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 ### Optional — per feature
 
 | Dependency                        | What it enables                                                                                                                                                                                                                                                                                                                                                   |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher                                                                                                                                                                                                                                  |
 | **mysql-client**                  | MySQL database client for vim-dadbod                                                                                                                                                                                                                                                                                                                              |
 | **redis-tools** (`redis-cli`)     | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window                                                                                                                                                                                                                                                                         |
@@ -87,7 +87,7 @@ the `http/` collections in this repository.
 ## What's inside
 
 | Area                    | Tooling                                                                                                                                                                      |
-|-------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Plugin manager          | lazy.nvim, versions pinned by `nvim/lazy-lock.json`                                                                                                                          |
 | Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons                                                                                              |
 | LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
@@ -132,11 +132,11 @@ nvim/
 
 The layers never mix:
 
-- **`lua/plugins/`** only says *which* plugin: repository, dependencies, build
+- **`lua/plugins/`** only says _which_ plugin: repository, dependencies, build
   step, branch or version. Each spec is built with
   `require("settings").spec("folke/trouble.nvim", "problems.trouble")`, where
   `problems` is the name of the plugins file the spec sits in.
-- **`lua/settings/<group>/<name>.lua`** says *how*: it returns
+- **`lua/settings/<group>/<name>.lua`** says _how_: it returns
   `{ event / ft / cmd / keys, opts, init, config, which_key }`, and everything a
   plugin is configured with lives there — options, keymaps with their
   descriptions, highlights are the one exception and sit in `settings/ui/theme.lua`.
@@ -151,27 +151,27 @@ The layers never mix:
 `nvim/lua/user/settings.lua` is the single place meant for personal values —
 plain data the rest of the config reads:
 
-| Setting                                                      | Default                       | Effect                                                                                                                                                                |
-|--------------------------------------------------------------|-------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `editor.indent_width`                                        | `2`                           | `'shiftwidth'`, `'tabstop'`, `'softtabstop'`                                                                                                                          |
-| `editor.scrolloff`                                           | `8`                           | lines kept above and below the cursor                                                                                                                                 |
-| `editor.relative_number`                                     | `false`                       | relative line numbers; `false` shows absolute ones                                                                                                                    |
-| `ui.border`                                                  | `"rounded"`                   | border of every floating window (`'winborder'`)                                                                                                                       |
-| `ui.panel_height`                                            | `12`                          | height of the bottom panels: Trouble, debugger, test output                                                                                                           |
-| `ui.nerd_font`                                               | `true`                        | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you                                                                                          |
-| `colorscheme.enabled`                                        | `true`                        | `false` drops catppuccin and every color tweak of the config: Neovim's default colorscheme, each plugin with its own colors, the other `colorscheme.*` values ignored |
-| `colorscheme.flavour`                                        | `"mocha"`                     | catppuccin flavor: latte, frappe, macchiato, mocha                                                                                                                    |
-| `colorscheme.transparent`                                    | `false`                       | let the terminal background show through                                                                                                                              |
-| `colorscheme.window_bg`                                      | `"#000000"`                   | base background of windows, panels and floats                                                                                                                         |
-| `treesitter.max_filesize`, `max_line_length`                 | 1.5 MB, 2000                  | larger files get no treesitter                                                                                                                                        |
-| `formatting.format_on_save`                                  | `true`                        | toggle with `<leader>uf` (buffer) / `<leader>uF` (global)                                                                                                             |
-| `formatting.timeout_ms`, `max_filesize`                      | 3000, 1 MB                    | how long a formatter may block a save; larger files are not formatted                                                                                                 |
-| `explorer.position`, `width`, `min_width`, `hide_gitignored` | `"left"`, `"20%"`, 36, `true` | neo-tree panel; `width` is columns or a share of the editor width, never below `min_width` columns                                                                    |
-| `http.default_env`                                           | `"dev"`                       | kulala environment on startup                                                                                                                                         |
-| `coverage.command`                                           | `npm run test:cov`            | what `:CoverageRun` executes                                                                                                                                          |
-| `database.position`, `width`                                 | `"left"`, 40                  | vim-dadbod-ui drawer                                                                                                                                                  |
-| `lsp.inlay_hints`                                            | `false`                       | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                |
-| `lsp.disable_watchers`                                       | `false`                       | stop file watching to save CPU in huge monorepos                                                                                                                      |
+| Setting                                                      | Effect                                                                                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `editor.indent_width`                                        | `'shiftwidth'`, `'tabstop'`, `'softtabstop'`                                                                                                                          |
+| `editor.scrolloff`                                           | lines kept above and below the cursor                                                                                                                                 |
+| `editor.relative_number`                                     | relative line numbers; `false` shows absolute ones                                                                                                                    |
+| `ui.border`                                                  | border of every floating window (`'winborder'`)                                                                                                                       |
+| `ui.panel_height`                                            | height of the bottom panels: Trouble, debugger, test output                                                                                                           |
+| `ui.nerd_font`                                               | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you                                                                                          |
+| `colorscheme.enabled`                                        | `false` drops catppuccin and every color tweak of the config: Neovim's default colorscheme, each plugin with its own colors, the other `colorscheme.*` values ignored |
+| `colorscheme.flavour`                                        | catppuccin flavor: latte, frappe, macchiato, mocha                                                                                                                    |
+| `colorscheme.transparent`                                    | let the terminal background show through                                                                                                                              |
+| `colorscheme.window_bg`                                      | base background of windows, panels and floats                                                                                                                         |
+| `treesitter.max_filesize`, `max_line_length`                 | larger files get no treesitter                                                                                                                                        |
+| `formatting.format_on_save`                                  | toggle with `<leader>uf` (buffer) / `<leader>uF` (global)                                                                                                             |
+| `formatting.timeout_ms`, `max_filesize`                      | how long a formatter may block a save; larger files are not formatted                                                                                                 |
+| `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel; `width` is columns or a share of the editor width, never below `min_width` columns                                                                    |
+| `http.default_env`                                           | kulala environment on startup                                                                                                                                         |
+| `coverage.command`                                           | what `:CoverageRun` executes                                                                                                                                          |
+| `database.position`, `width`                                 | vim-dadbod-ui drawer                                                                                                                                                  |
+| `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                |
+| `lsp.disable_watchers`                                       | stop file watching to save CPU in huge monorepos                                                                                                                      |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
 `~/.config/nvim` is lost on the next reinstall.
@@ -211,7 +211,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### General
 
 | Keys        | Mode | Description                            | Buffer |
-|-------------|------|----------------------------------------|--------|
+| ----------- | ---- | -------------------------------------- | ------ |
 | `<`         | x    | Indent left, keep selection            |        |
 | `<Esc>`     | n    | Clear search highlight                 |        |
 | `<leader>?` | n    | Buffer keymaps (which-key)             |        |
@@ -240,7 +240,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Navigation
 
 | Keys         | Mode  | Description               | Buffer |
-|--------------|-------|---------------------------|--------|
+| ------------ | ----- | ------------------------- | ------ |
 | `<C-D>`      | n     | Half page down (centered) |        |
 | `<C-Down>`   | n     | Decrease window height    |        |
 | `<C-H>`      | n     | Go to left window         |        |
@@ -282,7 +282,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### LSP / Code
 
 | Keys         | Mode | Description                                           | Buffer                                           |
-|--------------|------|-------------------------------------------------------|--------------------------------------------------|
+| ------------ | ---- | ----------------------------------------------------- | ------------------------------------------------ |
 | `<C-W>d`     | n    | Show diagnostics under the cursor                     |                                                  |
 | `<leader>ca` | n x  | Code action                                           | every file buffer                                |
 | `<leader>cD` | n    | Buffer diagnostics to loclist                         | every file buffer                                |
@@ -316,7 +316,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Find
 
 | Keys         | Mode | Description            | Buffer |
-|--------------|------|------------------------|--------|
+| ------------ | ---- | ---------------------- | ------ |
 | `<leader>f/` | n    | Lines in buffer        |        |
 | `<leader>fb` | n    | Buffers                |        |
 | `<leader>fc` | n    | Commands               |        |
@@ -340,7 +340,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Explorer
 
 | Keys         | Mode | Description            | Buffer |
-|--------------|------|------------------------|--------|
+| ------------ | ---- | ---------------------- | ------ |
 | `-`          | n    | Parent directory (oil) |        |
 | `<leader>be` | n    | Buffers (explorer)     |        |
 | `<leader>E`  | n    | Explorer: reveal file  |        |
@@ -349,7 +349,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Git
 
 | Keys          | Mode | Description              | Buffer |
-|---------------|------|--------------------------|--------|
+| ------------- | ---- | ------------------------ | ------ |
 | `<leader>gB`  | n    | Blame (file)             | lua    |
 | `<leader>gb`  | n    | Git branches             |        |
 | `<leader>gC`  | n    | Git commits              |        |
@@ -390,7 +390,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Database
 
 | Keys             | Mode | Description                    | Buffer |
-|------------------|------|--------------------------------|--------|
+| ---------------- | ---- | ------------------------------ | ------ |
 | `<leader>Da`     | n    | Add connection                 |        |
 | `<leader>Df`     | n    | Find buffer in drawer          |        |
 | `<leader>Dq`     | n    | Last query info                |        |
@@ -405,7 +405,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Debug
 
 | Keys         | Mode | Description                   | Buffer |
-|--------------|------|-------------------------------|--------|
+| ------------ | ---- | ----------------------------- | ------ |
 | `<F10>`      | n    | Debug: step over              |        |
 | `<F11>`      | n    | Debug: step into              |        |
 | `<F5>`       | n    | Debug: continue / start       |        |
@@ -436,7 +436,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Test
 
 | Keys          | Mode | Description              | Buffer |
-|---------------|------|--------------------------|--------|
+| ------------- | ---- | ------------------------ | ------ |
 | `<leader>ta`  | n    | Run all tests            |        |
 | `<leader>tcc` | n    | Toggle coverage signs    |        |
 | `<leader>tcl` | n    | Load and show coverage   |        |
@@ -459,7 +459,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### HTTP
 
 | Keys         | Mode | Description               | Buffer |
-|--------------|------|---------------------------|--------|
+| ------------ | ---- | ------------------------- | ------ |
 | `<leader>ha` | n x  | Run all requests          | http   |
 | `<leader>hb` | n    | Show body                 | http   |
 | `<leader>hc` | n    | Copy as curl              | http   |
@@ -480,7 +480,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Problems
 
 | Keys         | Mode | Description                   | Buffer |
-|--------------|------|-------------------------------|--------|
+| ------------ | ---- | ----------------------------- | ------ |
 | `<leader>xc` | n    | Close all Trouble windows     |        |
 | `<leader>xl` | n    | Location list (Trouble)       |        |
 | `<leader>xq` | n    | Quickfix list (Trouble)       |        |
@@ -494,7 +494,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Refactor
 
 | Keys         | Mode | Description                  | Buffer |
-|--------------|------|------------------------------|--------|
+| ------------ | ---- | ---------------------------- | ------ |
 | `<leader>rA` | n    | Swap parameter with previous |        |
 | `<leader>ra` | n    | Swap parameter with next     |        |
 | `<leader>rB` | n    | Extract block to file        |        |
@@ -514,7 +514,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Multicursor
 
 | Keys              | Mode | Description                     | Buffer |
-|-------------------|------|---------------------------------|--------|
+| ----------------- | ---- | ------------------------------- | ------ |
 | `<C-LeftDrag>`    | n    | Drag cursor selection           |        |
 | `<C-LeftMouse>`   | n    | Add / remove cursor             |        |
 | `<C-LeftRelease>` | n    | Finish cursor selection         |        |
@@ -536,7 +536,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Session
 
 | Keys         | Mode | Description             | Buffer |
-|--------------|------|-------------------------|--------|
+| ------------ | ---- | ----------------------- | ------ |
 | `<leader>sD` | n    | Delete session          |        |
 | `<leader>sd` | n    | Toggle auto save        |        |
 | `<leader>sf` | n    | Find session            |        |
@@ -547,7 +547,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Outline
 
 | Keys        | Mode | Description           | Buffer                                                |
-|-------------|------|-----------------------|-------------------------------------------------------|
+| ----------- | ---- | --------------------- | ----------------------------------------------------- |
 | `<leader>;` | n    | Pick breadcrumb       |                                                       |
 | `<leader>O` | n    | Outline navigator     |                                                       |
 | `<leader>o` | n    | Outline (symbol tree) |                                                       |
@@ -557,7 +557,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### UI toggles
 
 | Keys         | Mode | Description                    | Buffer                                           |
-|--------------|------|--------------------------------|--------------------------------------------------|
+| ------------ | ---- | ------------------------------ | ------------------------------------------------ |
 | `<leader>uF` | n    | Toggle format on save (global) |                                                  |
 | `<leader>uf` | n    | Toggle format on save (buffer) |                                                  |
 | `<leader>ui` | n    | Toggle inlay hints             | dockerfile, lua, typescript, yaml.docker-compose |
@@ -567,7 +567,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Tooling
 
 | Keys         | Mode | Description  | Buffer |
-|--------------|------|--------------|--------|
+| ------------ | ---- | ------------ | ------ |
 | `<leader>lc` | n    | Check health |        |
 | `<leader>li` | n    | LSP clients  |        |
 | `<leader>ll` | n    | Lazy         |        |
@@ -579,7 +579,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 ### Insert mode
 
 | Keys        | Mode | Description                                             | Buffer            |
-|-------------|------|---------------------------------------------------------|-------------------|
+| ----------- | ---- | ------------------------------------------------------- | ----------------- |
 | `<C-B>`     | i    | blink.cmp: Scroll Documentation Up                      | every file buffer |
 | `<C-E>`     | i    | blink.cmp: Hide                                         | every file buffer |
 | `<C-F>`     | i    | blink.cmp: Scroll Documentation Down                    | every file buffer |
@@ -614,6 +614,7 @@ buffer-local (LSP keys appear once a language server is attached)._
   ```
 
   and add the connection without it: `mysql://app@127.0.0.1:3306/app_db`.
+
 - **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
   MySQL client ignores the port and connects to the local Unix socket.
 - Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
