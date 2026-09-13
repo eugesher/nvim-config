@@ -92,7 +92,8 @@ M.opts = {
   signs_staged = signs({ "add", "change", "delete", "topdelete", "changedelete" }),
   signs_staged_enable = true,
   signcolumn = true,
-  numhl = false,
+  -- Line numbers in the hunk's color; diagnostics leave them alone (core/diagnostics.lua).
+  numhl = true,
   linehl = false,
   culhl = false,
   word_diff = false,

@@ -21,12 +21,7 @@ vim.diagnostic.config({
       [severity.INFO] = icons.Info,
       [severity.HINT] = icons.Hint,
     },
-    numhl = {
-      [severity.ERROR] = "DiagnosticSignError",
-      [severity.WARN] = "DiagnosticSignWarn",
-      [severity.INFO] = "DiagnosticSignInfo",
-      [severity.HINT] = "DiagnosticSignHint",
-    },
+    -- No `numhl`: line numbers are colored by git status (settings/git/gitsigns.lua).
   },
   underline = true,
   update_in_insert = false,
