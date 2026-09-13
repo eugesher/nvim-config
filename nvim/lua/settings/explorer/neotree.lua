@@ -1,10 +1,3 @@
--- defaults verified against neo-tree.nvim v3.x@1a14083 (2026-09-12)
---
--- Side panel with the project tree (WebStorm's Project view): git statuses and
--- diagnostics right in the tree. Bulk file operations live in oil
--- (settings/explorer/oil.lua). Source `document_symbols` is enabled but has no keymap —
--- the outline is aerial's job (`<leader>o`): `:Neotree document_symbols`.
-
 local user = require("user.settings")
 local icons = require("settings.icons")
 
@@ -19,10 +12,6 @@ M.keys = {
   { "<leader>ge", "<cmd>Neotree git_status float<cr>", desc = "Git status (explorer)" },
 }
 
--- `nvim .` / `:e src/` before neo-tree is loaded: its own directory hijack
--- (plugin/neo-tree.lua) does not exist yet and netrw is disabled
--- (core/bootstrap.lua), so the directory would open as an empty buffer. Load
--- the plugin on the first directory buffer; from then on neo-tree handles it.
 function M.init()
   vim.api.nvim_create_autocmd("BufEnter", {
     group = vim.api.nvim_create_augroup("settings_neotree", { clear = true }),
@@ -40,17 +29,8 @@ function M.init()
   })
 end
 
--- `popup_border_style` accepts only these styles; for the rest of `ui.border`
--- ("none", "shadow", "bold") pass "" — neo-tree then takes 'winborder' and
--- falls back to "single" on styles it can't draw.
 local POPUP_BORDERS = { double = true, rounded = true, single = true, solid = true }
 
--- `user.explorer.width` in columns, never below `user.explorer.min_width`.
--- A function, which `window` options may be (neo-tree's defaults.lua), rather
--- than the "25%" string itself: neo-tree also does arithmetic on the raw value
--- when it renders without a window. Evaluated on every open, so the share
--- follows the current editor width; an open panel keeps its width on resize
--- ('winfixwidth').
 local function panel_width()
   local width = user.explorer.width
   if type(width) == "string" then
@@ -59,8 +39,6 @@ local function panel_width()
   return math.max(width, user.explorer.min_width)
 end
 
--- `document_symbols` kinds: glyphs from settings/icons, highlight groups as in
--- neo-tree's defaults.
 local SYMBOL_HIGHLIGHTS = {
   File = "Tag",
   Module = "Exception",
@@ -101,14 +79,9 @@ local function symbol_kinds()
   return kinds
 end
 
--- Mappings shared by every source window (`:h neo-tree-mappings`).
--- "none" removes a default mapping.
 local window_mappings = {
-  -- Leader is <Space>: a tree-local <Space> would shadow `<leader>…` here.
   ["<space>"] = "none",
-  -- quick_jump sits on the GUI combo <C-s>, which this config does not use.
   ["<C-s>"] = "none",
-  -- Needs nvim-window-picker, which is not installed.
   ["w"] = "none",
   ["<Tab>"] = "select",
   ["<C-S-i>"] = "invert_selection",
@@ -118,7 +91,6 @@ local window_mappings = {
   ["<esc>"] = "cancel",
   ["P"] = {
     "toggle_preview",
-    -- snacks.nvim / image.nvim are not installed.
     config = { use_float = true, use_snacks_image = false, use_image_nvim = false },
   },
   ["<C-f>"] = { "scroll_preview", config = { direction = -10 } },
@@ -150,9 +122,6 @@ local window_mappings = {
   [">"] = "next_source",
 }
 
--- neo-tree renames and moves files itself and tells language servers nothing.
--- Send them `workspace/didRenameFiles`, as oil does (`lsp_file_methods`): vtsls
--- answers with an edit that fixes the imports (`updateImportsOnFileMove`).
 local function matches_filters(filters, path)
   local is_dir = vim.fn.isdirectory(path) == 1
   for _, filter in ipairs(filters) do
@@ -186,7 +155,6 @@ local function did_rename_files(args)
   end
 end
 
--- "Order by" menu: `o` shows the help popup, the second key picks the order.
 local function order_mappings(extra)
   local mappings = {
     ["o"] = { "show_help", nowait = false, config = { title = "Order by", prefix_key = "o" } },
@@ -205,7 +173,6 @@ function M.opts()
     sources = { "filesystem", "buffers", "git_status", "document_symbols" },
     default_source = "filesystem",
     add_blank_line_at_top = false,
-    -- settings/session/autosession.lua keeps the tree out of sessions.
     auto_clean_after_session_restore = false,
     clipboard = { sync = "none" },
     close_if_last_window = true,
@@ -213,7 +180,6 @@ function M.opts()
     enable_git_status = true,
     enable_modified_markers = true,
     enable_opened_markers = true,
-    -- Only used without `use_libuv_file_watcher` (enabled for filesystem below).
     enable_refresh_on_write = true,
     enable_cursor_hijack = false,
     git_status_async = true,
@@ -229,7 +195,6 @@ function M.opts()
     log_level = vim.log.levels.INFO,
     log_to_file = false,
     open_files_in_last_window = true,
-    -- Windows a file opened from the tree never replaces.
     open_files_do_not_replace_types = { "terminal", "trouble", "qf" },
     open_files_using_relative_paths = false,
     popup_border_style = POPUP_BORDERS[user.ui.border] and user.ui.border or "",
@@ -237,7 +202,6 @@ function M.opts()
     sort_case_insensitive = true,
     use_popups_for_input = true,
     use_default_mappings = true,
-    -- Tabs would take the winbar, which belongs to dropbar.
     source_selector = { winbar = false, statusline = false },
 
     default_component_configs = {
@@ -263,7 +227,6 @@ function M.opts()
         folder_open = icons.ui.folder_open,
         folder_empty = icons.ui.folder_empty,
         folder_empty_open = icons.ui.folder_empty_open,
-        -- Fallback only: file icons come from nvim-web-devicons.
         default = icons.ui.file,
         highlight = "NeoTreeFileIcon",
         use_filtered_colors = true,
@@ -281,12 +244,10 @@ function M.opts()
       },
       git_status = {
         symbols = {
-          -- Change type
           added = icons.git.added,
           deleted = icons.git.removed,
           modified = icons.git.modified,
           renamed = icons.git.renamed,
-          -- Status type
           untracked = icons.git.untracked,
           ignored = icons.git.ignored,
           unstaged = icons.git.unstaged,
@@ -319,9 +280,9 @@ function M.opts()
     window = {
       position = user.explorer.position,
       width = panel_width,
-      height = 15, -- top/bottom positions only
+      height = 15,
       auto_expand_width = false,
-      popup = { -- position = "float" only
+      popup = {
         size = { height = "80%", width = "50%" },
         position = "50%",
       },
@@ -349,13 +310,12 @@ function M.opts()
         }),
       },
       async_directory_scan = "auto",
-      -- "deep" would pre-scan directories so empty ones group before expanding.
       scan_mode = "shallow",
       bind_to_cwd = true,
       cwd_target = { sidebar = "tab", current = "window" },
       check_gitignore_in_search = true,
       filtered_items = {
-        visible = false, -- `H` toggles hidden items on
+        visible = false,
         force_visible_in_empty_folder = false,
         children_inherit_highlights = true,
         show_hidden_count = true,
@@ -363,7 +323,7 @@ function M.opts()
         hide_gitignored = user.explorer.hide_gitignored,
         hide_ignored = true,
         ignore_files = { ".neotreeignore", ".ignore" },
-        hide_hidden = false, -- Windows-only attribute
+        hide_hidden = false,
         hide_by_name = { "node_modules", ".git", "dist", "coverage", ".turbo" },
         hide_by_pattern = {},
         always_show = {},
@@ -375,7 +335,6 @@ function M.opts()
       group_empty_dirs = true,
       search_limit = 50,
       follow_current_file = { enabled = true, leave_dirs_open = false },
-      -- Directories go to neo-tree in its side window; oil (`-`) is separate.
       hijack_netrw_behavior = "open_default",
       use_libuv_file_watcher = true,
     },
@@ -446,9 +405,6 @@ function M.opts()
       },
     },
 
-    -- The tree stays open after a file is opened. To close it instead, add a
-    -- `file_opened` handler calling
-    -- `require("neo-tree.command").execute({ action = "close" })`.
     event_handlers = vim.list_extend(require("settings.ui.theme").neo_tree_handlers(), {
       { event = "file_renamed", handler = did_rename_files },
       { event = "file_moved", handler = did_rename_files },

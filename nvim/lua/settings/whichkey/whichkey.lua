@@ -1,19 +1,3 @@
--- defaults verified against which-key.nvim v3.17.0-8-g3aab214 (2026-09-11)
---
--- Popup with the available keys after a prefix, and the one place where the
--- keymap namespaces of the leader map are declared.
---
--- Division of responsibility:
---   * a keymap's `desc` lives in settings/<group>/<plugin>.lua next to the
---     keymap: in its `keys` entry, or in the module's `which_key` field for
---     keymaps the plugin creates itself (collected by `settings.which_key()`).
---   * this file holds ONLY the groups, their icons and order. Individual
---     keymaps never go here — that would be a second source of truth.
---
--- which-key v3: only `require("which-key").add()`; v2's `register()` is gone.
--- A group without mappings is not drawn: each namespace shows up in the popup
--- once its first keymap exists.
-
 local user = require("user.settings")
 local glyphs = require("settings.icons").keymap_groups
 
@@ -21,8 +5,6 @@ local M = {}
 
 M.event = "VeryLazy"
 
--- Namespaces of the leader map.
--- n + x: code actions, refactors, hunks and multicursor also act on selections.
 local groups = {
   { "<leader>b", group = "buffers", icon = { icon = glyphs.buffers, color = "cyan" } },
   { "<leader>c", group = "code", icon = { icon = glyphs.code, color = "orange" } },
@@ -47,31 +29,24 @@ local groups = {
 for _, spec in ipairs(groups) do
   spec.mode = { "n", "x" }
 end
--- HTTP: normal mode only; its keymaps are buffer-local in .http buffers,
--- so globally the group stays empty and hidden.
 groups[#groups + 1] =
   { "<leader>h", group = "http", mode = "n", icon = { icon = glyphs.http, color = "blue" } }
 
--- Read by scripts/audit-keymaps.lua: a key that is a prefix of other keys is
--- fine only when it is one of these groups.
 M.groups = groups
 
 M.opts = {
   preset = "modern",
-  -- 200 ms: well under 'timeoutlen' (400, core/options.lua), so the popup is up
-  -- before an ambiguous key times out; plugin popups (marks, registers) at once.
   delay = function(ctx)
     return ctx.plugin and 0 or 200
   end,
   filter = function()
-    return true -- show every mapping, described or not
+    return true
   end,
-  spec = {}, -- groups are added in `config`
-  notify = true, -- warn about problems in the mappings
+  spec = {},
+  notify = true,
   triggers = {
     { "<auto>", mode = "nxso" },
   },
-  -- Visual line/block modes start hidden until the next key.
   defer = function(ctx)
     return ctx.mode == "V" or ctx.mode == "<C-V>"
   end,
@@ -90,14 +65,13 @@ M.opts = {
     },
   },
   win = {
-    no_overlap = true, -- never cover the cursor
-    -- Geometry of the "modern" preset, stated explicitly: bottom, 90% wide.
+    no_overlap = true,
     width = 0.9,
     height = { min = 4, max = 25 },
     col = 0.5,
     row = -1,
     border = user.ui.border,
-    padding = { 1, 2 }, -- [top/bottom, right/left]
+    padding = { 1, 2 },
     title = true,
     title_pos = "center",
     zindex = 1000,
@@ -113,7 +87,7 @@ M.opts = {
     scroll_up = "<c-u>",
   },
   sort = { "local", "order", "group", "alphanum", "mod" },
-  expand = 0, -- never inline a group's items into the parent list
+  expand = 0,
   replace = {
     key = {
       function(key)
@@ -137,7 +111,7 @@ M.opts = {
     group = "+",
     ellipsis = "…",
     mappings = true,
-    rules = {}, -- which-key's built-in rules only
+    rules = {},
     colors = true,
     keys = {
       Up = " ",
@@ -183,7 +157,6 @@ function M.config(_, opts)
   local wk = require("which-key")
   wk.setup(opts)
   wk.add(groups)
-  -- Descriptions of plugin-created keymaps, declared next to their plugin.
   wk.add(require("settings").which_key())
 end
 

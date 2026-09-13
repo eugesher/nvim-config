@@ -1,12 +1,5 @@
--- glyphs verified against Nerd Fonts v3 (2026-09-11)
---
--- Single source of glyphs for the whole config. Pure data: raw glyphs without
--- padding — consumers add spacing where their layout needs it. Nerd Fonts v3
--- only (the v2 Material Design range U+F500–U+FD46 was removed upstream).
-
 local M = {}
 
--- Diagnostic severities (signs, status line, bufferline, trouble).
 M.diagnostics = {
   Error = "",
   Warn = "",
@@ -14,7 +7,6 @@ M.diagnostics = {
   Hint = "",
 }
 
--- Git change types and file states (status line diff, file tree).
 M.git = {
   added = "",
   modified = "",
@@ -27,7 +19,6 @@ M.git = {
   conflict = "",
 }
 
--- Sign column bars for git hunks (gitsigns): thin, so the gutter stays calm.
 M.git_signs = {
   add = "█",
   change = "█",
@@ -37,8 +28,6 @@ M.git_signs = {
   untracked = "",
 }
 
--- LSP kinds: the full CompletionItemKind set (blink.cmp) followed by the
--- SymbolKind names it lacks (aerial, dropbar).
 M.kinds = {
   Text = "󰉿",
   Method = "󰊕",
@@ -76,7 +65,6 @@ M.kinds = {
   Null = "󰟢",
 }
 
--- Debugger signs (nvim-dap).
 M.dap = {
   breakpoint = "",
   condition = "",
@@ -85,7 +73,6 @@ M.dap = {
   rejected = "",
 }
 
--- Test results (neotest).
 M.test = {
   passed = "",
   failed = "",
@@ -93,7 +80,6 @@ M.test = {
   skipped = "",
 }
 
--- Database drawer (vim-dadbod-ui): tree nodes and the entries under them.
 M.database = {
   db = "󰆼",
   buffers = "",
@@ -111,7 +97,6 @@ M.database = {
   connection_error = "✕",
 }
 
--- Generic UI glyphs.
 M.ui = {
   chevron_right = "",
   chevron_down = "",
@@ -128,12 +113,10 @@ M.ui = {
   check = "✓",
 }
 
--- Test coverage bars in the sign column (nvim-coverage).
 M.coverage = {
   bar = "▎",
 }
 
--- TODO/FIXME keywords (todo-comments): signs, highlights and search results.
 M.todo = {
   fix = "",
   todo = "",
@@ -144,7 +127,6 @@ M.todo = {
   test = "⏲",
 }
 
--- Keymap namespaces (which-key group icons; colors live in settings/whichkey/whichkey.lua).
 M.keymap_groups = {
   buffers = "󰈔",
   code = "",
@@ -168,7 +150,6 @@ M.keymap_groups = {
   prev = "",
 }
 
--- Package states (Mason UI). Plain Unicode.
 M.packages = {
   installed = "✓",
   pending = "➜",

@@ -1,10 +1,3 @@
--- defaults verified against gitsigns.nvim v2.1.0-55-gf2421c5 (2026-09-12)
---
--- Git hunks in the sign column, hunk staging / reset / preview and blame.
--- All keymaps are buffer-local, created in `on_attach` — they exist only in
--- buffers of files tracked by git. Groups `<leader>gh` / `<leader>gt` live in
--- settings/whichkey/whichkey.lua.
-
 local user = require("user.settings")
 local icons = require("settings.icons")
 
@@ -27,12 +20,10 @@ local function on_attach(bufnr)
     vim.keymap.set(mode, lhs, rhs, { buffer = bufnr, desc = desc })
   end
 
-  -- Visual selection as a line range: stage / reset only the selected lines.
   local function selection()
     return { vim.fn.line("."), vim.fn.line("v") }
   end
 
-  -- ]c / [c stay with the built-in diff mode; in a diff window ]h / [h use them.
   local function nav(direction, diff_key)
     return function()
       if vim.wo.diff then
@@ -46,7 +37,6 @@ local function on_attach(bufnr)
   map("n", "]h", nav("next", "]c"), "Next hunk")
   map("n", "[h", nav("prev", "[c"), "Previous hunk")
 
-  -- On a staged hunk, stage_hunk unstages it (replaces the deprecated undo_stage_hunk).
   map("n", "<leader>ghs", gitsigns.stage_hunk, "Stage / unstage hunk")
   map("v", "<leader>ghs", function()
     gitsigns.stage_hunk(selection())
@@ -61,7 +51,6 @@ local function on_attach(bufnr)
   end, "Unstage buffer")
   map("n", "<leader>ghR", gitsigns.reset_buffer, "Reset buffer")
   map("n", "<leader>ghp", gitsigns.preview_hunk, "Preview hunk")
-  -- Also shows the deleted lines of the hunk (replaces the deprecated toggle_deleted).
   map("n", "<leader>ghi", gitsigns.preview_hunk_inline, "Preview hunk inline")
   map("n", "<leader>ghb", function()
     gitsigns.blame_line({ full = true })
@@ -92,7 +81,6 @@ M.opts = {
   signs_staged = signs({ "add", "change", "delete", "topdelete", "changedelete" }),
   signs_staged_enable = true,
   signcolumn = true,
-  -- Line numbers in the hunk's color; diagnostics leave them alone (core/diagnostics.lua).
   numhl = true,
   linehl = false,
   culhl = false,
@@ -100,7 +88,6 @@ M.opts = {
   watch_gitdir = { enable = true, follow_files = true },
   auto_attach = true,
   attach_to_untracked = false,
-  -- Blame of every line loads big files noticeably: off, toggled with <leader>gtb.
   current_line_blame = false,
   current_line_blame_opts = {
     virt_text = true,
@@ -110,12 +97,11 @@ M.opts = {
     virt_text_priority = 100,
     use_focus = true,
   },
-  -- Padded so the annotation does not stick to the end of the code.
   current_line_blame_formatter = " <author>, <author_time:%R> - <summary> ",
   current_line_blame_formatter_nc = " <author>",
   sign_priority = 6,
   update_debounce = 100,
-  max_file_length = 40000, -- lines; longer files are not attached
+  max_file_length = 40000,
   preview_config = {
     border = user.ui.border,
     style = "minimal",
@@ -129,13 +115,6 @@ M.opts = {
   worktrees = {},
   debug_mode = false,
   on_attach = on_attach,
-  -- Left at their defaults on purpose:
-  --   base             — the index;
-  --   diff_opts        — derived from 'diffopt' and follows its changes;
-  --   status_formatter — formats `b:gitsigns_status` (lualine reads `b:gitsigns_status_dict`);
-  --   blame_formatter  — the built-in layout;
-  --   trouble          — true with trouble.nvim installed, so
-  --                      `:Gitsigns setqflist` opens the problems panel.
 }
 
 return M

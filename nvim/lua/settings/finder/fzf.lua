@@ -1,14 +1,3 @@
--- defaults verified against fzf-lua @05e44d3 (2026-09-11)
---
--- One picker for files, text, symbols, diagnostics and git; it also serves
--- vim.ui.select (code actions, DAP configurations, sessions). Telescope itself
--- is not part of this config; telescope-fzf-native.nvim is, but only as the C
--- fzf library behind dropbar's menu filter (plugins/structure.lua).
---
--- fzf-lua's default key tables bind Alt combinations (hide, toggle-all, first /
--- last, preview line scroll, ignore / hidden toggles). The tables below replace
--- them (no leading `true`), because this config does not use the Alt layer.
-
 local user = require("user.settings")
 local icons = require("settings.icons")
 
@@ -16,31 +5,26 @@ local M = {}
 
 M.cmd = { "FzfLua" }
 
--- Ubuntu ships fd as `fdfind`; the README asks for an `fd` symlink.
 local fd = vim.fn.executable("fd") == 1 and "fd" or "fdfind"
--- NestJS monorepos: never list or search build output and dependencies.
 local excludes = "--exclude .git --exclude node_modules --exclude dist --exclude coverage"
 
--- vim.ui.select goes through fzf-lua from the very first call: this stub loads
--- the plugin, whose `config` registers the real implementation.
 function M.init()
   local native = vim.ui.select
   local function stub(...)
     require("lazy").load({ plugins = { "fzf-lua" } })
     if vim.ui.select == stub then
-      vim.ui.select = native -- registration failed: never recurse
+      vim.ui.select = native
     end
     return vim.ui.select(...)
   end
   vim.ui.select = stub
 end
 
--- A function: the actions come from fzf-lua itself, loaded by then.
 function M.opts()
   local actions = require("fzf-lua.actions")
   return {
-    "default-title", -- profile: picker name in the border title
-    ui_select = false, -- registered in `config` instead
+    "default-title",
+    ui_select = false,
     winopts = {
       height = 0.85,
       width = 0.80,
@@ -48,7 +32,7 @@ function M.opts()
       col = 0.55,
       border = user.ui.border,
       zindex = 50,
-      backdrop = 100, -- no dimming, like the lazy.nvim and Mason windows
+      backdrop = 100,
       fullscreen = false,
       title_pos = "center",
       treesitter = {
@@ -62,7 +46,7 @@ function M.opts()
         hidden = false,
         vertical = "down:45%",
         horizontal = "right:55%",
-        layout = "flex", -- side by side on wide screens, stacked on narrow ones
+        layout = "flex",
         flip_columns = 100,
         title = true,
         title_pos = "center",
@@ -84,7 +68,6 @@ function M.opts()
       },
     },
     keymap = {
-      -- :tmap keys of the fzf window
       builtin = {
         ["<F1>"] = "toggle-help",
         ["<F2>"] = "toggle-fullscreen",
@@ -99,7 +82,6 @@ function M.opts()
         ["<S-down>"] = "preview-page-down",
         ["<S-up>"] = "preview-page-up",
       },
-      -- fzf --bind keys
       fzf = {
         ["ctrl-z"] = "abort",
         ["ctrl-u"] = "unix-line-discard",
@@ -114,15 +96,10 @@ function M.opts()
       },
     },
     actions = {
-      -- Inherited by files, grep, lsp, buffers, oldfiles, quickfix, git_status, …
       files = {
-        ["enter"] = actions.file_edit_or_qf, -- one entry opens, several go to quickfix
+        ["enter"] = actions.file_edit_or_qf,
         ["ctrl-s"] = actions.file_split,
         ["ctrl-v"] = actions.file_vsplit,
-        -- The selection — or the whole list when nothing is selected — goes to
-        -- the problems panel (settings/problems/trouble.lua). The action is a table with
-        -- an fzf `prefix`, not a plain function, so it cannot be wrapped to defer
-        -- the require: trouble loads together with the first picker.
         ["ctrl-t"] = require("trouble.sources.fzf").actions.open,
         ["ctrl-q"] = actions.file_sel_to_qf,
       },
@@ -134,13 +111,13 @@ function M.opts()
       ["--layout"] = "reverse",
       ["--border"] = "none",
       ["--highlight-line"] = true,
-      ["--tiebreak"] = "index", -- equal scores keep the source order
+      ["--tiebreak"] = "index",
     },
     previewers = {
       builtin = {
         syntax = true,
         syntax_limit_l = 0,
-        syntax_limit_b = 1024 * 1024, -- no syntax highlighting above 1 MB
+        syntax_limit_b = 1024 * 1024,
         limit_b = 1024 * 1024 * 10,
         treesitter = {
           enabled = true,
@@ -164,23 +141,22 @@ function M.opts()
     grep = {
       rg_opts = "--column --line-number --no-heading --color=always --smart-case "
         .. "--max-columns=4096 -g '!node_modules' -g '!dist' -g '!coverage' -e",
-      rg_glob = true, -- `foo -- *.ts` narrows live_grep with a glob
+      rg_glob = true,
       glob_flag = "--iglob",
       glob_separator = "%s%-%-",
     },
     lsp = {
       async_or_timeout = 5000,
-      jump1 = true, -- a single result opens directly (gd)
-      includeDeclaration = false, -- references without the declaration itself
+      jump1 = true,
+      includeDeclaration = false,
       symbols = {
         locate = false,
         async_or_timeout = true,
-        symbol_style = 1, -- icon + kind
+        symbol_style = 1,
         symbol_icons = icons.kinds,
       },
     },
     diagnostics = {
-      -- `severity_limit` stays unset: every severity is listed.
       file_icons = false,
       color_headings = true,
       diag_icons = true,
@@ -197,7 +173,6 @@ function M.opts()
           ["ctrl-x"] = { fn = actions.git_reset, reload = true },
         },
       },
-      -- git-delta, when installed, is picked up as the preview pager.
       commits = { preview = "git show --color {1}" },
       branches = { remotes = "local" },
       stash = { preview = "git --no-pager stash show --patch --color {1}" },
@@ -209,7 +184,7 @@ function M.opts()
     },
     oldfiles = {
       include_current_session = true,
-      cwd_only = true, -- recent files of this project only
+      cwd_only = true,
       stat_file = true,
       ignore_current_buffer = true,
     },
@@ -251,7 +226,6 @@ M.keys = {
   { "<leader>fc", pick("commands"), desc = "Commands" },
   { "<leader>fq", pick("quickfix"), desc = "Quickfix list" },
   { "<leader>fR", pick("resume"), desc = "Resume last picker" },
-  -- LSP client info is `<leader>li` (settings/lsp/lspconfig.lua), not a picker.
   { "<leader>gs", pick("git_status"), desc = "Git status" },
   { "<leader>gC", pick("git_commits"), desc = "Git commits" },
   { "<leader>gb", pick("git_branches"), desc = "Git branches" },

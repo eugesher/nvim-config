@@ -1,12 +1,3 @@
--- defaults verified against conform.nvim v9.1.0-97-g016802d (2026-09-11)
---
--- Formatting on save and on demand. Prettier (through the prettierd daemon)
--- formats the web stack, stylua formats Lua. ESLint only lints: its
--- `prettier/prettier` rule is silenced at the server
--- (settings/lsp/servers/eslint.lua) and it never fixes on save — if a
--- "Delete `␊`" diagnostic shows up, look at `rulesCustomizations` there.
--- After editing .prettierrc run `prettierd restart` (it is a daemon).
-
 local user = require("user.settings")
 
 local M = {}
@@ -14,12 +5,10 @@ local M = {}
 M.event = { "BufWritePre" }
 M.cmd = { "ConformInfo" }
 
--- Prettier through its daemon; the plain CLI only when prettierd is missing.
 local function prettier()
   return { "prettierd", "prettier", stop_after_first = true }
 end
 
--- Commands and the global default exist before conform is loaded.
 function M.init()
   vim.g.disable_autoformat = not user.formatting.format_on_save
   vim.api.nvim_create_user_command("FormatDisable", function(args)
@@ -45,27 +34,24 @@ M.opts = {
     javascriptreact = prettier(),
     json = prettier(),
     jsonc = prettier(),
-    yaml = prettier(), -- also yaml.docker-compose: conform tries each part of a compound filetype
+    yaml = prettier(),
     html = prettier(),
     css = prettier(),
     scss = prettier(),
     markdown = prettier(),
     graphql = prettier(),
     lua = { "stylua" },
-    -- sh: no formatter — shfmt is not installed (and defaults to tabs without
-    -- an .editorconfig). Add { "shfmt" } plus the Mason package to opt in.
   },
   default_format_opts = {
-    lsp_format = "fallback", -- no formatter configured → ask the language server
+    lsp_format = "fallback",
     timeout_ms = user.formatting.timeout_ms,
     quiet = false,
-    stop_after_first = false, -- per filetype, see `prettier()` above
+    stop_after_first = false,
   },
   format_on_save = function(bufnr)
     if vim.g.disable_autoformat or vim.b[bufnr].disable_autoformat then
       return
     end
-    -- Real files only: no help, terminal or plugin panel buffers.
     if vim.bo[bufnr].buftype ~= "" then
       return
     end
@@ -76,18 +62,14 @@ M.opts = {
     if size > user.formatting.max_filesize then
       return
     end
-    return {} -- everything else from `default_format_opts`
+    return {}
   end,
-  -- `format_after_save` stays unset: formatting is synchronous, before the write.
-  -- The built-in definitions already do the right thing: prettierd runs in the
-  -- project root and picks up its Prettier and .prettierrc; stylua searches for
-  -- stylua.toml from the file upwards (nvim/stylua.toml for this config).
   formatters = {
     prettierd = { inherit = true },
     stylua = { inherit = true },
   },
   notify_on_error = true,
-  notify_no_formatters = false, -- plain text files have none, that is fine
+  notify_no_formatters = false,
   log_level = vim.log.levels.WARN,
 }
 
@@ -99,7 +81,6 @@ M.keys = {
   {
     "<leader>cf",
     function()
-      -- In visual mode conform formats just the selection.
       require("conform").format()
     end,
     mode = { "n", "x" },

@@ -1,17 +1,7 @@
--- defaults verified against bufferline.nvim v4.9.1 (2026-09-11)
---
--- Buffer tab line, plus `safe_buffer_delete` — the only way this config closes
--- buffers. It goes through bufdelete.nvim, which keeps the window layout.
-
 local icons = require("settings.icons")
 
 local M = {}
 
---- Closes a buffer without closing the windows that show it. Used by the tab
---- close icon, right click, `<leader>bd` / `<leader>bD` and `<leader>q`; the
---- config never calls `:bdelete` directly.
----@param bufnr? integer buffer to close (nil or 0: the current one)
----@param force? boolean discard unsaved changes instead of prompting
 function M.safe_buffer_delete(bufnr, force)
   if bufnr == nil or bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
@@ -26,36 +16,30 @@ end
 M.event = "VeryLazy"
 
 function M.init()
-  -- `options.hover` needs mouse-move events to reveal the close icon.
   vim.o.mousemoveevent = true
 end
 
 M.opts = {
   options = {
     mode = "buffers",
-    -- `style_preset` is set in `config`: it needs the loaded module.
     themable = true,
-    numbers = "ordinal", -- `<leader>1..9` jump by this number
+    numbers = "ordinal",
     close_command = close,
     right_mouse_command = close,
     left_mouse_command = "buffer %d",
-    -- `middle_mouse_command` stays unset (no action), as upstream.
     indicator = { style = "underline" },
     buffer_close_icon = icons.ui.close,
     modified_icon = icons.ui.dot,
     close_icon = icons.ui.close,
     left_trunc_marker = icons.ui.arrow_left,
     right_trunc_marker = icons.ui.arrow_right,
-    -- `name_formatter`, `custom_filter`, `get_element_icon` stay unset:
-    -- plain file names, every listed buffer, icons from nvim-web-devicons.
     max_name_length = 24,
-    max_prefix_length = 18, -- prefix shown when two buffers share a name
+    max_prefix_length = 18,
     truncate_names = true,
     tab_size = 24,
     diagnostics = "nvim_lsp",
     diagnostics_update_in_insert = false,
     diagnostics_update_on_event = true,
-    -- Errors and warnings only; hints/info would crowd every tab.
     diagnostics_indicator = function(_, _, counts)
       local parts = {}
       if counts.error then
@@ -74,13 +58,11 @@ M.opts = {
         highlight = "Directory",
         separator = true,
       },
-      -- No entry for trouble: `offsets` reserves room in the
-      -- tab line for a *side* panel, and the problems list is a bottom split.
     },
     color_icons = true,
     show_buffer_icons = true,
     show_buffer_close_icons = true,
-    show_close_icon = false, -- per-tab icons and `<leader>bo` cover it
+    show_close_icon = false,
     show_tab_indicators = true,
     show_duplicate_prefix = true,
     duplicates_across_groups = true,
@@ -100,8 +82,6 @@ M.opts = {
 function M.config(_, opts)
   local bufferline = require("bufferline")
   opts.options.style_preset = bufferline.style_preset.default
-  -- Built here, not at import time: catppuccin's theme needs its options, and
-  -- catppuccin is loaded first (`lazy = false`, `priority = 1000`).
   opts.highlights = require("settings.ui.theme").bufferline_highlights()
   bufferline.setup(opts)
 end
@@ -128,9 +108,6 @@ M.keys = {
   { "<leader>b<lt>", "<cmd>BufferLineMovePrev<CR>", desc = "Move buffer left" },
   { "<leader>q", delete_current, desc = "Delete buffer" },
 }
--- `go_to(i, true)`: the absolute position, i.e. the ordinal shown on the tab.
--- `:BufferLineGoToBuffer i` counts only visible tabs, so once the line is
--- truncated the key and the label would disagree.
 for i = 1, 9 do
   M.keys[#M.keys + 1] = {
     "<leader>" .. i,

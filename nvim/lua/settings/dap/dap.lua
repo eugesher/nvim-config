@@ -1,26 +1,10 @@
--- defaults verified against nvim-dap v0.10.0-68-gcfa2d58 (2026-09-12)
---
--- Debug Adapter Protocol client: breakpoints, stepping, stack and variables for
--- Node.js and TypeScript. The adapter is js-debug-adapter (the Mason package of
--- microsoft/vscode-js-debug), configured directly — nvim-dap-vscode-js has been
--- unmaintained since 2022. The panel is settings/dap/dap-view.lua.
---
--- nvim-dap has no setup(): everything is assigned in `config`, which lazy.nvim
--- runs on the first <leader>d key.
---
--- `.vscode/launch.json` needs no code here: nvim-dap reads it on every
--- dap.continue() through its built-in `dap.launch.json` config provider.
--- dap.ext.vscode.load_launchjs() is deprecated and only warns.
-
 local icons = require("settings.icons").dap
 
 local M = {}
 
--- Entry point of the adapter inside the Mason package.
 local function server_path()
   return vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
 end
--- `:checkhealth myconfig` checks the same file (lua/myconfig/health.lua).
 M.server_path = server_path
 
 local function conditional_breakpoint()
@@ -34,14 +18,11 @@ end
 local function log_point()
   vim.ui.input({ prompt = "Log point message: " }, function(message)
     if message and message ~= "" then
-      -- Third parameter: the message is logged instead of stopping.
       require("dap").set_breakpoint(nil, nil, message)
     end
   end)
 end
 
--- <leader>da: the attach configuration straight away, without picking from the
--- list that <leader>dc shows.
 local function attach_to_process()
   local dap = require("dap")
   local filetype = vim.bo.filetype
@@ -68,12 +49,10 @@ local function dap_call(method, ...)
 end
 
 M.keys = {
-  -- Breakpoints.
   { "<leader>db", dap_call("toggle_breakpoint"), desc = "Toggle breakpoint" },
   { "<leader>dB", conditional_breakpoint, desc = "Conditional breakpoint" },
   { "<leader>dp", log_point, desc = "Log point" },
   { "<leader>dx", dap_call("clear_breakpoints"), desc = "Clear all breakpoints" },
-  -- Session control. The F-keys are the VS Code ones, as muscle memory.
   { "<leader>dc", dap_call("continue"), desc = "Continue / start" },
   { "<F5>", dap_call("continue"), desc = "Debug: continue / start" },
   { "<leader>do", dap_call("step_over"), desc = "Step over" },
@@ -87,7 +66,6 @@ M.keys = {
   { "<S-F5>", dap_call("terminate"), desc = "Debug: terminate session" },
   { "<leader>dl", dap_call("run_last"), desc = "Run last configuration" },
   { "<leader>da", attach_to_process, desc = "Attach to process" },
-  -- Inspecting a stopped session.
   { "<leader>dr", dap_call("repl", "toggle"), desc = "Toggle REPL" },
   {
     "<leader>de",
@@ -101,8 +79,6 @@ M.keys = {
   { "<leader>dk", dap_call("up"), desc = "Up the stack" },
   { "<leader>df", widget("frames"), desc = "Frames" },
   { "<leader>ds", widget("scopes"), desc = "Scopes" },
-  -- The panel and the inline values (settings/dap/dap-view.lua,
-  -- settings/dap/dap-virtual-text.lua).
   { "<leader>du", "<cmd>DapViewToggle<cr>", desc = "Toggle debugger panel" },
   {
     "<leader>dw",
@@ -113,11 +89,6 @@ M.keys = {
   { "<leader>dv", "<cmd>DapVirtualTextToggle<cr>", desc = "Toggle inline values" },
 }
 
--- The five signs nvim-dap draws. Colors come from catppuccin's `dap`
--- integration; only the line of the stopped frame needs a group of its own
--- (settings/ui/theme.lua). With the colorscheme off none of these groups is
--- defined, so the signs are drawn exactly like with nvim-dap's own `SignColumn`
--- and `debugPC` (Neovim's default colorscheme has no `debugPC` either).
 local SIGNS = {
   DapBreakpoint = { text = icons.breakpoint, texthl = "DapBreakpoint" },
   DapBreakpointCondition = { text = icons.condition, texthl = "DapBreakpointCondition" },
@@ -131,9 +102,8 @@ local SIGNS = {
   },
 }
 
--- Fields shared by every configuration below.
 local COMMON = {
-  sourceMaps = true, -- stop in the .ts file, not in compiled .js
+  sourceMaps = true,
   outFiles = { "${workspaceFolder}/dist/**/*.js", "!**/node_modules/**" },
   skipFiles = { "<node_internals>/**", "${workspaceFolder}/node_modules/**" },
   resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
@@ -155,9 +125,6 @@ local function node_configurations()
       processId = require("dap.utils").pick_process,
       cwd = "${workspaceFolder}",
     }),
-    -- `nest start --debug` on this machine. No localRoot / remoteRoot here:
-    -- the pair tells js-debug the process runs somewhere else, and against a
-    -- local process breakpoints then stay "provisional" and never fire.
     with_common({
       type = "pwa-node",
       request = "attach",
@@ -167,9 +134,6 @@ local function node_configurations()
       restart = true,
       cwd = "${workspaceFolder}",
     }),
-    -- The same port forwarded out of a container. Here the pair is required,
-    -- otherwise the container paths the adapter reports match nothing locally.
-    -- Inside the container: --inspect=0.0.0.0:9229, port published outside.
     with_common({
       type = "pwa-node",
       request = "attach",
@@ -181,8 +145,6 @@ local function node_configurations()
       localRoot = "${workspaceFolder}",
       remoteRoot = "/usr/src/app",
     }),
-    -- tsconfig-paths/register: NestJS projects resolve `@app/...` aliases
-    -- through tsconfig `paths`, and ts-node alone does not.
     with_common({
       type = "pwa-node",
       request = "launch",
@@ -203,8 +165,6 @@ local function node_configurations()
   }
 end
 
--- Opening the panel takes the bottom split; trouble is closed first, but only
--- when it is already loaded — never pulled in just to be closed.
 local function open_panel()
   local trouble = package.loaded["trouble"]
   if trouble then
@@ -213,10 +173,6 @@ local function open_panel()
   vim.cmd("DapViewOpen")
 end
 
--- The bang hides the debugee's terminal too, but js-debug spawns a child
--- session per process and each gets a terminal window, of which the command
--- only hides one. The rest are closed here, so the layout returns to what it
--- was before the session.
 local function close_panel()
   vim.cmd("DapViewClose!")
   for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
@@ -244,39 +200,25 @@ function M.config()
     )
   end
 
-  -- host, port and the two args are all required: without them nvim-dap
-  -- cannot start the server and the session dies silently.
   dap.adapters["pwa-node"] = {
     type = "server",
     host = "127.0.0.1",
-    port = "${port}", -- nvim-dap picks a free port and substitutes it in `args`
+    port = "${port}",
     executable = {
       command = "node",
       args = { server, "${port}", "127.0.0.1" },
     },
   }
 
-  -- Both filetypes get the same list; `.vscode/launch.json` entries are added
-  -- by nvim-dap itself on top of these.
   for _, filetype in ipairs({ "typescript", "javascript" }) do
     dap.configurations[filetype] = node_configurations()
   end
 
-  -- Client behavior (dap.defaults), stated explicitly.
   local fallback = dap.defaults.fallback
   fallback.exception_breakpoints = { "uncaught" }
-  fallback.focus_terminal = false -- the debugee's terminal does not steal focus
-  fallback.switchbuf = "usevisible,usetab,uselast" -- no jumps within a visible frame
-  -- `terminal_win_cmd` is deliberately not set: nvim-dap's help warns that UI
-  -- extensions drive it, and dap-view points the debugee's terminal at its own
-  -- window. Overriding it leaves a second terminal window behind after the
-  -- session ends.
+  fallback.focus_terminal = false
+  fallback.switchbuf = "usevisible,usetab,uselast"
 
-  -- The panel follows the session. dap-view's own `auto_toggle` stays off: the
-  -- bottom split is shared with trouble and the test output, and deciding who
-  -- gets it is this config's business.
-  -- The key must not be "dap-view": the plugin registers its own listeners
-  -- under that name and ours would silently replace each other.
   dap.listeners.before.launch["settings_dap_panel"] = open_panel
   dap.listeners.before.attach["settings_dap_panel"] = open_panel
   dap.listeners.before.event_terminated["settings_dap_panel"] = close_panel

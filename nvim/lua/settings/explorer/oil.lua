@@ -1,10 +1,3 @@
--- defaults verified against oil.nvim v2.16.0-8-gb73018b (2026-09-12)
---
--- A directory as an editable buffer: rename, move, create and delete files by
--- editing lines, applied on `:w`. Renames go through LSP
--- `workspace/willRenameFiles`, so vtsls fixes imports in other files.
--- Directories themselves open in neo-tree (settings/explorer/neotree.lua).
-
 local user = require("user.settings")
 
 local M = {}
@@ -21,12 +14,9 @@ M.keys = {
   },
 }
 
--- Entries never listed, even with hidden files shown (`g.`).
 local ALWAYS_HIDDEN = { [".git"] = true, ["node_modules"] = true }
 
 M.opts = {
-  -- Must stay false: otherwise oil takes over directory buffers and `nvim .`
-  -- opens oil instead of neo-tree.
   default_file_explorer = false,
   columns = { "icon" },
   buf_options = {
@@ -43,7 +33,6 @@ M.opts = {
     conceallevel = 3,
     concealcursor = "nvic",
   },
-  -- FreeDesktop trash on Linux; browse it with `g\`.
   delete_to_trash = true,
   skip_confirm_for_simple_edits = false,
   prompt_save_on_select_new_entry = true,
@@ -51,13 +40,10 @@ M.opts = {
   lsp_file_methods = {
     enabled = true,
     timeout_ms = 1000,
-    -- Save the buffers the language server edited (e.g. fixed imports).
     autosave_changes = true,
   },
   constrain_cursor = "editable",
   watch_for_changes = true,
-  -- Defaults minus GUI combos (<C-s> split, <C-c> close) and the window
-  -- navigation keys <C-h>/<C-l> (core/keymaps.lua), which stay global here.
   keymaps = {
     ["g?"] = { "actions.show_help", mode = "n" },
     ["<CR>"] = "actions.select",
@@ -86,7 +72,6 @@ M.opts = {
       return ALWAYS_HIDDEN[name] == true
     end,
     natural_order = "fast",
-    -- Same order as the tree (neo-tree `sort_case_insensitive`).
     case_insensitive = true,
     sort = {
       { "type", "asc" },
@@ -98,7 +83,6 @@ M.opts = {
   },
   extra_scp_args = {},
   extra_s3_args = {},
-  -- Experimental: git add/mv/rm alongside file operations. Off — git is done by hand.
   git = {
     add = function()
       return false

@@ -1,17 +1,9 @@
--- defaults verified against blink.cmp v1.10.2 (2026-09-11)
---
--- Completion engine. Pinned to 1.x in plugins/completion.lua. Default
--- implementations that are code rather than settings (menu components,
--- documentation `draw`, buffer `get_bufnrs`, …) are left to blink.cmp.
-
 local user = require("user.settings")
 local icons = require("settings.icons")
 local sql_filetypes = require("settings.database.dadbod-completion").ft
 
 local M = {}
 
--- Schema-aware SQL completion (vim-dadbod-completion) on top of the defaults,
--- in SQL buffers only.
 local function per_filetype()
   local sources = {}
   for _, filetype in ipairs(sql_filetypes) do
@@ -23,13 +15,10 @@ end
 M.event = { "InsertEnter", "CmdlineEnter" }
 
 M.opts = {
-  -- Default conditions still apply (no prompt buffers, `vim.b.completion ~= false`).
   enabled = function()
     return true
   end,
 
-  -- Every key listed by hand. <Tab> / <S-Tab> only jump through snippet fields,
-  -- they never accept a completion. <C-s> stays Neovim's signature help.
   keymap = {
     preset = "none",
     ["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
@@ -53,7 +42,7 @@ M.opts = {
   },
 
   completion = {
-    keyword = { range = "prefix" }, -- match only the text before the cursor
+    keyword = { range = "prefix" },
     trigger = {
       prefetch_on_insert = true,
       show_in_snippet = true,
@@ -72,8 +61,8 @@ M.opts = {
     list = {
       max_items = 200,
       selection = {
-        preselect = true, -- <CR> accepts the first item right away
-        auto_insert = false, -- moving through the list does not touch the buffer
+        preselect = true,
+        auto_insert = false,
       },
       cycle = { from_bottom = true, from_top = true },
     },
@@ -114,7 +103,7 @@ M.opts = {
         gap = 1,
         cursorline_priority = 10000,
         snippet_indicator = "~",
-        treesitter = { "lsp" }, -- highlight LSP labels with treesitter
+        treesitter = { "lsp" },
         columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" } },
       },
     },
@@ -137,7 +126,6 @@ M.opts = {
         },
       },
     },
-    -- On purpose: no AI plugin in the stack, so nothing else draws ghost text.
     ghost_text = {
       enabled = true,
       show_with_selection = true,
@@ -173,13 +161,10 @@ M.opts = {
   },
 
   fuzzy = {
-    -- Rust matcher (prebuilt binary for the pinned tag); falls back to Lua with
-    -- a warning. Without network access, set "lua".
     implementation = "prefer_rust_with_warning",
     max_typos = function(keyword)
       return math.floor(#keyword / 4)
     end,
-    -- `use_frecency` is the deprecated name of `frecency.enabled`.
     frecency = {
       enabled = true,
       path = vim.fn.stdpath("state") .. "/blink/cmp/frecency.dat",
@@ -190,15 +175,12 @@ M.opts = {
     prebuilt_binaries = {
       download = true,
       ignore_version_mismatch = false,
-      -- `force_version` / `force_system_triple` stay unset: inferred from the git tag and jit.os / jit.arch.
       extra_curl_args = {},
       proxy = { from_env = true },
     },
   },
 
   sources = {
-    -- Never `dadbod` here, or SQL suggestions would show up in TypeScript. Its
-    -- filetypes are the lazy-loading trigger of vim-dadbod-completion.
     default = { "lsp", "snippets", "path", "buffer" },
     per_filetype = per_filetype(),
     transform_items = function(_, items)
@@ -208,7 +190,7 @@ M.opts = {
     providers = {
       lsp = {
         score_offset = 100,
-        fallbacks = { "buffer" }, -- buffer words only when the server has nothing
+        fallbacks = { "buffer" },
       },
       snippets = {
         score_offset = 80,
@@ -238,24 +220,21 @@ M.opts = {
           max_total_buffer_size = 500000,
           retention_order = { "focused", "visible", "recency", "largest" },
           use_cache = true,
-          enable_in_ex_commands = false, -- would switch off 'inccommand' previews
+          enable_in_ex_commands = false,
         },
       },
-      -- vim-dadbod-completion's own blink source (settings/database/dadbod-completion.lua).
       dadbod = {
         name = "Dadbod",
         module = "vim_dadbod_completion.blink",
-        score_offset = 90, -- tables and columns above snippets
+        score_offset = 90,
       },
     },
   },
 
-  -- LuaSnip expands and jumps (settings/completion/luasnip.lua).
   snippets = { preset = "luasnip", score_offset = -3 },
 
   cmdline = {
     enabled = true,
-    -- In the command line <Tab> completes, as it always has.
     keymap = {
       preset = "none",
       ["<Tab>"] = { "show_and_insert_or_accept_single", "select_next" },
@@ -276,7 +255,6 @@ M.opts = {
       },
       list = { selection = { preselect = true, auto_insert = true } },
       menu = {
-        -- The menu opens on <Tab>, not while typing (always in the cmdwin).
         auto_show = function(ctx)
           return ctx.mode == "cmdwin"
         end,
@@ -285,7 +263,6 @@ M.opts = {
     },
   },
 
-  -- No completion inside :terminal buffers.
   term = { enabled = false },
 }
 

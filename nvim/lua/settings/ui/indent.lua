@@ -1,19 +1,14 @@
--- defaults verified against indent-blankline.nvim v3.10.1 (2026-09-11)
---
--- Indent guides with the current scope highlighted (scope needs a treesitter
--- parser).
-
 local M = {}
 
 M.event = { "BufReadPost", "BufNewFile" }
 
 M.opts = {
   enabled = true,
-  debounce = 200, -- ms between refreshes
-  viewport_buffer = { min = 30 }, -- lines beyond the viewport; `max` is deprecated
+  debounce = 200,
+  viewport_buffer = { min = 30 },
   indent = {
     char = "│",
-    tab_char = "»", -- tabs stand out, same glyph as 'listchars'
+    tab_char = "»",
     highlight = "IblIndent",
     smart_indent_cap = true,
     priority = 1,
@@ -26,7 +21,7 @@ M.opts = {
   scope = {
     enabled = true,
     char = "│",
-    show_start = false, -- no underline on the scope's first line
+    show_start = false,
     show_end = false,
     show_exact_scope = false,
     injected_languages = true,
@@ -43,7 +38,6 @@ M.opts = {
     },
   },
   exclude = {
-    -- Upstream defaults (minus packer/telescope, not in the stack) + side panels.
     filetypes = {
       "",
       "checkhealth",

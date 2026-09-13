@@ -1,21 +1,7 @@
--- defaults verified against auto-session v2.5.1-196-g02a5588 (2026-09-12)
---
--- One session per project directory (and per git branch): window layout, buffers
--- and folds come back on the next `nvim` in that directory. `sessionoptions`
--- carries `localoptions` (core/options.lua) — without it filetype-local settings
--- and buffer-local keymaps are lost on restore.
---
--- Commands are the modern `:AutoSession <verb>` form; the legacy `:Session*`
--- aliases are switched off rather than left to shadow them.
-
 local M = {}
 
--- Eager: a session has to be restored before the first buffer is opened.
 M.lazy = false
 
--- Panels that must never end up in a saved session — a restored layout with an
--- empty tree, a dead debugger panel or an empty problems list is worse than no
--- session at all. **Extend this list whenever a new panel joins the config.**
 local PANELS = {
   "neo-tree",
   "oil",
@@ -65,42 +51,29 @@ M.keys = {
 }
 
 M.opts = {
-  -- Saving / restoring.
   enabled = true,
   auto_save = true,
   auto_restore = true,
   auto_create = true,
-  -- Starting `nvim` in a directory with no session of its own must not drag in
-  -- somebody else's layout.
   auto_restore_last_session = false,
-  cwd_change_handling = false, -- `:cd` does not switch sessions
+  cwd_change_handling = false,
   single_session_mode = false,
 
-  -- Filtering.
-  -- Globs: a session in the home directory or in / would collect every file
-  -- ever opened there.
   suppressed_dirs = { "~/", "~/Downloads", "/", "/tmp" },
-  allowed_dirs = nil, -- every other directory is allowed
-  -- Nothing is saved when a panel is the only thing left open…
+  allowed_dirs = nil,
   bypass_save_filetypes = PANELS,
-  -- …and panels are closed before saving, so they cannot come back empty.
   close_filetypes_on_save = PANELS,
-  close_unsupported_windows = true, -- windows without a real file behind them
-  preserve_buffer_on_restore = nil, -- every buffer of the session is restored
+  close_unsupported_windows = true,
+  preserve_buffer_on_restore = nil,
 
-  -- Git / session naming: a branch is a different working state, so it gets its
-  -- own session. Switching branches inside a running Neovim does not swap the
-  -- session — that would rearrange the windows under the cursor.
   git_use_branch_name = true,
   git_auto_restore_on_branch_change = false,
   custom_session_tag = nil,
   resolve_symlinks = false,
 
-  -- Deleting.
   auto_delete_empty_sessions = true,
-  purge_after_minutes = nil, -- sessions are kept until `<leader>sp`
+  purge_after_minutes = nil,
 
-  -- Saving extra data: DAP breakpoints travel with the session.
   save_extra_data = function(_)
     local ok, breakpoints = pcall(require, "dap.breakpoints")
     if not ok then
@@ -141,32 +114,25 @@ M.opts = {
     end
   end,
 
-  -- Argument handling: `nvim .` restores the session of that directory,
-  -- `nvim file.ts` opens just the file and saves nothing.
   args_allow_single_directory = true,
   args_allow_files_auto_save = false,
 
-  -- Misc.
   log_level = "error",
-  -- Sessions are state, not data: they describe one machine's windows and are
-  -- worthless on another one.
   root_dir = vim.fn.stdpath("state") .. "/sessions/",
   show_auto_restore_notif = false,
-  restore_error_handler = nil, -- the built-in one ignores fold and help errors
+  restore_error_handler = nil,
   continue_restore_on_error = true,
   lsp_stop_on_restore = false,
-  save_and_restore_shada = false, -- ShaDa is global; a session is per project
-  lazy_support = true, -- wait for lazy.nvim before restoring
-  legacy_cmds = false, -- only `:AutoSession <verb>`, no `:Session*` aliases
+  save_and_restore_shada = false,
+  lazy_support = true,
+  legacy_cmds = false,
 
   session_lens = {
-    picker = "fzf", -- telescope is not part of this config
-    load_on_setup = true, -- telescope-only, stated for completeness
-    picker_opts = nil, -- fzf-lua's own window options apply (settings/finder/fzf.lua)
-    previewer = "summary", -- the files and the layout the session would restore
-    shorten_paths = true, -- `~` instead of the home directory
-    -- Keys inside the picker, in insert mode — the same layer fzf-lua itself
-    -- uses for its actions.
+    picker = "fzf",
+    load_on_setup = true,
+    picker_opts = nil,
+    previewer = "summary",
+    shorten_paths = true,
     mappings = {
       delete_session = { "i", "<C-d>" },
       alternate_session = { "i", "<C-s>" },
@@ -178,9 +144,6 @@ M.opts = {
     },
   },
 
-  -- Hooks. Empty on purpose: `close_filetypes_on_save` already closes every
-  -- panel before the session is written, so there is
-  -- nothing left for a pre-save command to do.
   pre_save_cmds = {},
   post_save_cmds = {},
   pre_restore_cmds = {},

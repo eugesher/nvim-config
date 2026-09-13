@@ -1,12 +1,3 @@
--- defaults verified against diffview.nvim @4516612 (2026-09-12)
---
--- Diffs of the working tree / index / commits, file history and the 3-way
--- merge tool. Default keys that would shadow the global namespaces inside a
--- diffview tab are moved (the old ones are disabled with `false`):
---   <leader>e / <leader>b (explorer / buffers) → <localleader>e / <localleader>b
---   <leader>c* conflict choices (code / LSP)    → <leader>gx* (group "conflicts")
---   <C-A-d> (the Alt layer is not used)          → <localleader>d
-
 local icons = require("settings.icons")
 
 local M = {}
@@ -24,11 +15,9 @@ M.keys = {
   { "<leader>gD", "<cmd>DiffviewClose<cr>", desc = "Close diff view" },
   { "<leader>gf", "<cmd>DiffviewFileHistory %<cr>", desc = "File history" },
   { "<leader>gF", "<cmd>DiffviewFileHistory<cr>", desc = "Repository history" },
-  -- During a merge / rebase DiffviewOpen shows conflicted files in the merge tool.
   { "<leader>gm", "<cmd>DiffviewOpen<cr>", desc = "Merge tool (conflicts)" },
 }
 
--- A function: the keymaps need `diffview.actions`, available once the plugin loads.
 function M.opts()
   local actions = require("diffview.actions")
 
@@ -46,7 +35,6 @@ function M.opts()
     return result
   end
 
-  -- Shared by the view and both panels.
   local entries = {
     map("n", "<tab>", actions.select_next_entry, "Open the diff for the next file"),
     map("n", "<s-tab>", actions.select_prev_entry, "Open the diff for the previous file"),
@@ -118,8 +106,6 @@ function M.opts()
       fold_open = icons.ui.chevron_down,
       done = icons.ui.check,
     },
-    -- Diagnostics off in every view: LSP floods conflict markers (<<<<<<<) and
-    -- historical file versions with errors.
     view = {
       default = {
         layout = "diff2_horizontal",
@@ -163,7 +149,6 @@ function M.opts()
     hooks = {},
     keymaps = {
       disable_defaults = false,
-      -- Diff buffers, while the current tabpage is a diffview.
       view = list(entries, conflict_nav, {
         map("n", "<leader>gxo", actions.conflict_choose("ours"), "Conflict: choose OURS"),
         map("n", "<leader>gxt", actions.conflict_choose("theirs"), "Conflict: choose THEIRS"),

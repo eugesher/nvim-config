@@ -1,13 +1,7 @@
--- defaults verified against nvim-treesitter-context v1.0.0-26-gf306133 (2026-09-11)
---
--- Sticky header: the enclosing function / class stays visible at the top of the
--- window while scrolling through its body (like WebStorm's sticky lines).
-
 local M = {}
 
 M.event = { "BufReadPost", "BufNewFile" }
 
--- Side panels and auxiliary buffers never get a context window.
 local excluded = {
   "neo-tree",
   "trouble",
@@ -24,14 +18,13 @@ local excluded = {
 
 M.opts = {
   enable = true,
-  multiwindow = false, -- only the current window
-  max_lines = 3, -- at most three context lines
-  min_window_height = 20, -- no context in small splits
+  multiwindow = false,
+  max_lines = 3,
+  min_window_height = 20,
   line_numbers = true,
-  multiline_threshold = 20, -- lines of a single multi-line context node
-  trim_scope = "outer", -- over `max_lines`, drop the outermost scopes first
-  mode = "cursor", -- context of the cursor line, not of the top line
-  -- `separator` stays unset: catppuccin underlines the last context line instead.
+  multiline_threshold = 20,
+  trim_scope = "outer",
+  mode = "cursor",
   zindex = 20,
   on_attach = function(buf)
     return not vim.tbl_contains(excluded, vim.bo[buf].filetype)

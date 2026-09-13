@@ -12,7 +12,7 @@ explains how the code is organized and which decisions must not be "fixed".
 nvim                                                  # first start: lazy.nvim installs plugins, Mason installs servers
 stylua --check nvim/                                  # or: npx --yes @johnnymorganz/stylua-bin --check nvim/
 nvim --headless -l scripts/audit-keymaps.lua          # keymap audit, must exit 0
-nvim --headless -l scripts/dump-keymaps.lua --readme  # regenerate the key tables in README.md
+nvim --headless -l scripts/dump-keymaps.lua --write   # regenerate the key tables in KEYMAP.md
 nvim --headless -c 'lua print(vim.inspect(require("lazy").stats()))' -c qa
 ```
 
@@ -65,8 +65,11 @@ lsp/mason).
 - **Options explicitly, defaults included — but only documented ones** (README,
   `:help`, or the config file the plugin's docs name as the reference). Never dig
   out undocumented internal fields.
-- The first line of every settings module:
-  `-- defaults verified against <plugin> vX.Y.Z (YYYY-MM-DD)` (or `@<commit>`).
+- No explanatory comments in code: Lua, shell scripts and the scripts in `.http`
+  files. An explanation that matters goes to README.md ("Implementation notes");
+  the reason for a keymap audit exception goes to KEYMAP.md ("Audit exceptions").
+  Two kinds of comments stay: tool directives (`---@diagnostic` for lua_ls) and
+  commented-out code the user keeps (`settings/ui/theme.lua`).
 - Values a user may want to change go into `lua/user/settings.lua` and are read
   from there, never hard-coded in a settings file.
 - Highlights go into `custom_highlights` in `settings/ui/theme.lua` (never
@@ -100,8 +103,8 @@ lsp/mason).
 - Every keymap has a `desc`, written next to its plugin (`keys` or the module's
   `which_key` field). `settings/whichkey/whichkey.lua` declares groups only.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
-  collision goes into its whitelist with the reason; then regenerate the README
-  tables.
+  collision goes into its whitelist, with the reason under "Audit exceptions" in
+  KEYMAP.md; then regenerate the tables there (`dump-keymaps.lua --write`).
 
 | Prefix | Group | Prefix | Group |
 | --- | --- | --- | --- |
@@ -166,7 +169,7 @@ These look like mistakes or omissions and are not. Change them only on request.
   does not exist; `settings/treesitter/treesitter.lua` starts highlighting, folds
   and indent per buffer, and incremental selection is Neovim's own.
 
-Further decisions recorded in the code, each with its measurement:
+Further decisions, explained in README.md ("Implementation notes"):
 
 - aerial loads on `BufReadPost` with LSP first, so `{` / `}` jump by symbol and
   class fields show up.

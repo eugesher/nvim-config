@@ -1,16 +1,3 @@
--- defaults verified against neogit v3.0.0-221-g5adc81b2 (2026-09-12)
---
--- Git client (magit-like): staging, commits, branches, stash, rebase, merge.
--- Diffs and the merge tool go to diffview (settings/git/diffview.lua), menus
--- (branch selection, …) to fzf-lua. Default keys against the config's key
--- philosophy are moved to the localleader layer (`\`), as in oil:
---   GUI combos <c-c><c-c> / <c-c><c-k> / <c-s> / <c-v> and the Alt layer <m-…>,
---   and ]c / [c, reserved by diff mode (→ ]o / [o).
--- Not set on purpose: `auto_refresh` and `filewatcher.interval` are still in
--- the README but no longer read by the code; `telescope_sorter` — telescope is
--- not used. neogit also adds a few undocumented keys of its own
--- (R, zC/zO/zc in status, L in popups, x in refs view, o in commit view).
-
 local user = require("user.settings")
 local icons = require("settings.icons")
 
@@ -18,7 +5,6 @@ local M = {}
 
 M.cmd = "Neogit"
 
--- <leader>gL is left free on purpose.
 M.keys = {
   { "<leader>gg", "<cmd>Neogit<cr>", desc = "Neogit (status)" },
   { "<leader>gc", "<cmd>Neogit commit<cr>", desc = "Commit" },
@@ -27,7 +13,7 @@ M.keys = {
   { "<leader>gl", "<cmd>Neogit log<cr>", desc = "Log" },
 }
 
-local fold_signs = { icons.ui.chevron_right, icons.ui.chevron_down } -- { CLOSED, OPENED }
+local fold_signs = { icons.ui.chevron_right, icons.ui.chevron_down }
 
 M.opts = {
   treesitter_diff_highlight = false,
@@ -38,12 +24,10 @@ M.opts = {
   git_executable = "git",
   prompt_force_push = true,
   prompt_amend_commit = true,
-  -- Insert mode only when the commit message is empty.
   disable_insert_on_commit = "auto",
   filewatcher = { enabled = true },
   graph_style = "unicode",
   process_spinner = false,
-  -- URL templates for "pull request", "open commit" and "open tree".
   git_services = {
     ["github.com"] = {
       pull_request = "https://github.com/${owner}/${repository}/compare/${branch_name}?expand=1",
@@ -95,7 +79,6 @@ M.opts = {
   notification_icon = icons.keymap_groups.git,
   status = {
     show_head_commit_hash = true,
-    -- Lower it if the status buffer gets slow in a big repository.
     recent_commit_count = 10,
     HEAD_padding = 10,
     HEAD_folded = false,
@@ -140,7 +123,6 @@ M.opts = {
     item = fold_signs,
     section = fold_signs,
   },
-  -- fzf-lua is the only picker.
   integrations = {
     telescope = false,
     diffview = true,
@@ -163,10 +145,9 @@ M.opts = {
     recent = { folded = true, hidden = false },
     rebase = { folded = true, hidden = false },
   },
-  -- `false` removes a default mapping.
   mappings = {
     commit_editor = {
-      ["q"] = "Close", -- asks to save; saving submits, discarding aborts
+      ["q"] = "Close",
       ["<localleader>c"] = "Submit",
       ["<localleader>k"] = "Abort",
       ["<localleader>p"] = "PrevMessage",

@@ -1,37 +1,21 @@
--- defaults verified against lualine.nvim 221ce6b (2026-09-11)
---
--- Status line: a single global bar (`laststatus = 3`, core/options.lua).
--- The nvim-dap and neotest components check `package.loaded` first: they stay
--- empty until those plugins load and never load them themselves.
--- `winbar` stays empty on purpose: dropbar owns it.
-
 local icons = require("settings.icons")
 
 local M = {}
 
 M.event = "VeryLazy"
 
--- Side panels. With a global status line, focusing one keeps the bar on the
--- last code window instead of blanking or describing the panel.
 local panels = { "neo-tree", "trouble", "dbui", "dap-view", "dap-view-term", "dap-repl", "aerial" }
-
--- Components ------------------------------------------------------------------
 
 local function macro_recording()
   local reg = vim.fn.reg_recording()
   return reg == "" and "" or ("recording @" .. reg)
 end
 
--- Latest LSP progress text. Filled by the LspProgress autocmd in `config`:
--- `vim.lsp.status()` consumes the messages, so it is read once per event.
 local lsp_message = ""
 local function lsp_progress()
-  -- The text is inserted into 'statusline' as is: `vim.lsp.status()` reports
-  -- " 45%: Loading workspace", and a bare `%:` there is E539.
   return (lsp_message:gsub("%%", "%%%%"))
 end
 
--- nvim-dap: only while a debug session exists.
 local function dap_active()
   return package.loaded["dap"] ~= nil and require("dap").session() ~= nil
 end
@@ -39,7 +23,6 @@ local function dap_status()
   return icons.dap.stopped .. " " .. require("dap").status()
 end
 
--- neotest: running / failed / passed counts for the current buffer.
 local function neotest_status()
   if not package.loaded["neotest"] then
     return ""
@@ -65,7 +48,6 @@ local function neotest_status()
   return ok and text or ""
 end
 
--- Diff counts from gitsigns (settings/git/gitsigns.lua); empty outside git buffers.
 local function gitsigns_diff()
   local status = vim.b.gitsigns_status_dict
   if status then
@@ -73,14 +55,10 @@ local function gitsigns_diff()
   end
 end
 
--- Options ---------------------------------------------------------------------
-
--- A function: the theme needs catppuccin, which is loaded by the time lualine is.
 function M.opts()
   return {
     options = {
       icons_enabled = true,
-      -- Catppuccin theme with `b`/`c` on the base black, or "auto" (settings/ui/theme.lua).
       theme = require("settings.ui.theme").lualine_theme(),
       component_separators = { left = "│", right = "│" },
       section_separators = { left = "", right = "" },
@@ -88,7 +66,7 @@ function M.opts()
       ignore_focus = panels,
       always_divide_middle = true,
       always_show_tabline = true,
-      globalstatus = true, -- required with 'laststatus' = 3, or the bar doubles up
+      globalstatus = true,
       refresh = {
         statusline = 1000,
         tabline = 1000,
@@ -142,7 +120,7 @@ function M.opts()
           "filename",
           file_status = true,
           newfile_status = true,
-          path = 1, -- relative to the working directory
+          path = 1,
           shorting_target = 40,
           symbols = {
             modified = icons.ui.dot,
@@ -186,7 +164,6 @@ function M.config(_, opts)
     group = group,
     desc = "Show LSP progress in the status line",
     callback = function(event)
-      -- The autocmd pattern is the progress kind: begin / report / end.
       lsp_message = event.match == "end" and "" or vim.lsp.status()
       lualine.refresh()
     end,
@@ -195,7 +172,6 @@ function M.config(_, opts)
     group = group,
     desc = "Show macro recording in the status line",
     callback = function()
-      -- During RecordingLeave the register is still reported: refresh after it.
       vim.schedule(function()
         lualine.refresh()
       end)

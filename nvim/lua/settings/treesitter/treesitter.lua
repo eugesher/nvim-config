@@ -1,24 +1,9 @@
--- defaults verified against nvim-treesitter main@d4d59cb3 (2026-09-11)
---
--- nvim-treesitter `main`: installs parsers and ships queries — nothing more.
--- Highlighting, folds and indentation are switched on per buffer by the
--- FileType autocmd below; the old `configs.setup{ highlight, indent,
--- incremental_selection }` API does not exist on this branch. Incremental
--- selection is built into Neovim 0.12 (`an` / `in`, `]n` / `[n`) and is left alone.
-
 local user = require("user.settings")
 
 local M = {}
 
--- The plugin does not support lazy-loading (README).
 M.lazy = false
 
--- Installed on startup; `install()` skips what is already there. Notes:
---   * no `jsonc`: that parser is gone on `main`, and nvim-treesitter maps the
---     `jsonc` filetype to the `json` parser;
---   * `http` is required by kulala.nvim;
---   * typescript / tsx / javascript are needed by neotest and
---     nvim-dap-virtual-text.
 local parsers = {
   "typescript",
   "tsx",
@@ -43,7 +28,7 @@ local parsers = {
   "markdown",
   "markdown_inline",
   "dockerfile",
-  "hcl", -- docker-bake.hcl
+  "hcl",
   "sql",
   "http",
   "graphql",
@@ -54,10 +39,9 @@ local parsers = {
 }
 
 M.opts = {
-  install_dir = vim.fn.stdpath("data") .. "/site", -- prepended to 'runtimepath'
+  install_dir = vim.fn.stdpath("data") .. "/site",
 }
 
--- Whether a buffer is too large for treesitter (see user/settings.lua).
 local function too_large(buf)
   local limits = user.treesitter
   if vim.api.nvim_buf_get_offset(buf, vim.api.nvim_buf_line_count(buf)) > limits.max_filesize then
@@ -74,14 +58,13 @@ end
 function M.config(_, opts)
   local ts = require("nvim-treesitter")
   ts.setup(opts)
-  ts.install(parsers) -- asynchronous; compiles only the missing ones
+  ts.install(parsers)
 
   vim.api.nvim_create_autocmd("FileType", {
     group = vim.api.nvim_create_augroup("settings_treesitter", { clear = true }),
     desc = "Start treesitter highlighting, folds and indentation",
     callback = function(event)
       local buf = event.buf
-      -- No parser for this filetype: stay silent (e.g. `.env`).
       local lang = vim.treesitter.language.get_lang(event.match)
       local ok, loaded = pcall(vim.treesitter.language.add, lang or "")
       if not (lang and ok and loaded) then
@@ -89,8 +72,6 @@ function M.config(_, opts)
       end
       local in_window = vim.api.nvim_get_current_buf() == buf
       if too_large(buf) then
-        -- The global treesitter 'foldexpr' (core/options.lua) would parse the
-        -- buffer anyway; fall back to manual folds here.
         if in_window then
           vim.wo[0][0].foldmethod = "manual"
         end
