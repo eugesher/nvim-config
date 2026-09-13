@@ -45,6 +45,20 @@ end
 -- falls back to "single" on styles it can't draw.
 local POPUP_BORDERS = { double = true, rounded = true, single = true, solid = true }
 
+-- `user.explorer.width` in columns, never below `user.explorer.min_width`.
+-- A function, which `window` options may be (neo-tree's defaults.lua), rather
+-- than the "25%" string itself: neo-tree also does arithmetic on the raw value
+-- when it renders without a window. Evaluated on every open, so the share
+-- follows the current editor width; an open panel keeps its width on resize
+-- ('winfixwidth').
+local function panel_width()
+  local width = user.explorer.width
+  if type(width) == "string" then
+    width = math.floor(vim.o.columns * tonumber(width:match("^(%d+)%%$")) / 100)
+  end
+  return math.max(width, user.explorer.min_width)
+end
+
 -- `document_symbols` kinds: glyphs from settings/icons, highlight groups as in
 -- neo-tree's defaults.
 local SYMBOL_HIGHLIGHTS = {
@@ -304,7 +318,7 @@ function M.opts()
 
     window = {
       position = user.explorer.position,
-      width = user.explorer.width,
+      width = panel_width,
       height = 15, -- top/bottom positions only
       auto_expand_width = false,
       popup = { -- position = "float" only
