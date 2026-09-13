@@ -8,8 +8,9 @@ return {
     indent_width = 2,
     -- Minimal number of lines kept above/below the cursor.
     scrolloff = 8,
-    -- Relative line numbers (the current line still shows its absolute number).
-    relative_number = true,
+    -- Line numbers are always shown. true: relative to the cursor (the current
+    -- line still shows its absolute number); false: absolute on every line.
+    relative_number = false,
   },
 
   ui = {

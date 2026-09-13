@@ -155,7 +155,7 @@ plain data the rest of the config reads:
 | --- | --- | --- |
 | `editor.indent_width` | `2` | `'shiftwidth'`, `'tabstop'`, `'softtabstop'` |
 | `editor.scrolloff` | `8` | lines kept above and below the cursor |
-| `editor.relative_number` | `true` | relative line numbers |
+| `editor.relative_number` | `false` | relative line numbers; `false` shows absolute ones |
 | `ui.border` | `"rounded"` | border of every floating window (`'winborder'`) |
 | `ui.panel_height` | `12` | height of the bottom panels: Trouble, debugger, test output |
 | `ui.nerd_font` | `true` | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you |
@@ -166,7 +166,7 @@ plain data the rest of the config reads:
 | `treesitter.max_filesize`, `max_line_length` | 1.5 MB, 2000 | larger files get no treesitter |
 | `formatting.format_on_save` | `true` | toggle with `<leader>uf` (buffer) / `<leader>uF` (global) |
 | `formatting.timeout_ms`, `max_filesize` | 3000, 1 MB | how long a formatter may block a save; larger files are not formatted |
-| `explorer.position`, `width`, `min_width`, `hide_gitignored` | `"left"`, `"25%"`, 36, `true` | neo-tree panel; `width` is columns or a share of the editor width, never below `min_width` columns |
+| `explorer.position`, `width`, `min_width`, `hide_gitignored` | `"left"`, `"20%"`, 36, `true` | neo-tree panel; `width` is columns or a share of the editor width, never below `min_width` columns |
 | `http.default_env` | `"dev"` | kulala environment on startup |
 | `coverage.command` | `npm run test:cov` | what `:CoverageRun` executes |
 | `database.position`, `width` | `"left"`, 40 | vim-dadbod-ui drawer |
