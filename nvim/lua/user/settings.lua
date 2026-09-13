@@ -32,7 +32,7 @@ return {
 
   explorer = {
     position = "left",
-    width = "20%",
+    width = "35%",
     min_width = 36,
     hide_gitignored = true,
   },
