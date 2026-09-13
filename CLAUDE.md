@@ -71,6 +71,13 @@ lsp/mason).
   from there, never hard-coded in a settings file.
 - Highlights go into `custom_highlights` in `settings/ui/theme.lua` (never
   `color_overrides`), colors from the catppuccin palette.
+- `user.colorscheme.enabled = false` must leave Neovim's default colorscheme and
+  every plugin's own colors. Color code outside `settings/ui/theme.lua` goes
+  through its helpers (`palette()`, `lualine_theme()`, `bufferline_highlights()`,
+  `neo_tree_handlers()`), which return the plugin default in that case. Never
+  `require("catppuccin…")` elsewhere: the spec switches with `cond` (the plugin
+  stays installed and locked), and lazy.nvim errors on requiring a plugin whose
+  `cond` is false.
 - Glyphs come from `settings/icons.lua` only (Nerd Fonts v3, no padding).
 - A new panel filetype has to be added to every exclusion list: `PANELS` in
   `settings/session/autosession.lua`, `EXCLUDED_FILETYPES` in

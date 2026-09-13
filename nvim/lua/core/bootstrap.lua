@@ -38,7 +38,9 @@ require("lazy").setup({
   },
   install = {
     missing = true,
-    colorscheme = { "catppuccin", "habamax" }, -- used by the installer UI on first run
+    -- Used by the installer UI on first run; "default" keeps Neovim's own
+    -- colorscheme while catppuccin is off (user.colorscheme.enabled).
+    colorscheme = user.colorscheme.enabled and { "catppuccin", "habamax" } or { "default" },
   },
   checker = { enabled = false }, -- no background update checks
   change_detection = { enabled = false, notify = false }, -- no auto-reload on config edits

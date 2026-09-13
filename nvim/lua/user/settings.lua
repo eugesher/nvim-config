@@ -27,6 +27,10 @@ return {
   },
 
   colorscheme = {
+    -- Catppuccin together with every color tweak of this config (backgrounds,
+    -- borders, status line, tabs, sign colors). false: Neovim's default
+    -- colorscheme and each plugin's own colors; the values below are then ignored.
+    enabled = true,
     -- Catppuccin flavor: "latte" | "frappe" | "macchiato" | "mocha".
     flavour = "mocha",
     -- Let the terminal background show through the editor surfaces

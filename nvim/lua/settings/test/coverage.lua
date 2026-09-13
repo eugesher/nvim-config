@@ -98,11 +98,17 @@ function M.init()
   end, { desc = "Run the project's coverage command, then show the report" })
 end
 
+-- Sign colors with the colorscheme off: the plugin's defaults.
+local DEFAULT_SIGN_COLORS = { covered = "#B7F071", uncovered = "#F07178", partial = "#AA71F0" }
+
 function M.opts()
   -- Colors from the active catppuccin flavor: hard-coded hex values would
   -- become unreadable as soon as the flavor changes (settings/ui/theme.lua).
-  local ok, palettes = pcall(require, "catppuccin.palettes")
-  local colors = ok and palettes.get_palette() or {}
+  local palette = require("settings.ui.theme").palette()
+  local sign_colors = DEFAULT_SIGN_COLORS
+  if palette then
+    sign_colors = { covered = palette.green, uncovered = palette.red, partial = palette.yellow }
+  end
   local bar = icons.coverage.bar
 
   return {
@@ -116,9 +122,9 @@ function M.opts()
     end,
 
     highlights = {
-      covered = { fg = colors.green },
-      uncovered = { fg = colors.red },
-      partial = { fg = colors.yellow },
+      covered = { fg = sign_colors.covered },
+      uncovered = { fg = sign_colors.uncovered },
+      partial = { fg = sign_colors.partial },
       summary_border = { link = "FloatBorder" },
       summary_normal = { link = "NormalFloat" },
       summary_cursor_line = { link = "CursorLine" },

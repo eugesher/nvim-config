@@ -100,10 +100,9 @@ M.opts = {
 function M.config(_, opts)
   local bufferline = require("bufferline")
   opts.options.style_preset = bufferline.style_preset.default
-  -- Built here, not at import time: needs catppuccin's options, and catppuccin
-  -- is loaded first (`lazy = false`, `priority = 1000`). The selected tab is
-  -- bold, not italic.
-  opts.highlights = require("catppuccin.special.bufferline").get_theme({ styles = { "bold" } })
+  -- Built here, not at import time: catppuccin's theme needs its options, and
+  -- catppuccin is loaded first (`lazy = false`, `priority = 1000`).
+  opts.highlights = require("settings.ui.theme").bufferline_highlights()
   bufferline.setup(opts)
 end
 

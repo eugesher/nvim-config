@@ -80,7 +80,7 @@ function M.opts()
   return {
     options = {
       icons_enabled = true,
-      -- Catppuccin theme with the `b`/`c` sections on the base black (settings/ui/theme.lua).
+      -- Catppuccin theme with `b`/`c` on the base black, or "auto" (settings/ui/theme.lua).
       theme = require("settings.ui.theme").lualine_theme(),
       component_separators = { left = "│", right = "│" },
       section_separators = { left = "", right = "" },

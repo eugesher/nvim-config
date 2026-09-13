@@ -14,7 +14,8 @@
 -- The plugin documents no setup options: `signs`, `shallowUndo` and `hlsearch`
 -- exist only as type annotations in its source, so `setup()` is called bare.
 -- The highlight groups it defines are overridden from the catppuccin palette in
--- settings/ui/theme.lua, where every other plugin's groups live.
+-- settings/ui/theme.lua, where every other plugin's groups live; with the
+-- colorscheme off (user.colorscheme.enabled) the plugin's own colors apply.
 
 local M = {}
 

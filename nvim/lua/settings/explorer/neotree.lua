@@ -435,11 +435,10 @@ function M.opts()
     -- The tree stays open after a file is opened. To close it instead, add a
     -- `file_opened` handler calling
     -- `require("neo-tree.command").execute({ action = "close" })`.
-    event_handlers = {
-      require("settings.ui.theme").neo_tree_cursorline(),
+    event_handlers = vim.list_extend(require("settings.ui.theme").neo_tree_handlers(), {
       { event = "file_renamed", handler = did_rename_files },
       { event = "file_moved", handler = did_rename_files },
-    },
+    }),
   }
 end
 

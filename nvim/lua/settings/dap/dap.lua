@@ -115,7 +115,9 @@ M.keys = {
 
 -- The five signs nvim-dap draws. Colors come from catppuccin's `dap`
 -- integration; only the line of the stopped frame needs a group of its own
--- (settings/ui/theme.lua).
+-- (settings/ui/theme.lua). With the colorscheme off none of these groups is
+-- defined, so the signs are drawn exactly like with nvim-dap's own `SignColumn`
+-- and `debugPC` (Neovim's default colorscheme has no `debugPC` either).
 local SIGNS = {
   DapBreakpoint = { text = icons.breakpoint, texthl = "DapBreakpoint" },
   DapBreakpointCondition = { text = icons.condition, texthl = "DapBreakpointCondition" },

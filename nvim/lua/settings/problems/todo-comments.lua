@@ -28,11 +28,33 @@ M.keys = {
   { "<leader>xt", "<cmd>Trouble todo toggle<cr>", desc = "Todo comments" },
 }
 
+-- Keyword colors with the colorscheme off: the plugin's defaults.
+local DEFAULT_COLORS = {
+  error = { "DiagnosticError", "ErrorMsg", "#DC2626" },
+  warning = { "DiagnosticWarn", "WarningMsg", "#FBBF24" },
+  info = { "DiagnosticInfo", "#2563EB" },
+  hint = { "DiagnosticHint", "#10B981" },
+  default = { "Identifier", "#7C3AED" },
+  test = { "Identifier", "#FF00FF" },
+}
+
 function M.opts()
   -- The palette, not hex literals: with a different flavor the keyword colors
   -- have to keep their contrast against the new background (settings/ui/theme.lua).
-  local ok, palettes = pcall(require, "catppuccin.palettes")
-  local colors = ok and palettes.get_palette() or {}
+  local palette = require("settings.ui.theme").palette()
+  local colors = DEFAULT_COLORS
+  if palette then
+    -- Hex from the palette comes first, so the colors do not depend on which
+    -- diagnostic groups happen to be defined when the plugin loads.
+    colors = {
+      error = { palette.red, "DiagnosticError" },
+      warning = { palette.yellow, "DiagnosticWarn" },
+      info = { palette.blue, "DiagnosticInfo" },
+      hint = { palette.teal, "DiagnosticHint" },
+      default = { palette.mauve, "Identifier" },
+      test = { palette.pink, "Identifier" },
+    }
+  end
 
   return {
     signs = true, -- keyword icon in the sign column
@@ -76,16 +98,7 @@ function M.opts()
       max_line_len = 400,
       exclude = {},
     },
-    -- Hex from the palette comes first, so the colors do not depend on which
-    -- diagnostic groups happen to be defined when the plugin loads.
-    colors = {
-      error = { colors.red, "DiagnosticError" },
-      warning = { colors.yellow, "DiagnosticWarn" },
-      info = { colors.blue, "DiagnosticInfo" },
-      hint = { colors.teal, "DiagnosticHint" },
-      default = { colors.mauve, "Identifier" },
-      test = { colors.pink, "Identifier" },
-    },
+    colors = colors,
     search = {
       command = "rg",
       args = {
