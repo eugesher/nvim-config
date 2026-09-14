@@ -4,6 +4,17 @@ local M = {}
 
 M.event = "VeryLazy"
 
+M.which_key = {
+  { "zF", desc = "Create fold for [count] lines", mode = "n" },
+  { "zX", desc = "Re-apply foldlevel", mode = "n" },
+  { "zn", desc = "Disable folding", mode = "n" },
+  { "zN", desc = "Enable folding", mode = "n" },
+  { "zj", desc = "Next fold start", mode = { "n", "x", "o" } },
+  { "zk", desc = "Previous fold end", mode = { "n", "x", "o" } },
+  { "[z", desc = "Start of current fold", mode = { "n", "x", "o" } },
+  { "]z", desc = "End of current fold", mode = { "n", "x", "o" } },
+}
+
 M.opts = {
   useLspFoldsWithTreesitterFallback = {
     enabled = false,

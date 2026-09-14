@@ -143,8 +143,9 @@ The layers never mix:
   configured with lives there — options, keymaps with their descriptions;
   highlights are the one exception and sit in `settings/ui/theme.lua`. Options
   are written out in full, defaults included, but only the documented ones.
-  `which_key` describes keymaps a plugin creates itself; which-key groups are
-  declared only in `settings/whichkey/whichkey.lua`.
+  `which_key` describes keymaps a plugin creates itself, or Neovim commands that
+  belong to it (the fold `z` keys in `structure/origami.lua`); which-key groups
+  are declared only in `settings/whichkey/whichkey.lua`.
 - **`lua/core/`** holds what Neovim does without any plugin.
 - **`after/ftplugin/`** holds keymaps that belong to one filetype.
 

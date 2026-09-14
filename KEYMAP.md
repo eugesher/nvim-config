@@ -22,6 +22,8 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
 Keys that exist only for a moment are not listed: the multicursor layer (`<Tab>` / `<S-Tab>` between cursors, `<C-q>`,
 `<Esc>`) and the keys inside
 plugin panels (`?` or `g?` shows them there).
+Neovim's fold commands are not keymaps either; they are listed by hand in
+[Folds](#folds).
 
 <!-- keymaps:start -->
 
@@ -418,6 +420,39 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<Tab>`     | s i  | blink.cmp: Snippet Forward                              | every file buffer |
 
 <!-- keymaps:end -->
+
+## Folds
+
+Folds are Neovim's own `z` commands, not keymaps: `dump-keymaps.lua` cannot see
+them, so this table is kept by hand. which-key shows them after `z`, `[` and
+`]` — most descriptions come from its `z` preset, the rest from the `which_key`
+field of `settings/structure/origami.lua`. Folds come from the language server
+when it provides them and from treesitter otherwise. `zf`, `zF`, `zd`, `zD` and
+`zE` need manual folds, which only a buffer above `treesitter.max_filesize` has;
+elsewhere they fail with E350 / E351 / E352.
+
+| Keys               | Mode  | Description                                                                 |
+| ------------------ | ----- | --------------------------------------------------------------------------- |
+| `za` / `zA`        | n     | Toggle the fold under the cursor / the same recursively                     |
+| `zo` / `zc`        | n x   | Open / close one fold under the cursor, or one level in the selection       |
+| `zO` / `zC`        | n x   | Open / close all folds under the cursor or in the selection                 |
+| `zv`               | n     | Open just enough folds to show the cursor line                              |
+| `zM` / `zR`        | n     | Close / open all folds                                                      |
+| `zm` / `zr`        | n     | Close / open one more level (`'foldlevel'` minus / plus the count)          |
+| `zx` / `zX`        | n     | Recompute folds and re-apply `'foldlevel'`; `zx` then shows the cursor line |
+| `zn` / `zN` / `zi` | n     | Folding off / back on / toggle (`'foldenable'`)                             |
+| `zj` / `zk`        | n x o | Start of the next fold / end of the previous fold                           |
+| `[z` / `]z`        | n x o | Start / end of the current open fold                                        |
+| `zf`               | n x   | Create a fold over a motion or the selection                                |
+| `zF`               | n     | Create a fold for count lines                                               |
+| `zd` / `zD`        | n x   | Delete the fold under the cursor / all nested folds too                     |
+| `zE`               | n     | Delete every fold in the window                                             |
+
+While a search is in use (`/`, `?`, `n`, `N`, `*`, `#`) every fold is open; the
+next other key closes them again and leaves only the fold under the cursor open.
+Imports and comments close on their own when a file is opened — except the file
+Neovim starts with — and a closed fold shows its line count, diagnostics and git
+changes. nvim-origami's `h` / `l` / `^` / `$` fold keys are not used.
 
 ## Audit exceptions
 
