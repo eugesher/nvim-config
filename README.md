@@ -96,7 +96,7 @@ the `http/` collections in this repository.
 | Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
 | Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
-| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the winbar)                                                                                                                    |
+| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the winbar), nvim-origami (fold line counts, auto-folded imports and comments)                                                 |
 | Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                           |
 | Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
 | HTTP client             | kulala.nvim                                                                                                                                                                  |
@@ -170,7 +170,8 @@ plain data the rest of the config reads:
 | `colorscheme.transparent`                                    | let the terminal background show through the editor surfaces instead of `window_bg`                                                                                                      |
 | `colorscheme.transparent_floats`                             | the same for floating windows: which-key, pickers, hover docs; the completion menu follows `transparent`                                                                                 |
 | `colorscheme.window_bg`                                      | base background of windows, panels and floats                                                                                                                                            |
-| `treesitter.max_filesize`, `max_line_length`                 | buffers larger than this many bytes, or with a longer line, get no treesitter highlighting, indentation or folds                                                                         |
+| `treesitter.max_filesize`, `max_line_length`                 | buffers larger than this many bytes, or with a longer line, get no treesitter highlighting or indentation, and no treesitter or LSP folds (manual folds only)                            |
+| `folding.auto_fold_kinds`                                    | LSP fold kinds closed when a file is opened: `comment`, `imports`, `region`; `{}` turns auto-folding off                                                                                 |
 | `formatting.format_on_save`                                  | format on save; toggle with `<leader>uf` (buffer) / `<leader>uF` (global) or `:FormatDisable[!]` / `:FormatEnable[!]`                                                                    |
 | `formatting.timeout_ms`, `max_filesize`                      | milliseconds a formatter may block a save; files larger than `max_filesize` bytes are saved unformatted                                                                                  |
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `H` shows gitignored files |
@@ -403,6 +404,18 @@ when "cleaned up".
   query has no properties or fields (NestJS injections), and with a key-only load
   `{` / `}` would stay paragraph motions until the tree is opened once. Anonymous
   callbacks that vtsls reports as symbols are filtered out.
+- **Folds come from the LSP when an attached server provides them**, from
+  treesitter otherwise, and stay manual in a file above `treesitter.max_filesize`:
+  `update_folds()` in `settings/treesitter/treesitter.lua` decides on `FileType`
+  and whenever a server attaches or detaches. nvim-origami's own switch to LSP
+  folds is off, because it ignores that limit, and `vim.lsp.foldexpr()` freezes
+  Neovim on such a file for minutes. origami keeps the rest: line counts with
+  diagnostics and git changes on a closed fold (hidden in neogit buffers),
+  auto-folded comments and imports, and folds paused while searching — it removes
+  `search` from `'foldopen'` and keeps only the fold under the cursor open once
+  the search is over. Its `h` / `l` / `^` / `$` keymaps stay off. Auto-folding
+  works through LSP folds only and does not reach the file Neovim starts with;
+  files opened later are folded.
 - **Trouble:** `<leader>xX` leaves out diagnostics from TypeScript's library
   sources (lib.dom.d.ts alone brings some eighty hints); the LSP lists report an
   empty result, so `grr` on an unreferenced symbol is not silent.

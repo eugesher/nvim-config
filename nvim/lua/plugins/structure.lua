@@ -8,4 +8,5 @@ return {
     dependencies = { "nvim-tree/nvim-web-devicons", "nvim-telescope/telescope-fzf-native.nvim" },
   }),
   spec("nvim-telescope/telescope-fzf-native.nvim", nil, { build = "make" }),
+  spec("chrisgrieser/nvim-origami", "structure.origami"),
 }

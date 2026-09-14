@@ -178,5 +178,9 @@ Further decisions, explained in README.md ("Implementation notes"):
 - `grr` opens Trouble, not a picker.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
+- nvim-origami's `useLspFoldsWithTreesitterFallback` is off: `update_folds()` in
+  `settings/treesitter/treesitter.lua` picks LSP or treesitter folds, so a file
+  above `treesitter.max_filesize` never gets `vim.lsp.foldexpr()`, which freezes
+  Neovim there.
 - `<leader>fp` and `<leader>cR` were removed as duplicates of `<leader>li` and
   `<leader>lr`.

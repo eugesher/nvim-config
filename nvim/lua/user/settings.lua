@@ -24,6 +24,10 @@ return {
     max_line_length = 2000,
   },
 
+  folding = {
+    auto_fold_kinds = { "comment", "imports" },
+  },
+
   formatting = {
     format_on_save = true,
     timeout_ms = 3000,

@@ -86,6 +86,9 @@ local function on_attach(event)
   if supports("textDocument/documentColor") then
     vim.lsp.document_color.enable(true, { bufnr = buf })
   end
+  if supports("textDocument/foldingRange") then
+    require("settings.treesitter.treesitter").update_folds(buf)
+  end
   if supports("textDocument/documentHighlight") then
     local group = vim.api.nvim_create_augroup(highlight_group(buf), { clear = true })
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -117,6 +120,8 @@ local function on_detach(event)
   local others = vim.tbl_filter(function(c)
     return c.id ~= event.data.client_id
   end, vim.lsp.get_clients({ bufnr = buf }))
+
+  require("settings.treesitter.treesitter").update_folds(buf, event.data.client_id)
 
   local highlight_left = vim.iter(others):any(function(c)
     return c:supports_method("textDocument/documentHighlight", buf)

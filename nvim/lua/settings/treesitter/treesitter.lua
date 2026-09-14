@@ -55,6 +55,20 @@ local function too_large(buf)
   return false
 end
 
+function M.update_folds(buf, detaching_client_id)
+  if too_large(buf) then
+    return
+  end
+  local clients = vim.lsp.get_clients({ bufnr = buf, method = "textDocument/foldingRange" })
+  local lsp = vim.iter(clients):any(function(client)
+    return client.id ~= detaching_client_id
+  end)
+  for _, win in ipairs(vim.fn.win_findbuf(buf)) do
+    vim.wo[win][0].foldexpr = lsp and "v:lua.vim.lsp.foldexpr()"
+      or "v:lua.vim.treesitter.foldexpr()"
+  end
+end
+
 function M.config(_, opts)
   local ts = require("nvim-treesitter")
   ts.setup(opts)
@@ -80,9 +94,7 @@ function M.config(_, opts)
       if not pcall(vim.treesitter.start, buf, lang) then
         return
       end
-      if in_window then
-        vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
-      end
+      M.update_folds(buf)
       vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end,
   })
