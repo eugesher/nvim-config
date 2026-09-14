@@ -187,8 +187,9 @@ Edit the file in the repository and run `./install.sh` again — an edit made in
 
 ## Key bindings
 
-`<leader>?` in the editor lists the keys of the current buffer. Every key of the
-configuration, with the scripts that keep the scheme consistent, is listed in
+`<leader>?` in the editor lists the keys of the current buffer and `<leader>K`
+all of them, Neovim's own commands included. Every key of the configuration,
+with the scripts that keep the scheme consistent, is listed in
 [KEYMAP.md](KEYMAP.md).
 
 ## Databases

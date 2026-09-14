@@ -168,6 +168,13 @@ M.keys = {
     end,
     desc = "Buffer keymaps (which-key)",
   },
+  {
+    "<leader>K",
+    function()
+      require("which-key").show({ global = true })
+    end,
+    desc = "All keymaps (which-key)",
+  },
 }
 
 return M

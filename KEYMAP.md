@@ -1,6 +1,7 @@
 # Key bindings
 
-`<leader>?` in the editor lists the keys of the current buffer. The tables below
+`<leader>?` in the editor lists the keys of the current buffer and `<leader>K`
+all of them, Neovim's `z`, `g` and `[` / `]` commands included. The tables below
 cover the whole configuration, and two scripts keep them and the scheme honest.
 Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
 
@@ -41,6 +42,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<`         | x    | Indent left, keep selection            |        |
 | `<Esc>`     | n    | Clear search highlight                 |        |
 | `<leader>?` | n    | Buffer keymaps (which-key)             |        |
+| `<leader>K` | n    | All keymaps (which-key)                |        |
 | `<leader>Q` | n    | Quit all                               |        |
 | `<leader>w` | n    | Write buffer                           |        |
 | `<M-j>`     | n    | Move line down                         |        |
@@ -426,10 +428,12 @@ buffer-local (LSP keys appear once a language server is attached)._
 Folds are Neovim's own `z` commands, not keymaps: `dump-keymaps.lua` cannot see
 them, so this table is kept by hand. which-key shows them after `z`, `[` and
 `]` — most descriptions come from its `z` preset, the rest from the `which_key`
-field of `settings/structure/origami.lua`. Folds come from the language server
-when it provides them and from treesitter otherwise. `zf`, `zF`, `zd`, `zD` and
-`zE` need manual folds, which only a buffer above `treesitter.max_filesize` has;
-elsewhere they fail with E350 / E351 / E352.
+field of `settings/structure/origami.lua`. `<leader>?` lists buffer-local keys
+only, so `z` pressed inside it shows nothing; `<leader>K` includes them. Folds
+come from the language server when it provides them and from treesitter
+otherwise. `zf`, `zF`, `zd`, `zD` and `zE` need manual folds, which only a
+buffer above `treesitter.max_filesize` has; elsewhere they fail with E350, E351
+or E352.
 
 | Keys               | Mode  | Description                                                                 |
 | ------------------ | ----- | --------------------------------------------------------------------------- |
