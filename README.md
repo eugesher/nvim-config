@@ -321,9 +321,14 @@ when "cleaned up".
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
   keeps the window layout.
-- **lualine escapes `%` in LSP progress text** (`" 45%: Loading"` is E539 in
-  `'statusline'`); its nvim-dap and neotest components stay empty until those
-  plugins are loaded and never load them.
+- **lualine tracks LSP progress per work-done token** from the `LspProgress`
+  event data and drops a task on its `end`. Neither `ev.match` (the kind
+  expanded to a path, `/cwd/end`) nor `vim.lsp.status()` (everything the ring
+  buffer collected, finished tasks' titles included) can tell that a task is
+  over: built on them, the status line kept "Analyzing '…' and its
+  dependencies" long after vtsls had loaded the project. Progress text escapes
+  `%` (`" 45%: Loading"` is E539 in `'statusline'`); the nvim-dap and neotest
+  components stay empty until those plugins are loaded and never load them.
 - **Files under `node_modules` open `'readonly'` and `'nomodifiable'`**
   (`editor.readonly_dirs`): `'readonly'` alone still takes a change and lets
   `:w!` write it. A `BufReadPost` autocmd sets both however the file is opened —

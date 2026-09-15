@@ -11,9 +11,39 @@ local function macro_recording()
   return reg == "" and "" or ("recording @" .. reg)
 end
 
-local lsp_message = ""
+local lsp_tasks = {}
 local function lsp_progress()
-  return (lsp_message:gsub("%%", "%%%%"))
+  local parts = {}
+  for _, task in ipairs(lsp_tasks) do
+    if vim.lsp.get_client_by_id(task.client_id) then
+      parts[#parts + 1] = task.text
+    end
+  end
+  return (table.concat(parts, ", "):gsub("%%", "%%%%"))
+end
+
+local function track_lsp_progress(data)
+  local value = data.params.value
+  if type(value) ~= "table" then
+    return
+  end
+  local key = data.client_id .. ":" .. tostring(data.params.token)
+  for i, task in ipairs(lsp_tasks) do
+    if task.key == key then
+      table.remove(lsp_tasks, i)
+      break
+    end
+  end
+  if value.kind ~= "end" then
+    local text = value.title or ""
+    if value.message then
+      text = text .. ": " .. value.message
+    end
+    if value.percentage then
+      text = string.format("%d%% %s", value.percentage, text)
+    end
+    lsp_tasks[#lsp_tasks + 1] = { key = key, client_id = data.client_id, text = text }
+  end
 end
 
 local function dap_active()
@@ -164,7 +194,7 @@ function M.config(_, opts)
     group = group,
     desc = "Show LSP progress in the status line",
     callback = function(event)
-      lsp_message = event.match == "end" and "" or vim.lsp.status()
+      track_lsp_progress(event.data)
       lualine.refresh()
     end,
   })
