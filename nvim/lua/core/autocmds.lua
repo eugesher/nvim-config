@@ -1,3 +1,5 @@
+local user = require("user.settings")
+
 local function augroup(name)
   return vim.api.nvim_create_augroup("core_" .. name, { clear = true })
 end
@@ -45,6 +47,20 @@ autocmd("BufReadPre", {
     })
   end,
 })
+
+if #user.editor.readonly_dirs > 0 then
+  autocmd("BufReadPost", {
+    group = augroup("readonly_dirs"),
+    pattern = vim.tbl_map(function(dir)
+      return "*/" .. dir .. "/*"
+    end, user.editor.readonly_dirs),
+    desc = "Open files from dependency directories read-only",
+    callback = function(event)
+      vim.bo[event.buf].readonly = true
+      vim.bo[event.buf].modifiable = false
+    end,
+  })
+end
 
 autocmd("VimResized", {
   group = augroup("equalize_splits"),

@@ -163,6 +163,7 @@ plain data the rest of the config reads:
 | `editor.indent_width`                                        | width of one indent step: `'shiftwidth'`, `'tabstop'`, `'softtabstop'`                                                                                                                   |
 | `editor.scrolloff`                                           | lines kept above and below the cursor                                                                                                                                                    |
 | `editor.relative_number`                                     | `true`: numbers relative to the cursor (the current line keeps its absolute number); `false`: absolute numbers                                                                           |
+| `editor.readonly_dirs`                                       | files inside a directory with one of these names, at any depth, open with `'readonly'` and `'nomodifiable'`: no edits, no saves; `{}` turns it off                                       |
 | `ui.border`                                                  | border of every floating window (`'winborder'`): `none`, `single`, `double`, `rounded`, `solid`, `shadow`, `bold`                                                                        |
 | `ui.panel_height`                                            | height in lines of the bottom panels — Trouble, debugger, test output — which share one split                                                                                            |
 | `ui.nerd_font`                                               | the terminal uses a Nerd Font v3; Neovim cannot see the font, so `:checkhealth myconfig` trusts this flag — set `false` without one                                                      |
@@ -323,6 +324,13 @@ when "cleaned up".
 - **lualine escapes `%` in LSP progress text** (`" 45%: Loading"` is E539 in
   `'statusline'`); its nvim-dap and neotest components stay empty until those
   plugins are loaded and never load them.
+- **Files under `node_modules` open `'readonly'` and `'nomodifiable'`**
+  (`editor.readonly_dirs`): `'readonly'` alone still takes a change and lets
+  `:w!` write it. A `BufReadPost` autocmd sets both however the file is opened —
+  go to definition, a picker, a restored session — at any depth, a pnpm
+  store in `node_modules/.pnpm/…` included. An LSP edit into such a file fails with
+  "Buffer is not 'modifiable'", which vtsls does not send for library code
+  anyway; `:setlocal modifiable noreadonly` unlocks one buffer.
 
 ### LSP
 

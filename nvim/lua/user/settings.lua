@@ -3,6 +3,7 @@ return {
     indent_width = 2,
     scrolloff = 8,
     relative_number = false,
+    readonly_dirs = { "node_modules" },
   },
 
   ui = {
