@@ -1,5 +1,4 @@
--- Autocommands. Every one lives in a named group created with `clear = true`,
--- so re-sourcing this file never duplicates them.
+local user = require("user.settings")
 
 local function augroup(name)
   return vim.api.nvim_create_augroup("core_" .. name, { clear = true })
@@ -28,8 +27,6 @@ autocmd("BufWritePre", {
   end,
 })
 
--- `:h last-position-jump`. The check waits for FileType: this group is created
--- before filetype detection, so on BufReadPost 'filetype' would still be empty.
 autocmd("BufReadPre", {
   group = augroup("restore_cursor"),
   desc = "Restore the last cursor position",
@@ -39,8 +36,6 @@ autocmd("BufReadPre", {
       once = true,
       callback = function()
         local ft = vim.bo[event.buf].filetype
-        -- Commit messages and rebase todos are new every time; xxd output is a
-        -- transformed view; diff mode positions the cursor itself.
         if ft:find("commit") or ft == "gitrebase" or ft == "xxd" or vim.wo.diff then
           return
         end
@@ -52,6 +47,20 @@ autocmd("BufReadPre", {
     })
   end,
 })
+
+if #user.editor.readonly_dirs > 0 then
+  autocmd("BufReadPost", {
+    group = augroup("readonly_dirs"),
+    pattern = vim.tbl_map(function(dir)
+      return "*/" .. dir .. "/*"
+    end, user.editor.readonly_dirs),
+    desc = "Open files from dependency directories read-only",
+    callback = function(event)
+      vim.bo[event.buf].readonly = true
+      vim.bo[event.buf].modifiable = false
+    end,
+  })
+end
 
 autocmd("VimResized", {
   group = augroup("equalize_splits"),
@@ -70,7 +79,6 @@ autocmd("FileType", {
   callback = function(event)
     vim.bo[event.buf].buflisted = false
     vim.keymap.set("n", "q", function()
-      -- `:close` fails in the last window; drop the buffer instead.
       if not pcall(vim.cmd.close) then
         vim.api.nvim_buf_delete(event.buf, { force = true })
       end
@@ -81,7 +89,6 @@ autocmd("FileType", {
 autocmd("FileType", {
   group = augroup("formatoptions"),
   desc = "Do not continue comments on new lines",
-  -- FileType, not BufEnter: ftplugins set 'formatoptions' and would undo it.
   callback = function()
     vim.opt_local.formatoptions:remove({ "c", "r", "o" })
   end,
@@ -91,7 +98,6 @@ autocmd("BufWritePre", {
   group = augroup("auto_mkdir"),
   desc = "Create missing parent directories on write",
   callback = function(event)
-    -- Skip URLs such as oil://, scp://, fugitive://.
     if event.match:match("^%w%w+:[\\/][\\/]") then
       return
     end
