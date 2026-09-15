@@ -22,7 +22,8 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
 
 Keys that exist only for a moment are not listed: the multicursor layer (`<Tab>` / `<S-Tab>` between cursors, `<C-q>`,
 `<Esc>`) and the keys inside
-plugin panels (`?` or `g?` shows them there).
+plugin panels (`?` or `g?` shows them there, and `<leader>?` in neogit's
+buffers).
 Neovim's fold commands are not keymaps either; they are listed by hand in
 [Folds](#folds).
 

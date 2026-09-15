@@ -228,6 +228,7 @@ M.opts = {
       ["c"] = "CommitPopup",
       ["f"] = "FetchPopup",
       ["l"] = "LogPopup",
+      ["L"] = "MarginPopup",
       ["m"] = "MergePopup",
       ["p"] = "PullPopup",
       ["r"] = "RebasePopup",
@@ -282,5 +283,166 @@ M.opts = {
     },
   },
 }
+
+local descriptions = {
+  popup = {
+    HelpPopup = "Help",
+    CherryPickPopup = "Cherry-pick",
+    DiffPopup = "Diff",
+    RemotePopup = "Remote",
+    PushPopup = "Push",
+    ResetPopup = "Reset",
+    StashPopup = "Stash",
+    IgnorePopup = "Ignore",
+    TagPopup = "Tag",
+    BranchPopup = "Branch",
+    BisectPopup = "Bisect",
+    WorktreePopup = "Worktree",
+    CommitPopup = "Commit",
+    FetchPopup = "Fetch",
+    LogPopup = "Log",
+    MarginPopup = "Margin",
+    MergePopup = "Merge",
+    PullPopup = "Pull",
+    RebasePopup = "Rebase",
+    RevertPopup = "Revert",
+  },
+  status = {
+    MoveDown = "Next item",
+    MoveUp = "Previous item",
+    OpenTree = "Open tree in browser",
+    Close = "Close",
+    InitRepo = "Init repository",
+    Depth1 = "Fold to sections",
+    Depth2 = "Fold to files",
+    Depth3 = "Fold to hunks",
+    Depth4 = "Unfold everything",
+    Command = "Run git command",
+    Toggle = "Toggle fold",
+    OpenFold = "Open fold",
+    Discard = "Discard",
+    Reverse = "Reverse change",
+    Stage = "Stage",
+    StageUnstaged = "Stage all unstaged",
+    StageAll = "Stage everything",
+    Unstage = "Unstage",
+    Untrack = "Untrack",
+    UnstageStaged = "Unstage everything",
+    ShowRefs = "Show refs",
+    CommandHistory = "Git command history",
+    YankSelected = "Yank",
+    GoToParentRepo = "Go to parent repository",
+    RefreshBuffer = "Refresh",
+    GoToFile = "Open item under cursor",
+    PeekFile = "Peek item under cursor",
+    VSplitOpen = "Open in vertical split",
+    SplitOpen = "Open in split",
+    TabOpen = "Open in tab",
+    GoToPreviousHunkHeader = "Previous hunk header",
+    GoToNextHunkHeader = "Next hunk header",
+    OpenOrScrollUp = "Open or scroll preview up",
+    OpenOrScrollDown = "Open or scroll preview down",
+    PeekUp = "Peek previous",
+    PeekDown = "Peek next",
+    NextSection = "Next section",
+    PreviousSection = "Previous section",
+  },
+  commit_view = {
+    OpenFileInWorktree = "Open file in worktree",
+  },
+  commit_editor = {
+    Close = "Close",
+    Submit = "Submit",
+    Abort = "Abort",
+    PrevMessage = "Previous message",
+    NextMessage = "Next message",
+    ResetMessage = "Reset message",
+  },
+  rebase_editor = {
+    Pick = "Pick",
+    Reword = "Reword",
+    Edit = "Edit",
+    Squash = "Squash",
+    Fixup = "Fixup",
+    Execute = "Execute",
+    Drop = "Drop",
+    Break = "Break",
+    Close = "Close",
+    OpenCommit = "Open commit",
+    MoveUp = "Move commit up",
+    MoveDown = "Move commit down",
+    Submit = "Submit",
+    Abort = "Abort",
+    OpenOrScrollUp = "Open or scroll preview up",
+    OpenOrScrollDown = "Open or scroll preview down",
+  },
+}
+
+local view_actions = {
+  Close = true,
+  Toggle = true,
+  Reverse = true,
+  GoToFile = true,
+  PeekFile = true,
+  PeekUp = true,
+  PeekDown = true,
+  OpenOrScrollUp = true,
+  OpenOrScrollDown = true,
+  YankSelected = true,
+  RefreshBuffer = true,
+}
+
+local buffer_groups = {
+  NeogitStatus = { "status", "popup" },
+  NeogitCommitView = { "commit_view", "view", "popup" },
+  NeogitLogView = { "view", "popup" },
+  NeogitReflogView = { "view", "popup" },
+  NeogitRefsView = { "view", "popup" },
+  NeogitStashView = { "view", "popup" },
+  NeogitCommitSelectView = { "view" },
+  NeogitDiffView = { "view" },
+  NeogitGitCommandHistory = { "view" },
+  NeogitConsole = { "view" },
+  gitcommit = { "commit_editor" },
+  gitrebase = { "rebase_editor" },
+}
+
+local function describe_keymaps(buf, groups, mappings)
+  for _, group in ipairs(groups) do
+    local source = group == "view" and "status" or group
+    for key, action in pairs(mappings[source] or {}) do
+      local desc = descriptions[source][action]
+      if desc and (group ~= "view" or view_actions[action]) then
+        for _, mode in ipairs({ "n", "v" }) do
+          local map = vim.fn.maparg(key, mode, false, true)
+          if map.buffer == 1 and not map.desc then
+            map.desc = desc
+            vim.fn.mapset(map)
+          end
+        end
+      end
+    end
+  end
+end
+
+function M.config(_, opts)
+  require("neogit").setup(opts)
+
+  vim.api.nvim_create_autocmd("FileType", {
+    group = vim.api.nvim_create_augroup("settings_neogit", { clear = true }),
+    pattern = vim.tbl_keys(buffer_groups),
+    desc = "Describe neogit buffer keymaps",
+    callback = function(event)
+      local groups = buffer_groups[event.match]
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(event.buf) then
+          vim.api.nvim_buf_call(event.buf, function()
+            describe_keymaps(event.buf, groups, opts.mappings)
+          end)
+        end
+      end)
+    end,
+  })
+end
 
 return M

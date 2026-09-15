@@ -104,7 +104,9 @@ lsp/mason).
   `which_key` field). `settings/whichkey/whichkey.lua` declares groups only.
   Neovim's fold commands are no keymaps: their extra which-key descriptions sit
   in the `which_key` field of `settings/structure/origami.lua`, and KEYMAP.md
-  lists them by hand under "Folds" — keep both in step.
+  lists them by hand under "Folds" — keep both in step. neogit's buffer keys
+  get their descriptions from `settings/git/neogit.lua`, keyed by the action
+  names of its `opts.mappings`: a new action there needs one.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
   collision goes into its whitelist, with the reason under "Audit exceptions" in
   KEYMAP.md; then regenerate the tables there (`dump-keymaps.lua --write`).

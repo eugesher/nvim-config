@@ -388,6 +388,17 @@ when "cleaned up".
   `<leader>e` / `<leader>b` → `<localleader>e` / `<localleader>b`, conflict
   choices → `<leader>gx…`, `<C-A-d>` → `<localleader>d`. neogit's GUI and Alt
   keys likewise move to the localleader layer, and its `]c` / `[c` to `]o` / `[o`.
+- **neogit creates its buffer keys without descriptions**, so which-key showed
+  them blank or with Vim's own meaning (`l` as "Right"). A `FileType` autocmd in
+  `settings/git/neogit.lua` waits until neogit has mapped a buffer and describes
+  every key that `mappings` binds to an action, through `maparg()` / `mapset()`
+  with the mapping itself unchanged. The status buffer gets all status actions;
+  the commit, log, reflog, refs and stash views only those they take from it
+  (close, open, peek, scroll, yank, fold, refresh), because keys such as `o` and
+  `x` mean something else there. Popup buffers are left alone: they print their
+  keys themselves. Keys neogit maps outside the documented `mappings` (`R`, `V`,
+  `+`, `<Esc>`, `o` in the log and commit views) stay without a description, and
+  `zc` / `zC` / `zO` keep which-key's fold descriptions.
 - **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
   would otherwise open an empty buffer), sends `workspace/didRenameFiles` so vtsls
   fixes imports after a rename, and takes its width from a function: neo-tree
