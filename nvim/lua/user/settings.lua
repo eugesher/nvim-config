@@ -40,6 +40,7 @@ return {
     width = "35%",
     min_width = 36,
     hide_gitignored = true,
+    group_empty_dirs = false,
   },
 
   http = {

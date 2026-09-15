@@ -332,7 +332,7 @@ function M.opts()
         never_show_by_pattern = {},
       },
       find_by_full_path_words = false,
-      group_empty_dirs = true,
+      group_empty_dirs = user.explorer.group_empty_dirs,
       search_limit = 50,
       follow_current_file = { enabled = true, leave_dirs_open = false },
       hijack_netrw_behavior = "open_default",
@@ -342,7 +342,7 @@ function M.opts()
     buffers = {
       bind_to_cwd = true,
       follow_current_file = { enabled = true, leave_dirs_open = false },
-      group_empty_dirs = true,
+      group_empty_dirs = user.explorer.group_empty_dirs,
       show_unloaded = true,
       terminals_first = false,
       window = {
