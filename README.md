@@ -305,6 +305,15 @@ when "cleaned up".
   the old leader, and plugin specs read the leader at import time.
 - **Visual-mode keymaps use mode `x`, not `v`:** `v` also covers Select mode,
   where typed text must replace a snippet placeholder.
+- **Only `x` / `X` put deleted text on the clipboard.** `'clipboard'` is
+  `unnamedplus`, so every delete would otherwise replace the system clipboard.
+  `d`, `D`, `c`, `C`, `s` and `S` (Normal and Visual mode) write to the black
+  hole register instead; `y` copies and `x` / `X` cut: `x` on a selection cuts
+  it, `Vx` cuts a line, and `xp` still swaps two characters. The keymaps are
+  `expr` mappings that add `"_` only when no register was given, so `"add` still
+  fills register `a`; an explicit `"+` or `"*` looks the same as no register and
+  goes to the black hole too. In oil a file is moved with `Vx` and `p`: after
+  `dd`, `p` would paste the clipboard as a new file name.
 - **`'inccommand'` stays `nosplit`**, which inc-rename's live preview needs, and
   `'sessionoptions'` includes `localoptions`, without which auto-session loses
   filetype options and buffer-local keymaps on restore.

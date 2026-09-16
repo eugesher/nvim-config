@@ -2,6 +2,15 @@ local function map(mode, lhs, rhs, desc)
   vim.keymap.set(mode, lhs, rhs, { desc = desc, silent = true })
 end
 
+local function map_keep_clipboard(mode, lhs, desc)
+  vim.keymap.set(mode, lhs, function()
+    if vim.v.register:find('^[%+%*"]$') then
+      return '"_' .. lhs
+    end
+    return lhs
+  end, { desc = desc, expr = true, silent = true })
+end
+
 map("n", "<leader>w", "<cmd>write<CR>", "Write buffer")
 map("n", "<leader>Q", "<cmd>qa<CR>", "Quit all")
 
@@ -24,6 +33,16 @@ map("n", "<C-u>", "<C-u>zz", "Half page up (centered)")
 map("x", "<", "<gv", "Indent left, keep selection")
 map("x", ">", ">gv", "Indent right, keep selection")
 map("x", "p", "P", "Paste without overwriting the register")
+map_keep_clipboard({ "n", "x" }, "d", "Delete (keeps clipboard)")
+map_keep_clipboard("n", "D", "Delete to end of line (keeps clipboard)")
+map_keep_clipboard("x", "D", "Delete lines (keeps clipboard)")
+map_keep_clipboard({ "n", "x" }, "c", "Change (keeps clipboard)")
+map_keep_clipboard("n", "C", "Change to end of line (keeps clipboard)")
+map_keep_clipboard("x", "C", "Change lines, block to end of line (keeps clipboard)")
+map_keep_clipboard("n", "s", "Substitute character (keeps clipboard)")
+map_keep_clipboard("x", "s", "Change selection (keeps clipboard)")
+map_keep_clipboard("n", "S", "Substitute line (keeps clipboard)")
+map_keep_clipboard("x", "S", "Change lines (keeps clipboard)")
 map("n", "<A-j>", "<cmd>silent! execute 'move .+' . v:count1<CR>==", "Move line down")
 map("n", "<A-k>", "<cmd>silent! execute 'move .-' . (v:count1 + 1)<CR>==", "Move line up")
 map(

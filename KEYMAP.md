@@ -38,33 +38,43 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### General
 
-| Keys        | Mode | Description                            | Buffer |
-| ----------- | ---- | -------------------------------------- | ------ |
-| `<`         | x    | Indent left, keep selection            |        |
-| `<Esc>`     | n    | Clear search highlight                 |        |
-| `<leader>?` | n    | Buffer keymaps (which-key)             |        |
-| `<leader>K` | n    | All keymaps (which-key)                |        |
-| `<leader>Q` | n    | Quit all                               |        |
-| `<leader>w` | n    | Write buffer                           |        |
-| `<M-j>`     | n    | Move line down                         |        |
-| `<M-j>`     | x    | Move selection down                    |        |
-| `<M-k>`     | n    | Move line up                           |        |
-| `<M-k>`     | x    | Move selection up                      |        |
-| `>`         | x    | Indent right, keep selection           |        |
-| `a=`        | x o  | Around assignment                      |        |
-| `aa`        | x o  | Around parameter                       |        |
-| `ac`        | x o  | Around class                           |        |
-| `af`        | x o  | Around function                        |        |
-| `ai`        | x o  | Around conditional                     |        |
-| `al`        | x o  | Around loop                            |        |
-| `i=`        | x o  | Inside assignment                      |        |
-| `ia`        | x o  | Inside parameter                       |        |
-| `ic`        | x o  | Inside class                           |        |
-| `if`        | x o  | Inside function                        |        |
-| `ii`        | x o  | Inside conditional                     |        |
-| `il`        | x o  | Inside loop                            |        |
-| `J`         | n    | Join lines (keep cursor)               |        |
-| `p`         | x    | Paste without overwriting the register |        |
+| Keys        | Mode | Description                                          | Buffer |
+| ----------- | ---- | ---------------------------------------------------- | ------ |
+| `<`         | x    | Indent left, keep selection                          |        |
+| `<Esc>`     | n    | Clear search highlight                               |        |
+| `<leader>?` | n    | Buffer keymaps (which-key)                           |        |
+| `<leader>K` | n    | All keymaps (which-key)                              |        |
+| `<leader>Q` | n    | Quit all                                             |        |
+| `<leader>w` | n    | Write buffer                                         |        |
+| `<M-j>`     | n    | Move line down                                       |        |
+| `<M-j>`     | x    | Move selection down                                  |        |
+| `<M-k>`     | n    | Move line up                                         |        |
+| `<M-k>`     | x    | Move selection up                                    |        |
+| `>`         | x    | Indent right, keep selection                         |        |
+| `a=`        | x o  | Around assignment                                    |        |
+| `aa`        | x o  | Around parameter                                     |        |
+| `ac`        | x o  | Around class                                         |        |
+| `af`        | x o  | Around function                                      |        |
+| `ai`        | x o  | Around conditional                                   |        |
+| `al`        | x o  | Around loop                                          |        |
+| `C`         | n    | Change to end of line (keeps clipboard)              |        |
+| `C`         | x    | Change lines, block to end of line (keeps clipboard) |        |
+| `c`         | n x  | Change (keeps clipboard)                             |        |
+| `D`         | n    | Delete to end of line (keeps clipboard)              |        |
+| `D`         | x    | Delete lines (keeps clipboard)                       |        |
+| `d`         | n x  | Delete (keeps clipboard)                             |        |
+| `i=`        | x o  | Inside assignment                                    |        |
+| `ia`        | x o  | Inside parameter                                     |        |
+| `ic`        | x o  | Inside class                                         |        |
+| `if`        | x o  | Inside function                                      |        |
+| `ii`        | x o  | Inside conditional                                   |        |
+| `il`        | x o  | Inside loop                                          |        |
+| `J`         | n    | Join lines (keep cursor)                             |        |
+| `p`         | x    | Paste without overwriting the register               |        |
+| `S`         | n    | Substitute line (keeps clipboard)                    |        |
+| `S`         | x    | Change lines (keeps clipboard)                       |        |
+| `s`         | n    | Substitute character (keeps clipboard)               |        |
+| `s`         | x    | Change selection (keeps clipboard)                   |        |
 
 ### Navigation
 
@@ -110,37 +120,37 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### LSP / Code
 
-| Keys         | Mode | Description                                           | Buffer                                           |
-| ------------ | ---- | ----------------------------------------------------- | ------------------------------------------------ |
-| `<C-W>d`     | n    | Show diagnostics under the cursor                     |                                                  |
-| `<leader>ca` | n x  | Code action                                           | every file buffer                                |
-| `<leader>cD` | n    | Buffer diagnostics to loclist                         | every file buffer                                |
-| `<leader>cd` | n    | Line diagnostics                                      | every file buffer                                |
-| `<leader>cf` | n x  | Format buffer / selection                             |                                                  |
-| `<leader>cL` | n    | Toggle code lenses                                    | lua, typescript, yaml.docker-compose             |
-| `<leader>cl` | n    | Run code lens                                         | lua, typescript, yaml.docker-compose             |
-| `<leader>cM` | n x  | Move to file                                          | typescript                                       |
-| `<leader>cm` | n    | Add missing imports                                   | typescript                                       |
-| `<leader>co` | n    | Organize imports                                      | typescript                                       |
-| `<leader>cr` | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose |
-| `<leader>cs` | n    | Source actions                                        | typescript                                       |
-| `<leader>cu` | n    | Remove unused imports                                 | typescript                                       |
-| `[D`         | n    | Jump to the first diagnostic in the current buffer    |                                                  |
-| `[d`         | n    | Jump to the previous diagnostic in the current buffer |                                                  |
-| `[e`         | n    | Previous error                                        |                                                  |
-| `]D`         | n    | Jump to the last diagnostic in the current buffer     |                                                  |
-| `]d`         | n    | Jump to the next diagnostic in the current buffer     |                                                  |
-| `]e`         | n    | Next error                                            |                                                  |
-| `gd`         | n    | Go to definition                                      | dockerfile, lua, typescript, yaml.docker-compose |
-| `gO`         | n    | vim.lsp.buf.document_symbol()                         |                                                  |
-| `gra`        | n x  | vim.lsp.buf.code_action()                             |                                                  |
-| `gri`        | n    | Implementations                                       | lua, typescript                                  |
-| `grn`        | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose |
-| `grr`        | n    | References (Trouble)                                  | lua, typescript                                  |
-| `grt`        | n    | Type definition                                       | lua, typescript                                  |
-| `grx`        | n    | vim.lsp.codelens.run()                                |                                                  |
-| `gs`         | n    | Go to source definition                               | typescript                                       |
-| `K`          | n    | vim.lsp.buf.hover()                                   | dockerfile, lua, typescript, yaml.docker-compose |
+| Keys         | Mode | Description                                           | Buffer                                                 |
+| ------------ | ---- | ----------------------------------------------------- | ------------------------------------------------------ |
+| `<C-W>d`     | n    | Show diagnostics under the cursor                     |                                                        |
+| `<leader>ca` | n x  | Code action                                           | every file buffer                                      |
+| `<leader>cD` | n    | Buffer diagnostics to loclist                         | every file buffer                                      |
+| `<leader>cd` | n    | Line diagnostics                                      | every file buffer                                      |
+| `<leader>cf` | n x  | Format buffer / selection                             |                                                        |
+| `<leader>cL` | n    | Toggle code lenses                                    | lua, typescript, yaml.docker-compose                   |
+| `<leader>cl` | n    | Run code lens                                         | lua, typescript, yaml.docker-compose                   |
+| `<leader>cM` | n x  | Move to file                                          | typescript                                             |
+| `<leader>cm` | n    | Add missing imports                                   | typescript                                             |
+| `<leader>co` | n    | Organize imports                                      | typescript                                             |
+| `<leader>cr` | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose       |
+| `<leader>cs` | n    | Source actions                                        | typescript                                             |
+| `<leader>cu` | n    | Remove unused imports                                 | typescript                                             |
+| `[D`         | n    | Jump to the first diagnostic in the current buffer    |                                                        |
+| `[d`         | n    | Jump to the previous diagnostic in the current buffer |                                                        |
+| `[e`         | n    | Previous error                                        |                                                        |
+| `]D`         | n    | Jump to the last diagnostic in the current buffer     |                                                        |
+| `]d`         | n    | Jump to the next diagnostic in the current buffer     |                                                        |
+| `]e`         | n    | Next error                                            |                                                        |
+| `gd`         | n    | Go to definition                                      | dockerfile, lua, typescript, yaml.docker-compose       |
+| `gO`         | n    | vim.lsp.buf.document_symbol()                         |                                                        |
+| `gra`        | n x  | vim.lsp.buf.code_action()                             |                                                        |
+| `gri`        | n    | Implementations                                       | lua, typescript                                        |
+| `grn`        | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose       |
+| `grr`        | n    | References (Trouble)                                  | lua, typescript                                        |
+| `grt`        | n    | Type definition                                       | lua, typescript                                        |
+| `grx`        | n    | vim.lsp.codelens.run()                                |                                                        |
+| `gs`         | n    | Go to source definition                               | typescript                                             |
+| `K`          | n    | vim.lsp.buf.hover()                                   | dockerfile, http, lua, typescript, yaml.docker-compose |
 
 ### Find
 
@@ -375,23 +385,23 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### Outline
 
-| Keys        | Mode | Description           | Buffer                                                |
-| ----------- | ---- | --------------------- | ----------------------------------------------------- |
-| `<leader>;` | n    | Pick breadcrumb       |                                                       |
-| `<leader>O` | n    | Outline navigator     |                                                       |
-| `<leader>o` | n    | Outline (symbol tree) |                                                       |
-| `{`         | n    | Previous symbol       | dockerfile, lua, sql, typescript, yaml.docker-compose |
-| `}`         | n    | Next symbol           | dockerfile, lua, sql, typescript, yaml.docker-compose |
+| Keys        | Mode | Description           | Buffer            |
+| ----------- | ---- | --------------------- | ----------------- |
+| `<leader>;` | n    | Pick breadcrumb       |                   |
+| `<leader>O` | n    | Outline navigator     |                   |
+| `<leader>o` | n    | Outline (symbol tree) |                   |
+| `{`         | n    | Previous symbol       | every file buffer |
+| `}`         | n    | Next symbol           | every file buffer |
 
 ### UI toggles
 
-| Keys         | Mode | Description                    | Buffer                                           |
-| ------------ | ---- | ------------------------------ | ------------------------------------------------ |
-| `<leader>uF` | n    | Toggle format on save (global) |                                                  |
-| `<leader>uf` | n    | Toggle format on save (buffer) |                                                  |
-| `<leader>ui` | n    | Toggle inlay hints             | dockerfile, lua, typescript, yaml.docker-compose |
-| `<leader>uk` | n    | Toggle sticky context          |                                                  |
-| `<leader>us` | n    | Toggle spell checking          |                                                  |
+| Keys         | Mode | Description                    | Buffer                                                 |
+| ------------ | ---- | ------------------------------ | ------------------------------------------------------ |
+| `<leader>uF` | n    | Toggle format on save (global) |                                                        |
+| `<leader>uf` | n    | Toggle format on save (buffer) |                                                        |
+| `<leader>ui` | n    | Toggle inlay hints             | dockerfile, http, lua, typescript, yaml.docker-compose |
+| `<leader>uk` | n    | Toggle sticky context          |                                                        |
+| `<leader>us` | n    | Toggle spell checking          |                                                        |
 
 ### Tooling
 

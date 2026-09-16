@@ -181,6 +181,9 @@ Further decisions, explained in README.md ("Implementation notes"):
 - dropbar's treesitter `valid_types` is narrowed to declarations. Its preview
   `reorient` uses `winrestview`, because `:normal` breaks the fuzzy prompt.
 - `grr` opens Trouble, not a picker.
+- `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
+  keymaps in `core/keymaps.lua` that keep an explicit named register); only
+  `x` / `X` cut to the clipboard.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
 - lualine's LSP progress follows work-done tokens from `LspProgress` event data;
