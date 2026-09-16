@@ -12,7 +12,7 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Neovim 0.12+**                | Core editor; the config uses 0.12 APIs throughout                                                                                                                     | `sudo snap install nvim --classic`                                                                                               |
 | **Git 2.31+**                   | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+                                                                                                        | `sudo apt install git`                                                                                                           |
-| **Node.js 20+** and npm         | TS/JS language servers, prettierd, js-debug-adapter, tree-sitter-cli                                                                                                  | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
+| **Node.js 20+** and npm         | TS/JS language servers, prettierd, sql-formatter, js-debug-adapter, tree-sitter-cli                                                                                   | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
 | **tree-sitter-cli ≥ 0.26.1**    | The `main` branch of nvim-treesitter builds parsers with it                                                                                                           | `npm install -g tree-sitter-cli`                                                                                                 |
 | **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential`                                                                                               |
 | **curl**                        | Downloads by Mason and by kulala for its backend                                                                                                                      | `sudo apt install curl`                                                                                                          |
@@ -39,7 +39,8 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 
 `vtsls`, `eslint-lsp`, `lua-language-server`, `json-lsp`, `yaml-language-server`,
 `docker-language-server`, `dockerfile-language-server`, `codebook`,
-`bash-language-server`, `prettierd`, `prettier`, `stylua`, `js-debug-adapter`.
+`bash-language-server`, `prettierd`, `prettier`, `stylua`, `js-debug-adapter`,
+`sql-formatter`.
 
 ## Installation
 
@@ -92,7 +93,7 @@ the `http/` collections in this repository.
 | Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons, statuscol.nvim (diagnostics and git signs on either side of the line numbers)               |
 | LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
 | Completion and snippets | blink.cmp, LuaSnip, friendly-snippets                                                                                                                                        |
-| Formatting              | conform.nvim with prettierd / prettier and stylua                                                                                                                            |
+| Formatting              | conform.nvim with prettierd / prettier, stylua and sql-formatter                                                                                                             |
 | Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
 | Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
@@ -176,6 +177,7 @@ plain data the rest of the config reads:
 | `folding.auto_fold_kinds`                                    | LSP fold kinds closed when a file is opened: `comment`, `imports`, `region`; `{}` turns auto-folding off                                                                                 |
 | `formatting.format_on_save`                                  | format on save; toggle with `<leader>uf` (buffer) / `<leader>uF` (global) or `:FormatDisable[!]` / `:FormatEnable[!]`                                                                    |
 | `formatting.timeout_ms`, `max_filesize`                      | milliseconds a formatter may block a save; files larger than `max_filesize` bytes are saved unformatted                                                                                  |
+| `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `H` shows gitignored files |
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `<cr>` on it merges instead of expanding; `false` keeps every folder on its own line  |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
@@ -366,6 +368,13 @@ when "cleaned up".
   "Delete `␊`" diagnostic means `rulesCustomizations` in
   `settings/lsp/servers/eslint.lua` needs a look; after editing `.prettierrc` run
   `prettierd restart`.
+- **SQL is formatted by sql-formatter**, which Mason installs with the other
+  tools. The `--language` conform passes (`formatting.sql_dialect`) is a default
+  only: sql-formatter looks for a `.sql-formatter.json` from Neovim's working
+  directory upwards and that file wins over the flag, so a project pins its own
+  dialect, indent and keyword case. `=` is no substitute — the treesitter SQL
+  indents align the lines a query already has and never re-wrap it. Query buffers
+  of vim-dadbod-ui are ordinary files and are formatted on save as well.
 - **The LSP log is off** (`vim.lsp.log.set_level(vim.log.levels.OFF)`): it grows
   to gigabytes. Turn it on only to debug a server.
 - **codebook:** `<leader>us` stops the server rather than hiding its

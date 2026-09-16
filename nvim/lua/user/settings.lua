@@ -33,6 +33,7 @@ return {
     format_on_save = true,
     timeout_ms = 3000,
     max_filesize = 1024 * 1024,
+    sql_dialect = "mysql",
   },
 
   explorer = {

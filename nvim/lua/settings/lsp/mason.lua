@@ -77,7 +77,7 @@ local lspconfig_opts = {
   automatic_enable = true,
 }
 
-M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter" }
+M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter", "sql-formatter" }
 
 local function ensure_extra_tools()
   local registry = require("mason-registry")

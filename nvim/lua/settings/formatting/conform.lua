@@ -41,6 +41,7 @@ M.opts = {
     markdown = prettier(),
     graphql = prettier(),
     lua = { "stylua" },
+    sql = { "sql_formatter" },
   },
   default_format_opts = {
     lsp_format = "fallback",
@@ -67,6 +68,10 @@ M.opts = {
   formatters = {
     prettierd = { inherit = true },
     stylua = { inherit = true },
+    sql_formatter = {
+      inherit = true,
+      prepend_args = { "--language", user.formatting.sql_dialect },
+    },
   },
   notify_on_error = true,
   notify_no_formatters = false,
