@@ -26,7 +26,7 @@ return {
   },
 
   folding = {
-    auto_fold_kinds = { "comment", "imports" },
+    auto_fold_kinds = { "comment" },
   },
 
   formatting = {
@@ -38,8 +38,8 @@ return {
 
   explorer = {
     position = "left",
-    width = "35%",
-    min_width = 36,
+    width = 48,
+    min_width = 40,
     hide_gitignored = true,
     group_empty_dirs = false,
   },
