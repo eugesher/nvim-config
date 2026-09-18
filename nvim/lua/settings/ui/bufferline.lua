@@ -90,6 +90,23 @@ local function delete_current()
   M.safe_buffer_delete(0, false)
 end
 
+local function delete_others()
+  local groups = require("bufferline.groups")
+  local elements = require("bufferline.state").components
+  local current = vim.api.nvim_get_current_buf()
+  local shown = vim.iter(elements):any(function(element)
+    return element.id == current
+  end)
+  if not shown then
+    return
+  end
+  for _, element in ipairs(elements) do
+    if element.id ~= current and not groups._is_pinned(element) then
+      M.safe_buffer_delete(element.id, false)
+    end
+  end
+end
+
 M.keys = {
   { "]b", "<cmd>BufferLineCycleNext<CR>", desc = "Next buffer" },
   { "[b", "<cmd>BufferLineCyclePrev<CR>", desc = "Previous buffer" },
@@ -101,7 +118,7 @@ M.keys = {
     end,
     desc = "Delete buffer (force)",
   },
-  { "<leader>bo", "<cmd>BufferLineCloseOthers<CR>", desc = "Delete other buffers" },
+  { "<leader>bo", delete_others, desc = "Delete other buffers (keep pinned)" },
   { "<leader>bp", "<cmd>BufferLinePick<CR>", desc = "Pick buffer" },
   { "<leader>bP", "<cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },
   { "<leader>b>", "<cmd>BufferLineMoveNext<CR>", desc = "Move buffer right" },

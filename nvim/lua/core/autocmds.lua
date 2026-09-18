@@ -105,3 +105,28 @@ autocmd("BufWritePre", {
     vim.fn.mkdir(vim.fn.fnamemodify(file, ":p:h"), "p")
   end,
 })
+
+local function is_empty_unnamed(buf)
+  return vim.api.nvim_buf_is_loaded(buf)
+    and vim.bo[buf].buflisted
+    and vim.bo[buf].buftype == ""
+    and not vim.bo[buf].modified
+    and vim.api.nvim_buf_get_name(buf) == ""
+    and vim.api.nvim_buf_line_count(buf) == 1
+    and vim.api.nvim_buf_get_lines(buf, 0, 1, false)[1] == ""
+end
+
+autocmd("BufWinEnter", {
+  group = augroup("replace_empty_buffer"),
+  desc = "Let a file buffer replace the empty unnamed one",
+  callback = function(event)
+    if vim.bo[event.buf].buftype ~= "" or vim.api.nvim_buf_get_name(event.buf) == "" then
+      return
+    end
+    for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+      if buf ~= event.buf and #vim.fn.win_findbuf(buf) == 0 and is_empty_unnamed(buf) then
+        pcall(vim.api.nvim_buf_delete, buf, {})
+      end
+    end
+  end,
+})

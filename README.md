@@ -331,6 +331,14 @@ when "cleaned up".
   write that fails or is declined — a read-only file asks first, the same way
   `:w` does — is reported and stays out of that number. The writes go through
   `BufWritePre`, so format on save runs for a buffer in the background too.
+- **A file buffer takes the place of the empty `[No Name]` buffer.** Neovim
+  starts with an unnamed buffer, and opening the first file from neo-tree or a
+  picker leaves it behind in the buffer list and in bufferline. The
+  `replace_empty_buffer` autocmd in `core/autocmds.lua` removes it as soon as a
+  file buffer is shown in a window, and only if it is really empty: listed,
+  without a name, without a `'buftype'`, unmodified and a single empty line, and
+  no window showing it. A scratch buffer that has text in it stays, and so does
+  an empty one that is still on screen in a split.
 - **`<leader>a` restarts Neovim with `:restart!`, not `:restart`.** Neovim 0.12
   starts a new server with the same arguments and reattaches the terminal UI, so
   the configuration is read again without leaving the shell, and `'confirm'`
@@ -361,6 +369,13 @@ when "cleaned up".
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
   keeps the window layout.
+- **`<leader>bo` keeps the pinned buffers.** `:BufferLineCloseOthers` walks the
+  whole tab list and closes everything but the current buffer, pins included.
+  The key runs `delete_others()` in `settings/ui/bufferline.lua` instead: it
+  reads bufferline's own components, leaves out the current buffer and every
+  buffer of the `pinned` group, and deletes the rest through
+  `safe_buffer_delete`. Pressed where the current buffer has no tab of its
+  own — in neo-tree, in a panel — it does nothing, the same as the command.
 - **lualine tracks LSP progress per work-done token** from the `LspProgress`
   event data and drops a task on its `end`. Neither `ev.match` (the kind
   expanded to a path, `/cwd/end`) nor `vim.lsp.status()` (everything the ring

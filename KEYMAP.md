@@ -79,45 +79,45 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### Navigation
 
-| Keys         | Mode  | Description               | Buffer |
-| ------------ | ----- | ------------------------- | ------ |
-| `<C-D>`      | n     | Half page down (centered) |        |
-| `<C-Down>`   | n     | Decrease window height    |        |
-| `<C-H>`      | n     | Go to left window         |        |
-| `<C-J>`      | n     | Go to lower window        |        |
-| `<C-K>`      | n     | Go to upper window        |        |
-| `<C-L>`      | n     | Go to right window        |        |
-| `<C-Left>`   | n     | Decrease window width     |        |
-| `<C-Right>`  | n     | Increase window width     |        |
-| `<C-U>`      | n     | Half page up (centered)   |        |
-| `<C-Up>`     | n     | Increase window height    |        |
-| `<leader>1`  | n     | Go to buffer 1            |        |
-| `<leader>2`  | n     | Go to buffer 2            |        |
-| `<leader>3`  | n     | Go to buffer 3            |        |
-| `<leader>4`  | n     | Go to buffer 4            |        |
-| `<leader>5`  | n     | Go to buffer 5            |        |
-| `<leader>6`  | n     | Go to buffer 6            |        |
-| `<leader>7`  | n     | Go to buffer 7            |        |
-| `<leader>8`  | n     | Go to buffer 8            |        |
-| `<leader>9`  | n     | Go to buffer 9            |        |
-| `<leader>b<` | n     | Move buffer left          |        |
-| `<leader>b>` | n     | Move buffer right         |        |
-| `<leader>bD` | n     | Delete buffer (force)     |        |
-| `<leader>bd` | n     | Delete buffer             |        |
-| `<leader>bo` | n     | Delete other buffers      |        |
-| `<leader>bP` | n     | Toggle pin                |        |
-| `<leader>bp` | n     | Pick buffer               |        |
-| `<leader>q`  | n     | Delete buffer             |        |
-| `[a`         | n x o | Previous parameter        |        |
-| `[b`         | n     | Previous buffer           |        |
-| `[f`         | n x o | Previous function         |        |
-| `[q`         | n     | :cprevious                |        |
-| `]a`         | n x o | Next parameter            |        |
-| `]b`         | n     | Next buffer               |        |
-| `]f`         | n x o | Next function             |        |
-| `]q`         | n     | :cnext                    |        |
-| `N`          | n     | Previous match (centered) |        |
-| `n`          | n     | Next match (centered)     |        |
+| Keys         | Mode  | Description                        | Buffer |
+| ------------ | ----- | ---------------------------------- | ------ |
+| `<C-D>`      | n     | Half page down (centered)          |        |
+| `<C-Down>`   | n     | Decrease window height             |        |
+| `<C-H>`      | n     | Go to left window                  |        |
+| `<C-J>`      | n     | Go to lower window                 |        |
+| `<C-K>`      | n     | Go to upper window                 |        |
+| `<C-L>`      | n     | Go to right window                 |        |
+| `<C-Left>`   | n     | Decrease window width              |        |
+| `<C-Right>`  | n     | Increase window width              |        |
+| `<C-U>`      | n     | Half page up (centered)            |        |
+| `<C-Up>`     | n     | Increase window height             |        |
+| `<leader>1`  | n     | Go to buffer 1                     |        |
+| `<leader>2`  | n     | Go to buffer 2                     |        |
+| `<leader>3`  | n     | Go to buffer 3                     |        |
+| `<leader>4`  | n     | Go to buffer 4                     |        |
+| `<leader>5`  | n     | Go to buffer 5                     |        |
+| `<leader>6`  | n     | Go to buffer 6                     |        |
+| `<leader>7`  | n     | Go to buffer 7                     |        |
+| `<leader>8`  | n     | Go to buffer 8                     |        |
+| `<leader>9`  | n     | Go to buffer 9                     |        |
+| `<leader>b<` | n     | Move buffer left                   |        |
+| `<leader>b>` | n     | Move buffer right                  |        |
+| `<leader>bD` | n     | Delete buffer (force)              |        |
+| `<leader>bd` | n     | Delete buffer                      |        |
+| `<leader>bo` | n     | Delete other buffers (keep pinned) |        |
+| `<leader>bP` | n     | Toggle pin                         |        |
+| `<leader>bp` | n     | Pick buffer                        |        |
+| `<leader>q`  | n     | Delete buffer                      |        |
+| `[a`         | n x o | Previous parameter                 |        |
+| `[b`         | n     | Previous buffer                    |        |
+| `[f`         | n x o | Previous function                  |        |
+| `[q`         | n     | :cprevious                         |        |
+| `]a`         | n x o | Next parameter                     |        |
+| `]b`         | n     | Next buffer                        |        |
+| `]f`         | n x o | Next function                      |        |
+| `]q`         | n     | :cnext                             |        |
+| `N`          | n     | Previous match (centered)          |        |
+| `n`          | n     | Next match (centered)              |        |
 
 ### LSP / Code
 
