@@ -11,4 +11,5 @@ return {
     dependencies = { "rafamadriz/friendly-snippets" },
   }),
   spec("rafamadriz/friendly-snippets"),
+  spec("windwp/nvim-autopairs", "completion.autopairs"),
 }

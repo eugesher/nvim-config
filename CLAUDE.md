@@ -185,6 +185,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   `reorient` uses `winrestview`, because `:normal` breaks the fuzzy prompt.
 - `<leader>w` writes every named buffer in a loop, not with `:wall`, which
   errors on a buffer that has no file name.
+- nvim-autopairs keeps its `<CR>` mapping: blink.cmp owns the key and falls
+  back to it while the completion menu is closed.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

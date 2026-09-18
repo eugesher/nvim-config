@@ -22,6 +22,8 @@ local ALLOWED_DUPLICATES = {
   { lhs = "]a", mode = "n" },
   { lhs = "[t", mode = "n" },
   { lhs = "]t", mode = "n" },
+  { mode = "i", source = "nvim-autopairs" },
+  { lhs = "<CR>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<C-j>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<C-n>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<C-k>", mode = "i", source = "blink/cmp/keymap" },

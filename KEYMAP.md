@@ -420,6 +420,11 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 | Keys        | Mode | Description                                             | Buffer            |
 | ----------- | ---- | ------------------------------------------------------- | ----------------- |
+| `"`         | i    | autopairs map key                                       | every file buffer |
+| `'`         | i    | autopairs map key                                       | every file buffer |
+| `(`         | i    | autopairs map key                                       | every file buffer |
+| `)`         | i    | autopairs map key                                       | every file buffer |
+| `<BS>`      | i    | autopairs delete                                        | every file buffer |
 | `<C-B>`     | i    | blink.cmp: Scroll Documentation Up                      | every file buffer |
 | `<C-E>`     | i    | blink.cmp: Hide                                         | every file buffer |
 | `<C-F>`     | i    | blink.cmp: Scroll Documentation Down                    | every file buffer |
@@ -429,9 +434,15 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<C-P>`     | i    | blink.cmp: Select Prev                                  | every file buffer |
 | `<C-S>`     | i    | vim.lsp.buf.signature_help()                            |                   |
 | `<C-Space>` | i    | blink.cmp: Show, Show Documentation, Hide Documentation | every file buffer |
+| `<CR>`      | i    | autopairs completion confirm                            |                   |
 | `<CR>`      | i    | blink.cmp: Accept                                       | every file buffer |
 | `<S-Tab>`   | s i  | blink.cmp: Select Prev, Snippet Backward                | every file buffer |
 | `<Tab>`     | s i  | blink.cmp: Select Next, Snippet Forward                 | every file buffer |
+| `[`         | i    | autopairs map key                                       | every file buffer |
+| `]`         | i    | autopairs map key                                       | every file buffer |
+| `` ` ``     | i    | autopairs map key                                       | every file buffer |
+| `{`         | i    | autopairs map key                                       | every file buffer |
+| `}`         | i    | autopairs map key                                       | every file buffer |
 
 <!-- keymaps:end -->
 
@@ -494,6 +505,11 @@ and `source` (a substring of the defining file) narrow an entry down.
   `<C-p>`, and `<Tab>` / `<S-Tab>` move through it as well, jumping through
   snippet fields only while the menu is closed. They take the place of Neovim's
   `vim.snippet` keys and fall back to them when neither applies.
+- nvim-autopairs, matched by its file: its insert-mode keys (`(`, `)`, `[`,
+  `]`, `{`, `}`, `"`, `'`, `` ` ``) all carry the plugin's own description
+  "autopairs map key", and blink.cmp's buffer-local `<CR>` hides its global one
+  on purpose — blink accepts a completion and falls back to nvim-autopairs when
+  the menu is closed.
 - `<leader>1` … `<leader>9` need no entry: each has its own description.
 
 **Keymaps without a description** — other people's code, matched by the

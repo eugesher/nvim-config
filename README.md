@@ -92,7 +92,7 @@ the `http/` collections in this repository.
 | Plugin manager          | lazy.nvim, versions pinned by `nvim/lazy-lock.json`                                                                                                                          |
 | Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons, statuscol.nvim (diagnostics and git signs on either side of the line numbers)               |
 | LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
-| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets                                                                                                                                        |
+| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets, nvim-autopairs                                                                                                                        |
 | Formatting              | conform.nvim with prettierd / prettier, stylua and sql-formatter                                                                                                             |
 | Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
@@ -537,6 +537,20 @@ when "cleaned up".
   closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
   menu to free it for the next field. Neither key accepts a completion — `<CR>`
   does — and the dadbod source is enabled for SQL filetypes only.
+- **nvim-autopairs** writes the closing bracket or quote to the right of the
+  cursor, and `<BS>` on the opening one takes both away while the pair is still
+  empty. It holds back where a closing character would be in the way: none is
+  added in front of a word or of `%`, `'`, `[`, `"`, `.`, `` ` `` or `$`
+  (`ignored_next_char`), typing the closing character over the one it added
+  moves the cursor past it instead of doubling it, and nothing is paired while a
+  macro is recorded or replayed, so a recorded `(` stays a single `(`. `<CR>`
+  between the two halves opens an indented line between them: blink.cmp keeps
+  the key for accepting a completion and falls back to nvim-autopairs whenever
+  the menu is closed. `check_ts` stays off — its own rules already cover the
+  quotes and brackets of these filetypes, and the treesitter check needs a list
+  of node types per language — and `disable_filetype` names neo-tree's popup
+  input, the one prompt here that takes insert-mode keys. `<C-w>` and `<C-h>`
+  stay Vim's own (`map_c_w`, `map_c_h`).
 
 ## Known limitations
 
