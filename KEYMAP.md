@@ -46,7 +46,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>a` | n    | Restart Neovim                                       |        |
 | `<leader>K` | n    | All keymaps (which-key)                              |        |
 | `<leader>Q` | n    | Quit all                                             |        |
-| `<leader>w` | n    | Write buffer                                         |        |
+| `<leader>w` | n    | Write all buffers                                    |        |
 | `<M-j>`     | n    | Move line down                                       |        |
 | `<M-j>`     | x    | Move selection down                                  |        |
 | `<M-k>`     | n    | Move line up                                         |        |

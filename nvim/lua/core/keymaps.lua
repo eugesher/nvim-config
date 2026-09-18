@@ -11,7 +11,28 @@ local function map_keep_clipboard(mode, lhs, desc)
   end, { desc = desc, expr = true, silent = true })
 end
 
-map("n", "<leader>w", "<cmd>write<CR>", "Write buffer")
+local function write_all()
+  local written = 0
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if
+      vim.bo[buf].modified
+      and vim.bo[buf].buftype == ""
+      and vim.api.nvim_buf_get_name(buf) ~= ""
+    then
+      local ok, err = pcall(vim.api.nvim_buf_call, buf, function()
+        vim.cmd("silent write")
+      end)
+      if not ok then
+        vim.notify(err, vim.log.levels.ERROR)
+      elseif not vim.bo[buf].modified then
+        written = written + 1
+      end
+    end
+  end
+  vim.notify(("%d buffer%s written"):format(written, written == 1 and "" or "s"))
+end
+
+map("n", "<leader>w", write_all, "Write all buffers")
 map("n", "<leader>Q", "<cmd>qa<CR>", "Quit all")
 map("n", "<leader>a", "<cmd>restart!<CR>", "Restart Neovim")
 

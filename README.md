@@ -322,6 +322,15 @@ when "cleaned up".
   fills register `a`; an explicit `"+` or `"*` looks the same as no register and
   goes to the black hole too. In oil a file is moved with `Vx` and `p`: after
   `dd`, `p` would paste the clipboard as a new file name.
+- **`<leader>w` writes every named buffer.** `:wall` writes them as well, but it
+  ends with `E141: No file name for buffer N` as soon as a buffer that was never
+  saved is open. `write_all()` in `core/keymaps.lua` walks the buffer list
+  instead and takes the modified buffers that have a name and an empty
+  `'buftype'`; each is written with `:silent write`, so the per-file reports do
+  not add up to a hit-enter prompt, and one message gives the number written. A
+  write that fails or is declined — a read-only file asks first, the same way
+  `:w` does — is reported and stays out of that number. The writes go through
+  `BufWritePre`, so format on save runs for a buffer in the background too.
 - **`<leader>a` restarts Neovim with `:restart!`, not `:restart`.** Neovim 0.12
   starts a new server with the same arguments and reattaches the terminal UI, so
   the configuration is read again without leaving the shell, and `'confirm'`
