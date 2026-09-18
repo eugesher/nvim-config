@@ -3,7 +3,7 @@
 Guidance for Claude Code in this repository: the source of a Neovim 0.12
 configuration for NestJS backend work. `nvim/` is the configuration itself;
 `install.sh` copies it to `~/.config/nvim`. README.md explains usage — this file
-explains how the code is organised and which decisions must not be "fixed".
+explains how the code is organized and which decisions must not be "fixed".
 
 ## Commands
 
@@ -12,7 +12,7 @@ explains how the code is organised and which decisions must not be "fixed".
 nvim                                                  # first start: lazy.nvim installs plugins, Mason installs servers
 stylua --check nvim/                                  # or: npx --yes @johnnymorganz/stylua-bin --check nvim/
 nvim --headless -l scripts/audit-keymaps.lua          # keymap audit, must exit 0
-nvim --headless -l scripts/dump-keymaps.lua --readme  # regenerate the key tables in README.md
+nvim --headless -l scripts/dump-keymaps.lua --write   # regenerate the key tables in KEYMAP.md
 nvim --headless -c 'lua print(vim.inspect(require("lazy").stats()))' -c qa
 ```
 
@@ -41,18 +41,20 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | --- | --- |
 | `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, filetypes, the lazy.nvim bootstrap |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
-| `lua/settings/<name>.lua` | **Everything** a plugin is configured with, one file per plugin or domain |
-| `lua/settings/lsp/` | `init.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `servers/<name>.lua` |
+| `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
+| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
 
-A spec is built with `require("settings").spec(repo, name, extra)`. The settings
-module `settings/<name>.lua` returns any of `enabled`, `cond`, `event`, `ft`,
+A spec is built with `require("settings").spec(repo, name, extra)`, where `name`
+is `"<group>.<name>"` (`"ui.theme"`). The settings module
+`settings/<group>/<name>.lua` returns any of `enabled`, `cond`, `event`, `ft`,
 `cmd`, `keys`, `opts`, `init`, `config`, `priority`, `lazy`, `which_key`; those
 fields go into the lazy.nvim spec, anything else is ignored. Modules use that to
-export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
-`M.extra_tools` in lsp/mason).
+export helpers other code reads (`M.groups` in whichkey/whichkey,
+`M.server_path` in dap/dap, `M.servers` in lsp/lspconfig, `M.extra_tools` in
+lsp/mason).
 
 `:checkhealth myconfig` lives under `lua/myconfig/` because checkhealth finds
 `lua/<name>/health.lua`; a `core/health.lua` would add a second, duplicate
@@ -63,18 +65,30 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 - **Options explicitly, defaults included — but only documented ones** (README,
   `:help`, or the config file the plugin's docs name as the reference). Never dig
   out undocumented internal fields.
-- The first line of every `settings/*.lua`:
-  `-- defaults verified against <plugin> vX.Y.Z (YYYY-MM-DD)` (or `@<commit>`).
+- No explanatory comments in code: Lua, shell scripts and the scripts in `.http`
+  files. An explanation that matters goes to README.md ("Implementation notes");
+  the reason for a keymap audit exception goes to KEYMAP.md ("Audit exceptions").
+  Two kinds of comments stay: tool directives (`---@diagnostic` for lua_ls) and
+  commented-out code the user keeps (`settings/ui/theme.lua`).
 - Values a user may want to change go into `lua/user/settings.lua` and are read
   from there, never hard-coded in a settings file.
-- Highlights go into `custom_highlights` in `settings/theme.lua` (never
-  `color_overrides`), colours from the catppuccin palette.
+- Highlights go into `custom_highlights` in `settings/ui/theme.lua` (never
+  `color_overrides`), colors from the catppuccin palette.
+- `user.colorscheme.enabled = false` must leave Neovim's default colorscheme and
+  every plugin's own colors. Color code outside `settings/ui/theme.lua` goes
+  through its helpers (`palette()`, `lualine_theme()`, `bufferline_highlights()`,
+  `neo_tree_handlers()`), which return the plugin default in that case. Never
+  `require("catppuccin…")` elsewhere: the spec switches with `cond` (the plugin
+  stays installed and locked), and lazy.nvim errors on requiring a plugin whose
+  `cond` is false.
 - Glyphs come from `settings/icons.lua` only (Nerd Fonts v3, no padding).
 - A new panel filetype has to be added to every exclusion list: `PANELS` in
-  `settings/autosession.lua`, `EXCLUDED_FILETYPES` in `settings/dropbar.lua`,
-  `disable.ft` in `settings/whichkey.lua`, `panels` in `settings/lualine.lua`,
-  and the lists in `treesitter-context.lua` and `indent.lua`. Bottom panels use
-  `user.ui.panel_height`.
+  `settings/session/autosession.lua`, `EXCLUDED_FILETYPES` in
+  `settings/structure/dropbar.lua`, `disable.ft` in `settings/whichkey/whichkey.lua`,
+  `panels` in `settings/ui/lualine.lua`, `ft_ignore` in `settings/ui/statuscol.lua`,
+  and the lists in
+  `settings/treesitter/treesitter-context.lua` and `settings/ui/indent.lua`.
+  Bottom panels use `user.ui.panel_height`.
 
 ## Keymaps
 
@@ -87,10 +101,15 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 - Never map `]n` / `[n`, `an` / `in` (Neovim 0.12 treesitter selection) or
   `]c` / `[c` (diff mode).
 - Every keymap has a `desc`, written next to its plugin (`keys` or the module's
-  `which_key` field). `settings/whichkey.lua` declares groups only.
+  `which_key` field). `settings/whichkey/whichkey.lua` declares groups only.
+  Neovim's fold commands are no keymaps: their extra which-key descriptions sit
+  in the `which_key` field of `settings/structure/origami.lua`, and KEYMAP.md
+  lists them by hand under "Folds" — keep both in step. neogit's buffer keys
+  get their descriptions from `settings/git/neogit.lua`, keyed by the action
+  names of its `opts.mappings`: a new action there needs one.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
-  collision goes into its whitelist with the reason; then regenerate the README
-  tables.
+  collision goes into its whitelist, with the reason under "Audit exceptions" in
+  KEYMAP.md; then regenerate the tables there (`dump-keymaps.lua --write`).
 
 | Prefix | Group | Prefix | Group |
 | --- | --- | --- | --- |
@@ -104,7 +123,7 @@ export helpers other code reads (`M.groups` in whichkey, `M.server_path` in dap,
 | `<leader>h` | HTTP (only in .http / .rest buffers) | `<leader>x` | Problems (trouble) |
 | `<leader>l` | LSP / tooling meta | `<leader>1..9` | bufferline buffers |
 | `<leader>m` | Multicursor | `<leader>;` | dropbar pick |
-| `<leader>a` | **free** | `<leader>gL` | **free** |
+| `<leader>a` | Restart Neovim | `<leader>gL` | **free** |
 
 ## Non-obvious decisions
 
@@ -113,6 +132,9 @@ These look like mistakes or omissions and are not. Change them only on request.
 - **The database is on `<leader>D`, not `<leader>db`.** `<leader>d` is the
   debugger group and `<leader>db` toggles a breakpoint; database keys under it
   would make that key wait for 'timeoutlen' and mix two groups in which-key.
+- **`<leader>a` is `:restart!`, with the bang.** Plain `:restart` saves and
+  restores a session of its own, beside the one auto-session writes on exit and
+  restores on start; the bang leaves sessions to auto-session alone.
 - **`g:db_ui_execute_on_save = 0`.** Saving a query buffer must never run it —
   `:w` in the wrong buffer is the classic way to execute a query against
   production. Queries run with `<localleader>x` / `<localleader>X` only.
@@ -152,17 +174,28 @@ These look like mistakes or omissions and are not. Change them only on request.
 - **nvim-treesitter is on the `main` branch** (textobjects too). It is a
   different plugin from the old `master`: it installs parsers and queries (built
   with tree-sitter-cli) and nothing more. `configs.setup{ highlight, indent }`
-  does not exist; `settings/treesitter.lua` starts highlighting, folds and indent
-  per buffer, and incremental selection is Neovim's own.
+  does not exist; `settings/treesitter/treesitter.lua` starts highlighting, folds
+  and indent per buffer, and incremental selection is Neovim's own.
 
-Further decisions recorded in the code, each with its measurement:
+Further decisions, explained in README.md ("Implementation notes"):
 
 - aerial loads on `BufReadPost` with LSP first, so `{` / `}` jump by symbol and
   class fields show up.
 - dropbar's treesitter `valid_types` is narrowed to declarations. Its preview
   `reorient` uses `winrestview`, because `:normal` breaks the fuzzy prompt.
 - `grr` opens Trouble, not a picker.
+- `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
+  keymaps in `core/keymaps.lua` that keep an explicit named register); only
+  `x` / `X` cut to the clipboard.
+- `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
+  jump through snippet fields only while the menu is closed.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
+- lualine's LSP progress follows work-done tokens from `LspProgress` event data;
+  `ev.match` and `vim.lsp.status()` left finished tasks in the status line.
+- nvim-origami's `useLspFoldsWithTreesitterFallback` is off: `update_folds()` in
+  `settings/treesitter/treesitter.lua` picks LSP or treesitter folds, so a file
+  above `treesitter.max_filesize` never gets `vim.lsp.foldexpr()`, which freezes
+  Neovim there.
 - `<leader>fp` and `<leader>cR` were removed as duplicates of `<leader>li` and
   `<leader>lr`.

@@ -1,61 +1,27 @@
--- Keymap audit: duplicates, prefix collisions, missing descriptions and the
--- key policy of this config.
---
---   nvim --headless -l scripts/audit-keymaps.lua [--list]
---
--- Examines the installed config (`~/.config/nvim`, copied by install.sh) with
--- every plugin loaded, globally and in sample `.ts`, `.lua`, `.sql`, `.http`,
--- `.yml` and Dockerfile buffers with their language servers attached. Exits 1
--- on a duplicate, a keymap without `desc` or a policy violation that is not
--- whitelisted below; prefix collisions are reported without failing. `--list`
--- also prints every keymap examined.
---
--- Not covered: keymaps that exist only for a moment — multicursor's layer
--- (while cursors are alive), plugin panels (neo-tree, trouble, aerial…).
-
 local here = vim.fs.dirname(vim.fn.fnamemodify(arg[0], ":p"))
 local common = dofile(here .. "/keymaps-common.lua")
 local out = common.out
 
 local LIST = vim.tbl_contains(arg, "--list")
 
--- Whitelist ---------------------------------------------------------------------
--- Every entry is a decision made in an earlier task. `lhs` is written the way
--- the config writes it; `mode` and `source` (a substring of the defining file)
--- narrow an entry down when given.
-
 local ALLOWED_DUPLICATES = {
-  -- One rename (inc-rename, live preview), three keys: Neovim's own `grn` and
-  -- aliases in the Code and Refactor namespaces (task 24).
   { lhs = "grn" },
   { lhs = "<leader>cr" },
   { lhs = "<leader>rn" },
-  -- Neovim's LSP defaults replaced on LspAttach by the fzf-lua pickers (task 10)
-  -- and, for references, by Trouble (task 20). `gra` stays Neovim's.
   { lhs = "gri", source = "settings/lsp/keymaps.lua" },
   { lhs = "grr", source = "settings/lsp/keymaps.lua" },
   { lhs = "grt", source = "settings/lsp/keymaps.lua" },
-  -- `<leader>q` closes the buffer like `<leader>bd` (task 03).
   { lhs = "<leader>q" },
   { lhs = "<leader>bd" },
-  -- gitsigns has a single hunk text object; `ih` and `ah` both select it (task 13).
   { lhs = "ih" },
   { lhs = "ah" },
-  -- Neovim defaults given another meaning:
-  -- `<C-l>` redraw → window to the right (task 02; `<Esc>` clears the search highlight);
   { lhs = "<C-l>", mode = "n", source = "core/keymaps.lua" },
-  -- `[b` / `]b` :bprevious / :bnext → the same, in bufferline's order (task 03);
   { lhs = "[b", mode = "n" },
   { lhs = "]b", mode = "n" },
-  -- `[a` / `]a` argument list → previous / next parameter (treesitter, task 05);
   { lhs = "[a", mode = "n" },
   { lhs = "]a", mode = "n" },
-  -- `[t` / `]t` tag stack → previous / next failed test (neotest, task 18).
   { lhs = "[t", mode = "n" },
   { lhs = "]t", mode = "n" },
-  -- blink.cmp (task 08): `<C-j>` / `<C-k>` move through the completion menu like
-  -- `<C-n>` / `<C-p>`, and `<Tab>` / `<S-Tab>` jump through snippet fields
-  -- instead of Neovim's own `vim.snippet` keys, falling back to them otherwise.
   { lhs = "<C-j>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<C-n>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<C-k>", mode = "i", source = "blink/cmp/keymap" },
@@ -64,39 +30,22 @@ local ALLOWED_DUPLICATES = {
   { lhs = "<S-Tab>", mode = "i", source = "blink/cmp/keymap" },
   { lhs = "<Tab>", mode = "s", source = "blink/cmp/keymap" },
   { lhs = "<S-Tab>", mode = "s", source = "blink/cmp/keymap" },
-  -- `<leader>1`…`<leader>9` (bufferline) need no entry: every one has its own
-  -- description, so none of them is ever reported.
 }
 
--- Keymaps without `desc` in other people's code, matched by the defining file.
 local ALLOWED_WITHOUT_DESC = {
-  -- matchit, bundled with Neovim and loaded by default: `%`, `[%`, `]%`, `g%`, `a%`.
   { source = "pack/dist/opt/matchit/plugin/matchit.vim" },
-  -- Filetype plugins bundled with Neovim, e.g. the section jumps `[[`, `]]`,
-  -- `[{`, `]"` of ftplugin/sql.vim.
   { source = "$VIMRUNTIME/ftplugin/" },
-  -- bufferline's hover handler; 'mousemoveevent' is on for it (task 03).
   { lhs = "<MouseMove>", source = "bufferline/hover.lua" },
-  -- multicursor.nvim keeps insert-mode cursor movement in sync (task 25).
   { lhs = "<Left>", mode = "i", source = "multicursor-nvim/core.lua" },
   { lhs = "<Right>", mode = "i", source = "multicursor-nvim/core.lua" },
-  -- LuaSnip's `cut_selection_keys`: a selection cut into `$TM_SELECTED_TEXT` (task 08).
   { lhs = "<Tab>", mode = "x", source = "luasnip/config.lua" },
 }
 
--- Keys that are both a keymap and the start of longer ones, checked and fine.
 local ALLOWED_PREFIXES = {
-  -- `]t` / `[t` (neotest) and `]td` / `[td` (todo-comments): the short ones
-  -- wait 'timeoutlen' (400 ms) before jumping to a failed test, the long ones
-  -- jump to a TODO at once (tasks 18 and 20).
   { lhs = "]t", mode = "n" },
   { lhs = "[t", mode = "n" },
 }
 
--- Checks ----------------------------------------------------------------------
-
--- Called after the config is loaded: `<leader>` means nothing before init.lua
--- has set it.
 local function normalize_whitelists()
   for _, list in ipairs({ ALLOWED_DUPLICATES, ALLOWED_WITHOUT_DESC, ALLOWED_PREFIXES }) do
     for _, entry in ipairs(list) do
@@ -135,8 +84,6 @@ local function section(title, items, fail)
   end
 end
 
--- Run ---------------------------------------------------------------------------
-
 local recording = common.start_recording()
 common.bootstrap()
 normalize_whitelists()
@@ -173,7 +120,6 @@ if LIST then
   end
 end
 
--- What a buffer actually sees: its own keymaps, then the global ones it does not hide.
 local function effective(buffer_maps)
   local seen, maps = {}, {}
   for _, map in ipairs(buffer_maps) do
@@ -188,12 +134,8 @@ local function effective(buffer_maps)
   return maps
 end
 
--- 2. Duplicates.
 local duplicates = {}
 
--- 2a. The same key defined twice in one scope, Neovim's defaults included. A
--- keymap set again by the same code with the same description is a refresh
--- (a second language server attaching), not a second definition.
 for _, r in ipairs(recording.redefinitions) do
   local internal = common.is_internal(r.key, r.first.desc)
     or common.is_internal(r.key, r.second.desc)
@@ -213,7 +155,6 @@ for _, r in ipairs(recording.redefinitions) do
   end
 end
 
--- 2b. A buffer-local keymap hiding a global one.
 local global_index = {}
 for _, map in ipairs(global) do
   global_index[map.mode .. "\0" .. map.key] = map
@@ -238,7 +179,6 @@ for _, buffer in ipairs(buffers) do
   end
 end
 
--- 2c. Keys with the same description: one action bound twice.
 local function aliases(maps, label, buffer_only)
   local by_desc = {}
   for _, map in ipairs(maps) do
@@ -278,10 +218,8 @@ for _, buffer in ipairs(buffers) do
 end
 section("Duplicates", duplicates, true)
 
--- 3. A key that is a keymap and a whole prefix of other keymaps, without being a
--- declared which-key group: the shorter one waits for 'timeoutlen' first.
 local groups = {}
-for _, group in ipairs(require("settings.whichkey").groups) do
+for _, group in ipairs(require("settings.whichkey.whichkey").groups) do
   groups[common.key(group[1])] = true
 end
 local collisions = {}
@@ -321,7 +259,6 @@ for _, buffer in ipairs(buffers) do
 end
 section("Prefix collisions (not failing)", collisions, false)
 
--- 4. Keymaps without a description.
 local undescribed = {}
 for _, scope in ipairs({ { label = "global", maps = global }, unpack(buffers) }) do
   for _, map in ipairs(scope.maps) do
@@ -342,7 +279,6 @@ for _, scope in ipairs({ { label = "global", maps = global }, unpack(buffers) })
 end
 section("Keymaps without desc", undescribed, true)
 
--- 5. Key policy of the config.
 local policy = {}
 local function each_map(fn)
   for _, scope in ipairs({ { label = "global", maps = global }, unpack(buffers) }) do
@@ -358,34 +294,29 @@ local reserved = {}
 for _, lhs in ipairs({ "]n", "[n", "an", "in", "]c", "[c" }) do
   reserved[common.key(lhs)] = true
 end
-local free = vim.tbl_map(common.key, { "<leader>a", "<leader>gL" })
+local free = vim.tbl_map(common.key, { "<leader>gL" })
 local alt_allowed = { ["<M-j>"] = true, ["<M-k>"] = true }
 each_map(function(map, label)
-  -- Rule 5: the Alt layer holds nothing but moving lines.
   if map.key:find("<M%-") and not alt_allowed[map.key] then
     policy[#policy + 1] = "Alt layer (only <A-j> / <A-k>): " .. describe(map, label)
   end
-  -- Rule 7: keys that belong to Neovim itself.
   if reserved[map.key] and not map.default then
     policy[#policy + 1] = "reserved for Neovim: " .. describe(map, label)
   end
-  -- Keys kept free on purpose.
   for _, key in ipairs(free) do
     if map.key == key or common.is_prefix(key, map.key) then
       policy[#policy + 1] = key .. " must stay free: " .. describe(map, label)
     end
   end
 end)
--- which-key: groups only, each with an icon; keymap descriptions live next to
--- their plugin (task 04).
-for _, group in ipairs(require("settings.whichkey").groups) do
+for _, group in ipairs(require("settings.whichkey.whichkey").groups) do
   if not group.group or not group.icon or group[2] ~= nil or group.desc ~= nil then
-    policy[#policy + 1] = "settings/whichkey.lua declares a keymap, not a group: " .. group[1]
+    policy[#policy + 1] = "settings/whichkey/whichkey.lua declares a keymap, not a group: "
+      .. group[1]
   end
 end
 section("Policy violations", policy, true)
 
--- Whitelist entries that matched nothing are stale.
 local stale = {}
 for name, list in pairs({
   duplicates = ALLOWED_DUPLICATES,

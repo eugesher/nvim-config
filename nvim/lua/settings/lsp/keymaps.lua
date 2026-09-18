@@ -1,28 +1,7 @@
--- defaults verified against Neovim v0.12.5 (2026-09-11)
---
--- The only LspAttach autocmd of the config. Every LSP keymap is created here,
--- buffer-local, and only for methods the attached server supports: a key that
--- silently does nothing is worse than no key. LspDetach undoes all of it once
--- the last client has left the buffer, so no LSP keymap outlives its server.
---
--- Neovim's own LSP maps stay as they are: K, gra, grr, gri, grt, gO and <C-s>
--- in insert mode. Ours are added on top as aliases. The one exception is `grn`,
--- which is pointed at inc-rename below — same rename, with a live preview.
---
--- Server-specific keymaps live next to their server: a `keymaps(client, buf, map)`
--- function in settings/lsp/servers/<name>.lua is called from here for that client.
--- Every keymap remembers which clients registered it and disappears when the
--- last of them detaches (e.g. vtsls' keys go with vtsls, eslint may stay).
--- gd / gri / grt open fzf-lua pickers (settings/fzf.lua); a single result jumps
--- straight to it. Neovim's own functions serve as the fallback. References are
--- the exception — they go to trouble (task 20), see `grr` below.
-
 local user = require("user.settings")
 
 local M = {}
 
--- owners[buf]["<mode> <lhs>"] = set of client ids that registered the keymap.
----@type table<integer, table<string, table<integer, true>>>
 local owners = {}
 
 local function map(buf, client_id, modes, lhs, rhs, desc, opts)
@@ -36,7 +15,6 @@ local function map(buf, client_id, modes, lhs, rhs, desc, opts)
   end
 end
 
--- An fzf-lua LSP picker, or Neovim's own function when fzf-lua is unavailable.
 local function picker(name, fallback)
   return function()
     local ok, fzf = pcall(require, "fzf-lua")
@@ -69,9 +47,6 @@ local function on_attach(event)
     bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
   end
   if supports("textDocument/references") then
-    -- Trouble instead of the picker (task 20): a symbol with dozens of uses is
-    -- easier to walk through in a list that stays open and previews every hit.
-    -- Decided deliberately — gd / gri / grt keep their fzf-lua pickers.
     bmap("n", "grr", "<cmd>Trouble lsp_references toggle focus=true<cr>", "References (Trouble)")
   end
   if supports("textDocument/implementation") then
@@ -87,12 +62,6 @@ local function on_attach(event)
     bmap({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
   end
   if supports("textDocument/rename") then
-    -- Renaming goes through inc-rename: the same LSP rename, but every
-    -- occurrence in the project updates live while the new name is typed
-    -- (settings/inc-rename.lua). `grn` keeps Neovim's own meaning and only gains
-    -- the preview; `<leader>cr` is its alias in the code namespace and
-    -- `<leader>rn` the one in the refactor namespace — a deliberate duplicate
-    -- (task 24), not an oversight to be cleaned up.
     local function rename()
       return ":IncRename " .. vim.fn.expand("<cword>")
     end
@@ -102,15 +71,12 @@ local function on_attach(event)
   bmap("n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
   bmap("n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")
   if supports("textDocument/codeLens") then
-    -- 0.12: code lenses refresh themselves once enabled (`codelens.refresh()` is deprecated).
     vim.lsp.codelens.enable(true, { bufnr = buf })
     bmap("n", "<leader>cl", vim.lsp.codelens.run, "Run code lens")
     bmap("n", "<leader>cL", function()
       vim.lsp.codelens.enable(not vim.lsp.codelens.is_enabled({ bufnr = buf }), { bufnr = buf })
     end, "Toggle code lenses")
   end
-  -- Restarting servers is `<leader>lr` (settings/lsp/init.lua), global: a copy
-  -- here as `<leader>cR` was removed by the keymap audit (task 27).
   if supports("textDocument/inlayHint") then
     vim.lsp.inlay_hint.enable(user.lsp.inlay_hints, { bufnr = buf })
     bmap("n", "<leader>ui", function()
@@ -120,8 +86,10 @@ local function on_attach(event)
   if supports("textDocument/documentColor") then
     vim.lsp.document_color.enable(true, { bufnr = buf })
   end
+  if supports("textDocument/foldingRange") then
+    require("settings.treesitter.treesitter").update_folds(buf)
+  end
   if supports("textDocument/documentHighlight") then
-    -- Highlight other occurrences of the symbol under the cursor after 'updatetime'.
     local group = vim.api.nvim_create_augroup(highlight_group(buf), { clear = true })
     vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
       group = group,
@@ -137,7 +105,6 @@ local function on_attach(event)
     })
   end
 
-  -- Server-specific keymaps (settings/lsp/servers/<name>.lua, field `keymaps`).
   local ok, server = pcall(require, "settings.lsp.servers." .. client.name)
   if ok and type(server) == "table" and type(server.keymaps) == "function" then
     server.keymaps(client, buf, bmap)
@@ -150,10 +117,11 @@ local function on_detach(event)
     owners[buf] = nil
     return
   end
-  -- The detaching client is still listed during LspDetach.
   local others = vim.tbl_filter(function(c)
     return c.id ~= event.data.client_id
   end, vim.lsp.get_clients({ bufnr = buf }))
+
+  require("settings.treesitter.treesitter").update_folds(buf, event.data.client_id)
 
   local highlight_left = vim.iter(others):any(function(c)
     return c:supports_method("textDocument/documentHighlight", buf)
@@ -163,7 +131,6 @@ local function on_detach(event)
     vim.lsp.util.buf_clear_references(buf)
   end
 
-  -- Keymaps no remaining client registered go away with the detaching one.
   for key, clients in pairs(owners[buf] or {}) do
     clients[event.data.client_id] = nil
     if next(clients) == nil then
@@ -180,12 +147,6 @@ local function on_detach(event)
 end
 
 function M.setup()
-  -- Capabilities can arrive long after a client has attached: the Neovim help
-  -- (`:help LspAttach`) suggests exactly this wrapper for it, and
-  -- docker-language-server needs it — it registers `textDocument/rename` some
-  -- three seconds in, when the keymap pass below has long finished, so
-  -- `<leader>cr` would never appear in a compose buffer (task 22). Repeating the
-  -- pass is safe: every keymap it creates overwrites its own earlier version.
   vim.lsp.handlers["client/registerCapability"] = (function(overridden)
     return function(err, res, ctx)
       local result = overridden(err, res, ctx)
