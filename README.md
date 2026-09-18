@@ -338,7 +338,11 @@ when "cleaned up".
   file buffer is shown in a window, and only if it is really empty: listed,
   without a name, without a `'buftype'`, unmodified and a single empty line, and
   no window showing it. A scratch buffer that has text in it stays, and so does
-  an empty one that is still on screen in a split.
+  an empty one that is still on screen in a split. While a session is being
+  restored the autocmd steps aside (`g:SessionLoad`): the session script itself
+  wipes the unnamed buffer it started from, and finding it already gone ends the
+  restore with `E517: No buffers were wiped out`, which makes auto-session turn
+  off its automatic saving for the rest of that session.
 - **`<leader>a` restarts Neovim with `:restart!`, not `:restart`.** Neovim 0.12
   starts a new server with the same arguments and reattaches the terminal UI, so
   the configuration is read again without leaving the shell, and `'confirm'`

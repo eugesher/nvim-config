@@ -120,7 +120,11 @@ autocmd("BufWinEnter", {
   group = augroup("replace_empty_buffer"),
   desc = "Let a file buffer replace the empty unnamed one",
   callback = function(event)
-    if vim.bo[event.buf].buftype ~= "" or vim.api.nvim_buf_get_name(event.buf) == "" then
+    if
+      vim.g.SessionLoad == 1
+      or vim.bo[event.buf].buftype ~= ""
+      or vim.api.nvim_buf_get_name(event.buf) == ""
+    then
       return
     end
     for _, buf in ipairs(vim.api.nvim_list_bufs()) do
