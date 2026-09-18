@@ -1,3 +1,5 @@
+local user = require("user.settings")
+
 local M = {}
 
 local root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" }
@@ -6,7 +8,7 @@ local function language(extra)
   return vim.tbl_deep_extend("force", {
     updateImportsOnFileMove = { enabled = "always" },
     suggest = { completeFunctionCalls = true },
-    preferences = { importModuleSpecifier = "non-relative" },
+    preferences = { importModuleSpecifier = user.lsp.import_style },
     inlayHints = {
       parameterNames = { enabled = "literals", suppressWhenArgumentMatchesName = true },
       parameterTypes = { enabled = true },

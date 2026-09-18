@@ -294,7 +294,7 @@ local reserved = {}
 for _, lhs in ipairs({ "]n", "[n", "an", "in", "]c", "[c" }) do
   reserved[common.key(lhs)] = true
 end
-local free = vim.tbl_map(common.key, { "<leader>a", "<leader>gL" })
+local free = vim.tbl_map(common.key, { "<leader>gL" })
 local alt_allowed = { ["<M-j>"] = true, ["<M-k>"] = true }
 each_map(function(map, label)
   if map.key:find("<M%-") and not alt_allowed[map.key] then

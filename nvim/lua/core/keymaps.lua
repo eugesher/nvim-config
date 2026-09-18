@@ -13,6 +13,7 @@ end
 
 map("n", "<leader>w", "<cmd>write<CR>", "Write buffer")
 map("n", "<leader>Q", "<cmd>qa<CR>", "Quit all")
+map("n", "<leader>a", "<cmd>restart!<CR>", "Restart Neovim")
 
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search highlight")
 map("n", "n", "nzzzv", "Next match (centered)")

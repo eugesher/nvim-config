@@ -123,7 +123,7 @@ lsp/mason).
 | `<leader>h` | HTTP (only in .http / .rest buffers) | `<leader>x` | Problems (trouble) |
 | `<leader>l` | LSP / tooling meta | `<leader>1..9` | bufferline buffers |
 | `<leader>m` | Multicursor | `<leader>;` | dropbar pick |
-| `<leader>a` | **free** | `<leader>gL` | **free** |
+| `<leader>a` | Restart Neovim | `<leader>gL` | **free** |
 
 ## Non-obvious decisions
 
@@ -132,6 +132,9 @@ These look like mistakes or omissions and are not. Change them only on request.
 - **The database is on `<leader>D`, not `<leader>db`.** `<leader>d` is the
   debugger group and `<leader>db` toggles a breakpoint; database keys under it
   would make that key wait for 'timeoutlen' and mix two groups in which-key.
+- **`<leader>a` is `:restart!`, with the bang.** Plain `:restart` saves and
+  restores a session of its own, beside the one auto-session writes on exit and
+  restores on start; the bang leaves sessions to auto-session alone.
 - **`g:db_ui_execute_on_save = 0`.** Saving a query buffer must never run it —
   `:w` in the wrong buffer is the classic way to execute a query against
   production. Queries run with `<localleader>x` / `<localleader>X` only.
@@ -184,6 +187,8 @@ Further decisions, explained in README.md ("Implementation notes"):
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only
   `x` / `X` cut to the clipboard.
+- `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
+  jump through snippet fields only while the menu is closed.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
 - lualine's LSP progress follows work-done tokens from `LspProgress` event data;

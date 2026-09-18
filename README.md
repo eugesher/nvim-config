@@ -168,6 +168,7 @@ plain data the rest of the config reads:
 | `ui.border`                                                  | border of every floating window (`'winborder'`): `none`, `single`, `double`, `rounded`, `solid`, `shadow`, `bold`                                                                        |
 | `ui.panel_height`                                            | height in lines of the bottom panels — Trouble, debugger, test output — which share one split                                                                                            |
 | `ui.nerd_font`                                               | the terminal uses a Nerd Font v3; Neovim cannot see the font, so `:checkhealth myconfig` trusts this flag — set `false` without one                                                      |
+| `ui.title`                                                   | text in the terminal's window and tab title (`'titlestring'`); `%{}` holds a Vim expression, and `fnamemodify(getcwd(), ':t')` is the name of the current directory                      |
 | `colorscheme.enabled`                                        | `false` drops catppuccin and every color tweak of the config: Neovim's default colorscheme, each plugin with its own colors, the other `colorscheme.*` values ignored                    |
 | `colorscheme.flavour`                                        | catppuccin flavor: latte, frappe, macchiato, mocha                                                                                                                                       |
 | `colorscheme.transparent`                                    | let the terminal background show through the editor surfaces instead of `window_bg`                                                                                                      |
@@ -185,6 +186,7 @@ plain data the rest of the config reads:
 | `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
+| `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
 `~/.config/nvim` is lost on the next reinstall.
@@ -305,6 +307,12 @@ when "cleaned up".
   the old leader, and plugin specs read the leader at import time.
 - **Visual-mode keymaps use mode `x`, not `v`:** `v` also covers Select mode,
   where typed text must replace a snippet placeholder.
+- **The terminal's window and tab title names the current directory.** Neovim
+  writes a title only with `'title'` on; without it a kitty tab keeps the name
+  of the program kitty started, `bash`. `ui.title` is the `'titlestring'`, and
+  the `getcwd()` in it follows the root of neo-tree: the tree's `cwd_target`
+  points the tab's directory at the root it shows, so `.` on a folder renames
+  the tab as well.
 - **Only `x` / `X` put deleted text on the clipboard.** `'clipboard'` is
   `unnamedplus`, so every delete would otherwise replace the system clipboard.
   `d`, `D`, `c`, `C`, `s` and `S` (Normal and Visual mode) write to the black
@@ -314,6 +322,17 @@ when "cleaned up".
   fills register `a`; an explicit `"+` or `"*` looks the same as no register and
   goes to the black hole too. In oil a file is moved with `Vx` and `p`: after
   `dd`, `p` would paste the clipboard as a new file name.
+- **`<leader>a` restarts Neovim with `:restart!`, not `:restart`.** Neovim 0.12
+  starts a new server with the same arguments and reattaches the terminal UI, so
+  the configuration is read again without leaving the shell, and `'confirm'`
+  turns an unsaved buffer into a "Save changes?" prompt rather than a silent
+  exit. The bang skips the `mksession` round trip `:restart` does on its own and
+  leaves the session to auto-session, which saves it on exit and restores it on
+  the next start, breakpoints (`save_extra_data`) and the git branch tag
+  included. Started as `nvim <file>`, the new instance opens that file again and
+  restores no session: auto-session saves none for a start with file arguments
+  (`args_allow_files_auto_save = false`). Neovim's own `ZR` is `:restart`; the
+  key does what `1ZR` does.
 - **`'inccommand'` stays `nosplit`**, which inc-rename's live preview needs, and
   `'sessionoptions'` includes `localoptions`, without which auto-session loses
   filetype options and buffer-local keymaps on restore.
@@ -362,6 +381,17 @@ when "cleaned up".
 - **`grn`, `<leader>cr` and `<leader>rn` are one rename** with inc-rename's
   preview; `gd`, `gri` and `grt` open fzf-lua pickers, while `grr` opens Trouble —
   a list that stays open is easier to walk through than a picker.
+- **Auto-imports follow `lsp.import_style`, `shortest` by default.** In a NestJS
+  monorepo with a single `tsconfig.json` at the root, `non-relative` writes every
+  import without a path alias as a path from `baseUrl`
+  (`apps/admin/src/modules/login/presentation/controllers/login.controller`), and
+  that is what `<leader>cm` inserts. `shortest` compares both forms: an alias
+  wins where one exists (`@app/config` is shorter than the relative path into
+  another top-level directory), and a file of the same module arrives as
+  `./presentation/controllers/login.controller`. `project-relative` does not help
+  here, as it treats the directory of the `tsconfig.json` as the project and
+  drops the aliases of `libs/` with it. The value reaches completion,
+  `<leader>cM` and the import rewrite on a file move as well.
 - **Docker files get two servers.** docker-language-server lints Dockerfiles
   through BuildKit but answers completion and hover with nothing, so dockerls
   supplies those; `removeOverlappingIssues` keeps their diagnostics from
@@ -474,9 +504,11 @@ when "cleaned up".
 - **kulala**'s `pathresolver` keeps its documented default although 6.x never
   calls it: kulala-core resolves request variables itself.
 - **blink.cmp** uses the prebuilt Rust matcher of the pinned tag; without network
-  access set its implementation to `"lua"`. `<Tab>` / `<S-Tab>` only jump through
-  snippet fields and never accept a completion, and the dadbod source is enabled
-  for SQL filetypes only.
+  access set its implementation to `"lua"`. `<Tab>` / `<S-Tab>` move the
+  selection while the menu is open and jump through snippet fields when it is
+  closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
+  menu to free it for the next field. Neither key accepts a completion — `<CR>`
+  does — and the dadbod source is enabled for SQL filetypes only.
 
 ## Known limitations
 

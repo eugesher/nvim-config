@@ -10,6 +10,7 @@ return {
     border = "rounded",
     panel_height = 12,
     nerd_font = true,
+    title = "nvim: %{fnamemodify(getcwd(), ':t')}",
   },
 
   colorscheme = {
@@ -60,5 +61,6 @@ return {
   lsp = {
     inlay_hints = false,
     disable_watchers = false,
+    import_style = "shortest",
   },
 }

@@ -11,8 +11,8 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
   hiding a global one, two keys sharing one description, a key that is also the
   start of longer ones without being a which-key group, a keymap without a
   description, and the key policy — nothing on Alt but `<A-j>` / `<A-k>`,
-  `]n` `[n` `an` `in` `]c` `[c` left to Neovim, `<leader>a` and `<leader>gL`
-  kept free, only groups in `settings/whichkey/whichkey.lua`. Deliberate exceptions sit
+  `]n` `[n` `an` `in` `]c` `[c` left to Neovim, `<leader>gL` kept free,
+  only groups in `settings/whichkey/whichkey.lua`. Deliberate exceptions sit
   in the whitelists at the top of the script and are explained in
   [Audit exceptions](#audit-exceptions); exit code 1 means a new problem.
   `--list` prints every keymap it looked at.
@@ -43,6 +43,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<`         | x    | Indent left, keep selection                          |        |
 | `<Esc>`     | n    | Clear search highlight                               |        |
 | `<leader>?` | n    | Buffer keymaps (which-key)                           |        |
+| `<leader>a` | n    | Restart Neovim                                       |        |
 | `<leader>K` | n    | All keymaps (which-key)                              |        |
 | `<leader>Q` | n    | Quit all                                             |        |
 | `<leader>w` | n    | Write buffer                                         |        |
@@ -429,8 +430,8 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<C-S>`     | i    | vim.lsp.buf.signature_help()                            |                   |
 | `<C-Space>` | i    | blink.cmp: Show, Show Documentation, Hide Documentation | every file buffer |
 | `<CR>`      | i    | blink.cmp: Accept                                       | every file buffer |
-| `<S-Tab>`   | s i  | blink.cmp: Snippet Backward                             | every file buffer |
-| `<Tab>`     | s i  | blink.cmp: Snippet Forward                              | every file buffer |
+| `<S-Tab>`   | s i  | blink.cmp: Select Prev, Snippet Backward                | every file buffer |
+| `<Tab>`     | s i  | blink.cmp: Select Next, Snippet Forward                 | every file buffer |
 
 <!-- keymaps:end -->
 
@@ -490,8 +491,9 @@ and `source` (a substring of the defining file) narrow an entry down.
   same in bufferline's order), `[a` / `]a` (argument list → previous / next
   parameter), `[t` / `]t` (tag stack → previous / next failed test).
 - blink.cmp: `<C-j>` / `<C-k>` move through the completion menu like `<C-n>` /
-  `<C-p>`, and `<Tab>` / `<S-Tab>` jump through snippet fields instead of
-  Neovim's `vim.snippet` keys, falling back to them otherwise.
+  `<C-p>`, and `<Tab>` / `<S-Tab>` move through it as well, jumping through
+  snippet fields only while the menu is closed. They take the place of Neovim's
+  `vim.snippet` keys and fall back to them when neither applies.
 - `<leader>1` … `<leader>9` need no entry: each has its own description.
 
 **Keymaps without a description** — other people's code, matched by the

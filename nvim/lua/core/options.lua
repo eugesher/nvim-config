@@ -27,6 +27,8 @@ opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣", extends = "›", precedes = "‹" }
 opt.fillchars = { eob = " ", fold = " ", foldsep = " ", diff = "╱" }
 opt.winborder = user.ui.border
+opt.title = true
+opt.titlestring = user.ui.title
 
 opt.ignorecase = true
 opt.smartcase = true
