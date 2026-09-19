@@ -61,7 +61,7 @@ mkdir -p "$(dirname "$DEST")"
 if [[ ! -f "$DEST" ]]; then
   {
     echo '# codebook — global dictionary and spell-check settings.'
-    echo '# Project-level overrides go into codebook.toml at the project root.'
+    echo '# Project-level words go into .codebook/words.toml at the project root.'
     echo 'dictionaries = ["en_us"]'
     cat "$ARRAY"
     echo 'flag_words = []'

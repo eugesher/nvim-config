@@ -50,7 +50,7 @@ mkdir -p "$CODEBOOK_DIR"
 if [[ ! -e "$CODEBOOK_CONFIG" ]]; then
   cat >"$CODEBOOK_CONFIG" <<'TOML'
 # codebook — global dictionary and spell-check settings.
-# Project-level overrides go into codebook.toml at the project root.
+# Project-level words go into .codebook/words.toml at the project root.
 dictionaries = ["en_us"]
 words = []
 flag_words = []
