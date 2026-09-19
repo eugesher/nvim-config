@@ -26,6 +26,7 @@ end
 
 function M.init()
   require("settings.lsp.keymaps").setup()
+  require("settings.lsp.unused").setup()
 end
 
 function M.config()

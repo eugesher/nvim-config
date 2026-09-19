@@ -39,10 +39,10 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 
 | Path | Holds |
 | --- | --- |
-| `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, filetypes, the lazy.nvim bootstrap |
+| `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, the annotations drawn above a line, filetypes, the lazy.nvim bootstrap |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
 | `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
-| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `symbol_usage.lua` (markers on unreferenced declarations), `servers/<name>.lua` |
+| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
@@ -189,11 +189,23 @@ Further decisions, explained in README.md ("Implementation notes"):
   back to it while the completion menu is closed.
 - bufferline's tab numbers come from a `numbers` function counting the
   rendered order; its own `ordinal` is the position in the buffer list.
+- every diagnostic and every `Unused symbol` marker is drawn above its line by
+  `core/annotations.lua`, one extmark per line so the order holds (errors first,
+  the marker last); `core/diagnostics.lua` enables it as the `myconfig/above`
+  handler and keeps `virtual_text` off.
 - unused code carries two different marks: `DiagnosticUnnecessary` for what the
-  compiler proves unused, symbol-usage.nvim's `peach` `unused` for a declaration
-  no code references (`lsp.unused_skip` keeps DTO fields and controller methods
-  out). vtsls' reference code lens is off — Neovim re-requests a lens vtsls
-  leaves unresolved, which it does for every symbol with no references.
+  compiler proves unused, `settings/lsp/unused.lua`'s teal `Unused symbol '…'.`
+  for a declaration no code references (`lsp.unused_skip` keeps DTO fields and
+  controller methods out). The marker never doubles a diagnostic tagged
+  `Unnecessary`: `core/annotations.lua` drops it for those columns. vtsls' reference code lens is off — Neovim re-requests
+  a lens vtsls leaves unresolved, which it does for every symbol with no
+  references.
+- codebook's project dictionary is `.codebook/words.toml`
+  (`spelling.project_dictionary`), handed to the server as an absolute path in
+  `params.initializationOptions.configPath` from `before_init` — a relative one
+  follows the working directory, and `config.init_options` is copied into the
+  request before the callback runs. `<leader>cw` adds every unknown word of the
+  buffer in one `codebook.addWord`.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

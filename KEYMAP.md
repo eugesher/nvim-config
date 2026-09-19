@@ -136,6 +136,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>cr` | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose       |
 | `<leader>cs` | n    | Source actions                                        | typescript                                             |
 | `<leader>cu` | n    | Remove unused imports                                 | typescript                                             |
+| `<leader>cw` | n    | Add unknown words to dictionary                       | http, lua, sql, typescript                             |
 | `[D`         | n    | Jump to the first diagnostic in the current buffer    |                                                        |
 | `[d`         | n    | Jump to the previous diagnostic in the current buffer |                                                        |
 | `[e`         | n    | Previous error                                        |                                                        |

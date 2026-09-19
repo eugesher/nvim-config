@@ -3,13 +3,14 @@ local severity = vim.diagnostic.severity
 
 local icons = require("settings.icons").diagnostics
 
+require("core.annotations").setup()
+
 vim.diagnostic.config({
-  virtual_text = {
-    prefix = "●",
-    spacing = 2,
-    severity = { min = severity.WARN },
-  },
+  virtual_text = false,
   virtual_lines = false,
+  ["myconfig/above"] = {
+    severity = { min = severity.HINT },
+  },
   signs = {
     text = {
       [severity.ERROR] = icons.Error,

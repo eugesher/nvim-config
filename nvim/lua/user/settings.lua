@@ -49,6 +49,10 @@ return {
     default_env = "dev",
   },
 
+  spelling = {
+    project_dictionary = ".codebook/words.toml",
+  },
+
   coverage = {
     command = { "npm", "run", "test:cov" },
   },
