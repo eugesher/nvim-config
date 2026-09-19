@@ -60,6 +60,8 @@ M.opts = {
   custom_highlights = function(colors)
     return {
       LineNr = { fg = colors.surface2 },
+      DiagnosticUnnecessary = { fg = colors.overlay0 },
+      SymbolUsageUnused = { fg = colors.peach },
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,
         -- style = { "underline" },

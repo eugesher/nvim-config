@@ -87,26 +87,26 @@ the `http/` collections in this repository.
 
 ## What's inside
 
-| Area                    | Tooling                                                                                                                                                                      |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Plugin manager          | lazy.nvim, versions pinned by `nvim/lazy-lock.json`                                                                                                                          |
-| Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons, statuscol.nvim (diagnostics and git signs on either side of the line numbers)               |
-| LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
-| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets, nvim-autopairs                                                                                                                        |
-| Formatting              | conform.nvim with prettierd / prettier, stylua and sql-formatter                                                                                                             |
-| Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
-| Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
-| Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
-| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the winbar), nvim-origami (fold line counts, auto-folded imports and comments)                                                 |
-| Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                           |
-| Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
-| HTTP client             | kulala.nvim                                                                                                                                                                  |
-| Debugging               | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter                                                                                                             |
-| Tests and coverage      | neotest (jest, vitest adapters), nvim-coverage                                                                                                                               |
-| Problems                | trouble.nvim, todo-comments.nvim                                                                                                                                             |
-| Refactoring             | inc-rename.nvim, refactoring.nvim, multicursor.nvim                                                                                                                          |
-| Sessions                | auto-session                                                                                                                                                                 |
-| Spelling                | codebook — a language server                                                                                                                                                 |
+| Area                    | Tooling                                                                                                                                                                                                                               |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plugin manager          | lazy.nvim, versions pinned by `nvim/lazy-lock.json`                                                                                                                                                                                   |
+| Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons, statuscol.nvim (diagnostics and git signs on either side of the line numbers)                                                                        |
+| LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them; symbol-usage.nvim marks declarations nothing references |
+| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets, nvim-autopairs                                                                                                                                                                                 |
+| Formatting              | conform.nvim with prettierd / prettier, stylua and sql-formatter                                                                                                                                                                      |
+| Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                                                                                        |
+| Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                                                                                  |
+| Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                                                                                   |
+| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the winbar), nvim-origami (fold line counts, auto-folded imports and comments)                                                                                                          |
+| Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                                                                                    |
+| Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                                                                                      |
+| HTTP client             | kulala.nvim                                                                                                                                                                                                                           |
+| Debugging               | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter                                                                                                                                                                      |
+| Tests and coverage      | neotest (jest, vitest adapters), nvim-coverage                                                                                                                                                                                        |
+| Problems                | trouble.nvim, todo-comments.nvim                                                                                                                                                                                                      |
+| Refactoring             | inc-rename.nvim, refactoring.nvim, multicursor.nvim                                                                                                                                                                                   |
+| Sessions                | auto-session                                                                                                                                                                                                                          |
+| Spelling                | codebook — a language server                                                                                                                                                                                                          |
 
 ## Configuration structure
 
@@ -187,6 +187,8 @@ plain data the rest of the config reads:
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
 | `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
+| `lsp.unused_symbols`                                         | write `unused` at the end of a declaration nothing references anywhere in the project; `<leader>uu` hides the markers in the current buffer                                              |
+| `lsp.unused_skip`                                            | globs of the file names where a declaration is never counted: `fields` for the DTOs, `methods` for the controllers; `*.{dto,entity}.ts` and the like work too                            |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
 `~/.config/nvim` is lost on the next reinstall.
@@ -455,6 +457,40 @@ when "cleaned up".
   dialect, indent and keyword case. `=` is no substitute — the treesitter SQL
   indents align the lines a query already has and never re-wrap it. Query buffers
   of vim-dadbod-ui are ordinary files and are formatted on save as well.
+- **Unused code is marked in two ways.** What TypeScript can prove unused —
+  imports, locals, parameters, private members, and whatever ESLint tags the same
+  way — arrives as a hint carrying the LSP `Unnecessary` tag, and Neovim paints
+  it with `DiagnosticUnnecessary`: `overlay0`, dimmer than a comment's `overlay2`
+  and without its italics. An exported class, a public method, a field, a type or
+  a constant is valid code with nobody calling it, so no compiler diagnostic
+  describes it; symbol-usage.nvim counts references for those declarations and
+  writes `unused` in `peach` at the end of the line when there are none. The
+  declaration itself keeps its colors: the plugin draws virtual text or a sign and
+  never highlights the symbol, so a grayed-out name would take an implementation
+  of its own.
+- **The count covers declarations, not locals.** Classes, interfaces, enums,
+  methods, functions, the fields of a class or an interface, and the constants,
+  types and arrow functions of a module; a local inside a function body is left
+  to the compiler, which grays it out anyway. symbol-usage.nvim asks for the
+  symbols of the visible part of the buffer only, one `textDocument/references`
+  per declaration, and re-counts after an edit and on every `BufEnter`, since a
+  usage may have been deleted in another buffer.
+- **`lsp.unused_skip` lists the files where a count is meaningless.** The fields
+  of a `*.dto.ts` are filled by the framework through the validation decorators
+  and the methods of a `*.controller.ts` are routes nothing calls from the code,
+  so both are skipped. The entries are globs (`vim.glob`, the LSP syntax with
+  `*`, `?` and `{}`) matched against the name of the file, not its path, and
+  everything else in those files is still counted. A method reached only through a decorator somewhere
+  else — a lifecycle hook, a queue handler — is marked as well: the count is
+  honest, the framework is not part of it.
+- **vtsls' reference code lens stays off.** It answers a `codeLens/resolve` with
+  the unresolved lens whenever the symbol has no references, because the command
+  VS Code puts behind "0 references" has an empty id. Neovim keeps such a lens
+  unresolved, draws an empty virtual line above the declaration and asks again on
+  the next redraw of that row: one file with a handful of unused declarations
+  sent about 15000 `codeLens/resolve` requests in 20 seconds. The counts come
+  from symbol-usage.nvim instead, and `<leader>cl` / `<leader>cL` keep working
+  for the code lenses of other servers.
 - **The LSP log is off** (`vim.lsp.log.set_level(vim.log.levels.OFF)`): it grows
   to gigabytes. Turn it on only to debug a server.
 - **codebook:** `<leader>us` stops the server rather than hiding its

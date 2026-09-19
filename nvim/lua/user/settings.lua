@@ -10,7 +10,7 @@ return {
     border = "rounded",
     panel_height = 12,
     nerd_font = true,
-    title = "nvim: %{fnamemodify(getcwd(), ':t')}",
+    title = "Neovim: %{fnamemodify(getcwd(), ':t')}",
   },
 
   colorscheme = {
@@ -62,5 +62,10 @@ return {
     inlay_hints = false,
     disable_watchers = false,
     import_style = "shortest",
+    unused_symbols = true,
+    unused_skip = {
+      fields = { "*.dto.ts" },
+      methods = { "*.controller.ts" },
+    },
   },
 }

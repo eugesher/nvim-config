@@ -42,7 +42,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, filetypes, the lazy.nvim bootstrap |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
 | `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
-| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `servers/<name>.lua` |
+| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `symbol_usage.lua` (markers on unreferenced declarations), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
@@ -189,6 +189,11 @@ Further decisions, explained in README.md ("Implementation notes"):
   back to it while the completion menu is closed.
 - bufferline's tab numbers come from a `numbers` function counting the
   rendered order; its own `ordinal` is the position in the buffer list.
+- unused code carries two different marks: `DiagnosticUnnecessary` for what the
+  compiler proves unused, symbol-usage.nvim's `peach` `unused` for a declaration
+  no code references (`lsp.unused_skip` keeps DTO fields and controller methods
+  out). vtsls' reference code lens is off — Neovim re-requests a lens vtsls
+  leaves unresolved, which it does for every symbol with no references.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

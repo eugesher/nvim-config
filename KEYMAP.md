@@ -403,6 +403,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>ui` | n    | Toggle inlay hints             | dockerfile, http, lua, typescript, yaml.docker-compose |
 | `<leader>uk` | n    | Toggle sticky context          |                                                        |
 | `<leader>us` | n    | Toggle spell checking          |                                                        |
+| `<leader>uu` | n    | Toggle unused markers          |                                                        |
 
 ### Tooling
 

@@ -9,4 +9,5 @@ return {
   }),
   spec("mason-org/mason-lspconfig.nvim"),
   spec("b0o/SchemaStore.nvim"),
+  spec("Wansmer/symbol-usage.nvim", "lsp.symbol_usage"),
 }
