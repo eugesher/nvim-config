@@ -187,6 +187,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   errors on a buffer that has no file name.
 - nvim-autopairs keeps its `<CR>` mapping: blink.cmp owns the key and falls
   back to it while the completion menu is closed.
+- bufferline's tab numbers come from a `numbers` function counting the
+  rendered order; its own `ordinal` is the position in the buffer list.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

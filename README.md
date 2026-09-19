@@ -373,6 +373,19 @@ when "cleaned up".
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
   keeps the window layout.
+- **The number on a tab is its position, not bufferline's `ordinal`.** The
+  plugin writes that number into the tab while it builds the components, before
+  it sorts them and before the pinned group moves to the front, so
+  `numbers = "ordinal"` showed the place a buffer holds in the buffer list:
+  pinning one tab was enough to leave the tabline reading 3, 1, 2, 4, 5 while
+  `<leader>3` still went to the third tab. The `numbers` function in
+  `settings/ui/bufferline.lua` numbers a tab by the position of its element in
+  bufferline's rendered component list, the list `go_to(i, true)` indexes, so
+  the label and the key always name the same buffer. That list is one render
+  behind whenever the order changes, so the function compares it, after the
+  render, with the order it numbered from and asks for one more
+  `redrawtabline` when the two differ; on a settled tabline it schedules
+  nothing.
 - **`<leader>bo` keeps the pinned buffers.** `:BufferLineCloseOthers` walks the
   whole tab list and closes everything but the current buffer, pins included.
   The key runs `delete_others()` in `settings/ui/bufferline.lua` instead: it

@@ -59,6 +59,7 @@ M.opts = {
   highlight_overrides = {},
   custom_highlights = function(colors)
     return {
+      LineNr = { fg = colors.surface2 },
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,
         -- style = { "underline" },

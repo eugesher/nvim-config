@@ -13,6 +13,30 @@ local function close(bufnr)
   M.safe_buffer_delete(bufnr, false)
 end
 
+local numbering = { source = nil, positions = {}, ids = {} }
+
+local function element_ids()
+  return vim.tbl_map(function(element)
+    return element.id
+  end, require("bufferline.state").components)
+end
+
+local function tab_number(opts)
+  local components = require("bufferline.state").components
+  if numbering.source ~= components then
+    numbering = { source = components, positions = {}, ids = element_ids() }
+    for position, id in ipairs(numbering.ids) do
+      numbering.positions[id] = position
+    end
+    vim.schedule(function()
+      if not vim.deep_equal(numbering.ids, element_ids()) then
+        vim.cmd("redrawtabline")
+      end
+    end)
+  end
+  return (numbering.positions[opts.id] or opts.ordinal) .. "."
+end
+
 M.event = "VeryLazy"
 
 function M.init()
@@ -23,7 +47,7 @@ M.opts = {
   options = {
     mode = "buffers",
     themable = true,
-    numbers = "ordinal",
+    numbers = tab_number,
     close_command = close,
     right_mouse_command = close,
     left_mouse_command = "buffer %d",
