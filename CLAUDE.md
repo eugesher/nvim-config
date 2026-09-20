@@ -200,7 +200,7 @@ Further decisions, explained in README.md ("Implementation notes"):
   The key of the setting is the `source` field of the diagnostic, not the
   server name.
 - unused code carries two different marks: `DiagnosticUnnecessary` for what the
-  compiler proves unused, `settings/lsp/unused.lua`'s teal `Unused symbol '…'.`
+  compiler proves unused, `settings/lsp/unused.lua`'s yellow `Unused symbol '…'.`
   for a declaration no code references (`lsp.unused_skip` keeps DTO fields and
   controller methods out). The marker never doubles a diagnostic tagged
   `Unnecessary`: `core/annotations.lua` drops it for those columns. vtsls' reference code lens is off — Neovim re-requests

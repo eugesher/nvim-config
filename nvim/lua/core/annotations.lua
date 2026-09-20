@@ -27,9 +27,9 @@ local highlights = {
 M.ranks = {
   [severity.ERROR] = 1,
   [severity.WARN] = 2,
-  [severity.INFO] = 3,
+  unused = 3,
   [severity.HINT] = 4,
-  unused = 5,
+  [severity.INFO] = 5,
 }
 
 local state = {}

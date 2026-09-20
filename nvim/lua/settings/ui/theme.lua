@@ -61,7 +61,8 @@ M.opts = {
     return {
       LineNr = { fg = colors.surface2 },
       DiagnosticUnnecessary = { fg = colors.overlay0 },
-      UnusedSymbol = { fg = colors.teal, style = { "italic" } },
+      DiagnosticVirtualTextWarn = { fg = colors.peach, style = { "italic" } },
+      UnusedSymbol = { fg = colors.yellow, style = { "italic" } },
       AnnotationHint = { fg = colors.overlay0, style = { "italic" } },
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,

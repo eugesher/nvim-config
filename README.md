@@ -508,12 +508,13 @@ when "cleaned up".
   and without its italics. An exported class, a public method, a field, a type or
   a constant is valid code with nobody calling it, so no compiler diagnostic
   describes it: `settings/lsp/unused.lua` counts the references of every such
-  declaration and writes `Unused symbol 'name'.` above its line in `teal`
-  italics, through the same renderer the diagnostics use. The marker yields to
-  the compiler: where a diagnostic of that line already carries the LSP
-  `Unnecessary` tag (`user_data.lsp.tags`) over the same columns — an unused
-  local, a private field, a class nobody imports — the renderer drops the
-  `Unused symbol` line and leaves the diagnostic alone.
+  declaration and writes `Unused symbol 'name'.` above its line in `yellow`
+  italics, through the same renderer the diagnostics use; warnings are drawn in
+  `peach` instead of catppuccin's yellow, so the two marks stay apart. The
+  marker yields to the compiler: where a diagnostic of that line already
+  carries the LSP `Unnecessary` tag (`user_data.lsp.tags`) over the same
+  columns — an unused local, a private field, a class nobody imports — the
+  renderer drops the `Unused symbol` line and leaves the diagnostic alone.
 - **The reference count is a module of the config, not a plugin.**
   symbol-usage.nvim did the same counting, but it draws virtual text of its own
   and never removes a marker once a symbol gains a reference — "unused" then
