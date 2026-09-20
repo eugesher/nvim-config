@@ -203,6 +203,14 @@ Further decisions, explained in README.md ("Implementation notes"):
   session restored (listed, not loaded) with `nvim_buf_delete`: bufdelete.nvim
   skips an unloaded buffer. `<leader>ba` deletes every listed buffer in one
   bufdelete call, which leaves the empty buffer `<leader>q` leaves last.
+- deleting a path in an explorer closes the buffers under it: neither neo-tree
+  nor oil does that for a directory, so `delete_buffers_under` in
+  `settings/ui/bufferline.lua` is called from neo-tree's `file_deleted` event
+  and from oil's `User OilActionsPost`. `rename_buffers_under`, on neo-tree's
+  `file_renamed` and `file_moved`, does the same for the buffers a rename left
+  behind: neo-tree renames the loaded ones only. oil deletes an unloaded buffer
+  instead of renaming it when a file moves, so `OilActionsPre` loads those
+  first (`load_buffers_under`) and lets oil rename them.
 - every diagnostic and every `Unused symbol` marker is drawn above its line by
   `core/annotations.lua`, one extmark per line so the order holds (errors first,
   the marker last); `core/diagnostics.lua` enables it as the `myconfig/above`
@@ -214,12 +222,20 @@ Further decisions, explained in README.md ("Implementation notes"):
   The key of the setting is the `source` field of the diagnostic, not the
   server name.
 - unused code carries two different marks: `DiagnosticUnnecessary` for what the
-  compiler proves unused, `settings/lsp/unused.lua`'s yellow `Unused symbol '…'.`
-  for a declaration no code references (`lsp.unused_skip` keeps DTO fields and
-  controller methods out). The marker never doubles a diagnostic tagged
-  `Unnecessary`: `core/annotations.lua` drops it for those columns. vtsls' reference code lens is off — Neovim re-requests
-  a lens vtsls leaves unresolved, which it does for every symbol with no
-  references.
+  compiler proves unused, `settings/lsp/unused.lua`'s `Unused symbol '…'.` for a
+  declaration no code references (`lsp.unused_skip`: `fields` keeps DTO and
+  entity fields out, `methods` controller methods, `paths` whole files —
+  node_modules). Both are warnings: `core/diagnostics.lua` wraps the two
+  diagnostic handlers and raises a hint tagged `Unnecessary` to a warning
+  before Neovim stores it, `core/annotations.lua` draws it in `UnusedSymbol`,
+  and `UnusedSymbol` links to `DiagnosticVirtualTextWarn`. A symbol with no name
+  to reference is not counted: what tsserver names `…) callback`, `<class>` or
+  `<function>`. A method counts in a class or an interface only, never in an
+  object literal, and an enum member never counts, only the enum itself. The
+  marker never doubles such a diagnostic: `core/annotations.lua` drops it for
+  those columns. vtsls' reference code lens
+  is off — Neovim re-requests a lens vtsls leaves unresolved, which it does for
+  every symbol with no references.
 - codebook's project dictionary is `.codebook/words.toml`
   (`spelling.project_dictionary`), handed to the server as an absolute path in
   `params.initializationOptions.configPath` from `before_init` — a relative one

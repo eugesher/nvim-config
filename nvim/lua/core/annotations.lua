@@ -10,6 +10,7 @@ local severity = vim.diagnostic.severity
 local bullet = icons.ui.dot .. " "
 
 local HINT_HIGHLIGHT = "AnnotationHint"
+local UNUSED_HIGHLIGHT = "UnusedSymbol"
 
 local summary = user.lsp.diagnostics_summary or {}
 local summary_sources = summary.sources or {}
@@ -24,12 +25,14 @@ local highlights = {
   [severity.HINT] = "DiagnosticVirtualTextHint",
 }
 
+M.unused_highlight = UNUSED_HIGHLIGHT
+
 M.ranks = {
   [severity.ERROR] = 1,
   [severity.WARN] = 2,
-  unused = 3,
-  [severity.HINT] = 4,
-  [severity.INFO] = 5,
+  unused = 2,
+  [severity.HINT] = 3,
+  [severity.INFO] = 4,
 }
 
 local state = {}
@@ -75,7 +78,7 @@ local function without_reported_unused(items, lnum)
     return items
   end
   return vim.tbl_filter(function(item)
-    if item.rank ~= M.ranks.unused then
+    if not item.marker then
       return true
     end
     for _, covers in ipairs(reported) do
@@ -83,6 +86,17 @@ local function without_reported_unused(items, lnum)
         return false
       end
     end
+    return true
+  end, items)
+end
+
+local function without_duplicates(items)
+  local seen = {}
+  return vim.tbl_filter(function(item)
+    if seen[item.text] then
+      return false
+    end
+    seen[item.text] = true
     return true
   end, items)
 end
@@ -193,6 +207,7 @@ local function render(bufnr)
       end
       return (a.col or 0) < (b.col or 0)
     end)
+    items = without_duplicates(items)
     local prefix = indent(bufnr, lnum)
     local virt_lines = lnum == 0 and top or {}
     for _, item in ipairs(items) do
@@ -243,14 +258,16 @@ local function diagnostic_items(diagnostics)
   local items = {}
   for _, diagnostic in ipairs(diagnostics) do
     local tags = vim.tbl_get(diagnostic, "user_data", "lsp", "tags") or {}
+    local tagged = vim.tbl_contains(tags, unnecessary)
+    local unused = tagged and diagnostic.severity >= severity.WARN
     items[#items + 1] = {
       lnum = diagnostic.lnum,
       col = diagnostic.col,
       end_lnum = diagnostic.end_lnum,
       end_col = diagnostic.end_col,
-      unnecessary = vim.tbl_contains(tags, unnecessary),
-      rank = M.ranks[diagnostic.severity],
-      hl = highlights[diagnostic.severity],
+      unnecessary = tagged,
+      rank = unused and M.ranks.unused or M.ranks[diagnostic.severity],
+      hl = unused and UNUSED_HIGHLIGHT or highlights[diagnostic.severity],
       summary = summary_sources[diagnostic.source or ""] and diagnostic.source or nil,
       text = (diagnostic.message:gsub("%s*\n%s*", " ")),
     }
@@ -260,6 +277,7 @@ end
 
 function M.setup()
   vim.api.nvim_set_hl(0, HINT_HIGHLIGHT, { link = "NonText", default = true })
+  vim.api.nvim_set_hl(0, UNUSED_HIGHLIGHT, { link = "DiagnosticVirtualTextWarn", default = true })
   vim.diagnostic.handlers["myconfig/above"] = {
     show = function(namespace, bufnr, diagnostics, _)
       M.set(bufnr, "diagnostic:" .. namespace, diagnostic_items(diagnostics))

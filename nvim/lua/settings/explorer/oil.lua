@@ -14,6 +14,36 @@ M.keys = {
   },
 }
 
+function M.init()
+  local group = vim.api.nvim_create_augroup("settings_oil", { clear = true })
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "OilActionsPre",
+    desc = "Load the buffers oil would drop instead of renaming them",
+    callback = function(event)
+      for _, action in ipairs(event.data.actions or {}) do
+        local path = action.type == "move" and action.src_url:match("^oil://(.*)$")
+        if path then
+          require("settings.ui.bufferline").load_buffers_under(path)
+        end
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("User", {
+    group = group,
+    pattern = "OilActionsPost",
+    desc = "Close the buffers of the files oil deleted",
+    callback = function(event)
+      for _, action in ipairs(event.data.actions or {}) do
+        local path = action.type == "delete" and action.url:match("^oil://(.*)$")
+        if path and not vim.uv.fs_lstat(path) then
+          require("settings.ui.bufferline").delete_buffers_under(path)
+        end
+      end
+    end,
+  })
+end
+
 local ALWAYS_HIDDEN = { [".git"] = true, ["node_modules"] = true }
 
 M.opts = {

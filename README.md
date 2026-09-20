@@ -189,7 +189,7 @@ plain data the rest of the config reads:
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
 | `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
 | `lsp.unused_symbols`                                         | write `Unused symbol '…'.` above a declaration nothing references anywhere in the project; `<leader>uu` hides the markers in the current buffer                                          |
-| `lsp.unused_skip`                                            | globs of the file names where a declaration is never counted: `fields` for the DTOs, `methods` for the controllers; `*.{dto,entity}.ts` and the like work too                            |
+| `lsp.unused_skip`                                            | globs of the places where a declaration is never counted: `fields` for DTO and entity fields, `methods` for controller methods, `paths` for whole files (node_modules)                   |
 | `lsp.diagnostics_summary`                                    | `sources` maps a diagnostic `source` to the `label` and `hint` of its block above the first line; `width` wraps the word list, `0` never wraps; `sources = {}` turns it off              |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
@@ -391,12 +391,13 @@ when "cleaned up".
   diagnostic one.
 - **Diagnostics are drawn above their line** (`core/annotations.lua`): one line
   per diagnostic, every severity, each line opened by `●` in the color of that
-  severity. Neovim's own `virtual_lines` draws them below the line and has no
-  switch for it — `vim.diagnostic.Opts.VirtualLines` knows `severity`,
-  `current_line` and `format` and nothing else — so the config registers a
-  handler of its own, `myconfig/above`, and turns `virtual_text` off.
-  Every annotation of a line lives in one extmark, which fixes their order:
-  errors, warnings, information, hints, then the `Unused symbol` marker. A
+  severity — in `UnusedSymbol` for a diagnostic tagged `Unnecessary`. Neovim's
+  own `virtual_lines` draws them below the line and has no switch for it —
+  `vim.diagnostic.Opts.VirtualLines` knows `severity`, `current_line` and
+  `format` and nothing else — so the config registers a handler of its own,
+  `myconfig/above`, and turns `virtual_text` off. Every annotation of a line
+  lives in one extmark, which fixes their order: errors, then the warnings and
+  the unused marks together, then hints and information. A
   virtual line above the first line of a buffer stays invisible until the window
   is given filler lines ([#16166](https://github.com/neovim/neovim/issues/16166)),
   so the renderer sets `topfill` itself while the window sits at the top —
@@ -517,24 +518,36 @@ when "cleaned up".
   dialect, indent and keyword case. `=` is no substitute — the treesitter SQL
   indents align the lines a query already has and never re-wrap it. Query buffers
   of vim-dadbod-ui are ordinary files and are formatted on save as well.
-- **Unused code is marked in two ways.** What TypeScript can prove unused —
-  imports, locals, parameters, private members, and whatever ESLint tags the same
-  way — arrives as a hint carrying the LSP `Unnecessary` tag, and Neovim paints
-  it with `DiagnosticUnnecessary`: `overlay0`, dimmer than a comment's `overlay2`
-  and without its italics. An exported class, a public method, a field, a type or
-  a constant is valid code with nobody calling it, so no compiler diagnostic
-  describes it: `settings/lsp/unused.lua` counts the references of every such
-  declaration and writes `Unused symbol 'name'.` above its line in `yellow`
-  italics, through the same renderer the diagnostics use; warnings are drawn in
-  `peach` instead of catppuccin's yellow, so the two marks stay apart. A
-  `custom_highlights` entry replaces the whole group, so the faint background
-  catppuccin puts behind virtual text — `darken(peach, 0.095, base)`, `NONE`
-  while `colorscheme.transparent` is on — is repeated there, and the italics
-  of `lsp_styles.virtual_text` with it. The marker yields to the compiler:
-  where a diagnostic of that line already carries the LSP `Unnecessary` tag
-  (`user_data.lsp.tags`) over the same columns — an unused local, a private
-  field, a class nobody imports — the renderer drops the `Unused symbol` line
-  and leaves the diagnostic alone.
+- **Unused code is found in two ways and drawn as one.** What TypeScript can
+  prove unused — imports, locals, parameters, private members, and whatever
+  ESLint tags the same way — arrives as a hint carrying the LSP `Unnecessary`
+  tag, and Neovim paints the code itself with `DiagnosticUnnecessary`:
+  `overlay0`, dimmer than a comment's `overlay2` and without its italics. An
+  exported class, a public method, a field, a type or a constant is valid code
+  with nobody calling it, so no compiler diagnostic describes it:
+  `settings/lsp/unused.lua` counts the references of every such declaration and
+  writes `Unused symbol 'name'.` above its line, through the same renderer the
+  diagnostics use. Both report the same thing, so both are shown as one. A
+  tagged diagnostic becomes a warning before Neovim stores it:
+  `core/diagnostics.lua` wraps the two handlers a server answers diagnostics
+  with — `textDocument/publishDiagnostics` and the pull variant
+  `textDocument/diagnostic`, its related documents included — and rewrites the
+  severity of everything tagged `Unnecessary`, so the sign, the counters of the
+  status line and trouble say the same thing the line above the code does; a
+  hint would otherwise rank below every other annotation and count for nothing.
+  Only a hint or an information is raised, never an error a server means as one,
+  and the tag itself is left alone, so the code keeps its
+  `DiagnosticUnnecessary` dimming. Above the line such a diagnostic is drawn in
+  `UnusedSymbol` rather than in the color of its severity, and `UnusedSymbol`
+  links to `DiagnosticVirtualTextWarn`: one group colors both marks. That
+  warning group is replaced whole in `custom_highlights`, so the faint
+  background catppuccin puts behind virtual text —
+  `darken(peach, 0.095, base)`, `NONE` while `colorscheme.transparent` is on —
+  is repeated there, and the italics of `lsp_styles.virtual_text` with it. The marker yields to the
+  compiler: where a diagnostic of that line already carries the LSP
+  `Unnecessary` tag (`user_data.lsp.tags`) over the same columns — an unused
+  local, a private field, a class nobody imports — the renderer drops the
+  `Unused symbol` line and leaves the diagnostic alone.
 - **The reference count is a module of the config, not a plugin.**
   symbol-usage.nvim did the same counting, but it draws virtual text of its own
   and never removes a marker once a symbol gains a reference — "unused" then
@@ -544,17 +557,38 @@ when "cleaned up".
   sends one `textDocument/references` per declaration visible in the window,
   counting again after an edit, after a scroll and on `BufEnter`, since a usage
   may have been deleted in another buffer. Counted are classes, interfaces,
-  enums, methods, functions, the fields of a class or an interface, and the
+  enums, functions, the methods and fields of a class or an interface, and the
   constants, types and arrow functions of a module; a local inside a function
-  body is left to the compiler, which grays it out anyway.
-- **`lsp.unused_skip` lists the files where a count is meaningless.** The fields
-  of a `*.dto.ts` are filled by the framework through the validation decorators
-  and the methods of a `*.controller.ts` are routes nothing calls from the code,
-  so both are skipped. The entries are globs (`vim.glob`, the LSP syntax with
-  `*`, `?` and `{}`) matched against the name of the file, not its path, and
-  everything else in those files is still counted. A method reached only through
-  a decorator somewhere else — a lifecycle hook, a queue handler — is marked as
-  well: the count is honest, the framework is not part of it.
+  body is left to the compiler, which grays it out anyway. What carries no name
+  a reference could point at is skipped: a function handed to a call, which
+  tsserver names after that call (`setTimeout() callback`, and
+  `register("plain") callback` when the call has arguments of its own), and an
+  anonymous declaration, which it names `<class>` or `<function>` — the `class`
+  a factory returns among them. Each of those counts zero references forever and
+  would carry a marker for good. A member of an object literal is left out as
+  well — the `useFactory` of a Nest module, the handler of a route table,
+  `parse` in a bag of helpers: a count finds the calls that go through the
+  object, but never the ones a framework makes by convention, and the marker was
+  noise more often than not. A method is therefore counted in a class or an
+  interface only, which is also where `lsp.unused_skip` applies. The members of
+  an enum are skipped for the same reason: a value of one travels through a
+  database column, a payload or a migration, where nothing points at the name,
+  and the enum itself carries the count. tsserver reports a member as a variable
+  whose parent is the enum, which is how they are told apart from the constants
+  of a module.
+- **`lsp.unused_skip` lists where a count is meaningless.** The fields of a
+  `*.dto.ts` are filled by the framework through the validation decorators, the
+  fields of a `*.entity.ts` by the ORM through the column decorators, and the
+  methods of a `*.controller.ts` are routes nothing calls from the code, so all
+  three are skipped. `fields` and `methods` are globs (`vim.glob`, the LSP
+  syntax with `*`, `?` and `{}`) matched against the name of the file, not its
+  path, and everything else in those files is still counted. `paths` matches the
+  whole path instead and takes the file out entirely — `**/node_modules/**`,
+  where every declaration belongs to a dependency, most of them are meant for
+  other projects and each open file would cost a request per symbol. Nothing
+  counts there until `<leader>uu` asks for the markers by hand. A method reached
+  only through a decorator somewhere else — a lifecycle hook, a queue handler —
+  is marked as well: the count is honest, the framework is not part of it.
 - **vtsls' reference code lens stays off.** It answers a `codeLens/resolve` with
   the unresolved lens whenever the symbol has no references, because the command
   VS Code puts behind "0 references" has an empty id. Neovim keeps such a lens
@@ -637,6 +671,37 @@ when "cleaned up".
   `"none"` (`P`, `C`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line
   out instead brings neo-tree's own default for it back, since a source
   inherits the global table and the defaults underneath it.
+- **Deleting a path closes the buffers under it.** A folder is where both
+  explorers leave them open: neo-tree removes the directory with `rm -Rf` and
+  clears buffers only in the libuv fallback it never reaches, oil clears none
+  at all, not even for a single file. The buffers of the deleted files stayed
+  in the tabline, and `auto_mkdir` recreates a parent directory on write, so
+  `:w` in one of them brought the whole tree back. neo-tree's `file_deleted`
+  event and oil's `User OilActionsPost` hand the path to
+  `delete_buffers_under` in `settings/ui/bufferline.lua`, which closes the
+  buffer of that path and of every path below it through `safe_buffer_delete`,
+  forced, the way neo-tree closes the buffer of a file it deleted on its own.
+  The oil handler answers for the `oil://` adapter only and for a path that is
+  really gone, so a failed action or a remote adapter leaves its buffers
+  alone.
+- **A rename reaches the buffers a session only listed.** neo-tree renames the
+  buffers under a moved path itself, but it walks the loaded ones only, and a
+  restored session lists its buffers without loading them until they are
+  opened: after a restart the tabline kept the old paths, and the tab led to a
+  file that was no longer there. `rename_buffers_under` in
+  `settings/ui/bufferline.lua` runs from the same `file_renamed` and
+  `file_moved` handler that notifies the servers, after neo-tree has done its
+  own part, and replaces every buffer it left behind with one under the new
+  path, listed or not the way it was.
+- **oil drops an unloaded buffer instead of moving it.** For a folder it walks
+  the buffer list and renames every buffer under the old path, but for a file
+  it hands its `rename_buffer` a name rather than a buffer number, and that
+  function deletes a buffer it finds unloaded instead of renaming it: a file
+  moved to another folder, or renamed, took its tab with it whenever the buffer
+  came from a restored session. The `OilActionsPre` handler in
+  `settings/explorer/oil.lua` loads the listed buffers under the source of
+  every `move` action first, through `load_buffers_under`, and oil renames them
+  itself — loading them is what it does to them in the folder case anyway.
 - **fzf-lua's key tables replace the defaults** rather than extend them: the
   defaults bind Alt combinations. `vim.ui.select` is a stub that loads fzf-lua on
   the first call.

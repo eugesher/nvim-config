@@ -2,7 +2,7 @@ local user = require("user.settings")
 
 local M = {}
 
-local root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" }
+local root_markers = { "tsconfig.json", "package.json", "jsconfig.json" }
 
 local function language(extra)
   return vim.tbl_deep_extend("force", {
@@ -91,7 +91,7 @@ M.config = {
   cmd = { "vtsls", "--stdio" },
   filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
   root_dir = function(bufnr, on_dir)
-    on_dir(vim.fs.root(bufnr, root_markers) or vim.fn.getcwd())
+    on_dir(vim.fs.root(bufnr, ".git") or vim.fs.root(bufnr, root_markers) or vim.fn.getcwd())
   end,
   commands = {
     ["_typescript.moveToFileRefactoring"] = move_to_file,

@@ -16,6 +16,51 @@ function M.safe_buffer_delete(bufnr, force)
   require("bufdelete").bufdelete(bufnr, force == true)
 end
 
+function M.delete_buffers_under(path)
+  local root = vim.fs.normalize(path)
+  local prefix = root .. "/"
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        M.safe_buffer_delete(bufnr, true)
+      end
+    end
+  end
+end
+
+function M.load_buffers_under(path)
+  local root = vim.fs.normalize(path)
+  local prefix = root .. "/"
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" and vim.bo[bufnr].buflisted and not vim.api.nvim_buf_is_loaded(bufnr) then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        vim.fn.bufload(bufnr)
+      end
+    end
+  end
+end
+
+function M.rename_buffers_under(source, destination)
+  local root = vim.fs.normalize(source)
+  local prefix = root .. "/"
+  local target = vim.fs.normalize(destination)
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" and not vim.api.nvim_buf_is_loaded(bufnr) then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        local listed = vim.bo[bufnr].buflisted
+        vim.api.nvim_buf_delete(bufnr, {})
+        vim.bo[vim.fn.bufadd(target .. name:sub(#root + 1))].buflisted = listed
+      end
+    end
+  end
+end
+
 local function close(bufnr)
   M.safe_buffer_delete(bufnr, false)
 end

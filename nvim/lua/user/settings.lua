@@ -68,7 +68,8 @@ return {
     import_style = "shortest",
     unused_symbols = true,
     unused_skip = {
-      fields = { "*.dto.ts" },
+      paths = { "**/node_modules/**" },
+      fields = { "*.dto.ts", "*.entity.ts" },
       methods = { "*.controller.ts" },
     },
     diagnostics_summary = {

@@ -160,6 +160,15 @@ local function did_rename_files(args)
   end
 end
 
+local function moved_files(args)
+  did_rename_files(args)
+  require("settings.ui.bufferline").rename_buffers_under(args.source, args.destination)
+end
+
+local function close_deleted_buffers(path)
+  require("settings.ui.bufferline").delete_buffers_under(path)
+end
+
 local function open_or_set_root(source)
   return function(state)
     local commands = require("neo-tree.sources." .. source .. ".commands")
@@ -424,8 +433,9 @@ function M.opts()
     },
 
     event_handlers = vim.list_extend(require("settings.ui.theme").neo_tree_handlers(), {
-      { event = "file_renamed", handler = did_rename_files },
-      { event = "file_moved", handler = did_rename_files },
+      { event = "file_renamed", handler = moved_files },
+      { event = "file_moved", handler = moved_files },
+      { event = "file_deleted", handler = close_deleted_buffers },
     }),
   }
 end

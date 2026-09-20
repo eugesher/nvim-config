@@ -6,7 +6,6 @@ local kinds = vim.lsp.protocol.SymbolKind
 local M = {}
 
 local SOURCE = "unused"
-local HIGHLIGHT = "UnusedSymbol"
 
 local script_filetypes = {
   javascript = true,
@@ -32,8 +31,7 @@ local default_kinds = {
 
 local globs = {}
 
-local function ignored_file(bufnr, patterns)
-  local name = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
+local function matched(name, patterns)
   for _, pattern in ipairs(patterns) do
     if not globs[pattern] then
       globs[pattern] = vim.glob.to_lpeg(pattern)
@@ -45,25 +43,36 @@ local function ignored_file(bufnr, patterns)
   return false
 end
 
+local function ignored_file(bufnr, patterns)
+  return matched(vim.fs.basename(vim.api.nvim_buf_get_name(bufnr)), patterns)
+end
+
+local function ignored_path(bufnr)
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  return name ~= "" and matched(vim.fs.normalize(name), user.lsp.unused_skip.paths)
+end
+
 local function tracked(bufnr, symbol, parent_kind, script)
   local allowed = script and script_kinds or default_kinds
   if not allowed[symbol.kind] then
     return false
   end
-  if symbol.name:find("() callback", 1, true) then
+  if vim.endswith(symbol.name, ") callback") or symbol.name:match("^<.*>$") then
     return false
   end
   if symbol.kind == kinds.Variable or symbol.kind == kinds.Constant then
     return parent_kind ~= kinds.Function
       and parent_kind ~= kinds.Method
       and parent_kind ~= kinds.Constructor
+      and parent_kind ~= kinds.Enum
   end
   if symbol.kind == kinds.Property then
     return (parent_kind == kinds.Class or parent_kind == kinds.Interface)
       and not ignored_file(bufnr, user.lsp.unused_skip.fields)
   end
   if symbol.kind == kinds.Method then
-    return not ignored_file(bufnr, user.lsp.unused_skip.methods)
+    return (parent_kind == kinds.Class or parent_kind == kinds.Interface)
+      and not ignored_file(bufnr, user.lsp.unused_skip.methods)
   end
   return true
 end
@@ -129,8 +138,9 @@ local function publish(bufnr, buffer, symbols, encoding)
       items[#items + 1] = {
         lnum = symbol.lnum,
         col = byte_col(bufnr, symbol.position, encoding),
+        marker = true,
         rank = annotations.ranks.unused,
-        hl = HIGHLIGHT,
+        hl = annotations.unused_highlight,
         text = label(symbol),
       }
     end
@@ -286,13 +296,12 @@ function M.setup()
   if not user.lsp.unused_symbols then
     return
   end
-  vim.api.nvim_set_hl(0, HIGHLIGHT, { link = "DiagnosticVirtualTextHint", default = true })
   local group = vim.api.nvim_create_augroup("myconfig_unused", { clear = true })
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
     desc = "Mark declarations nothing references",
     callback = function(event)
-      if client_for(event.buf) then
+      if client_for(event.buf) and not ignored_path(event.buf) then
         attach(event.buf)
       end
     end,
