@@ -71,5 +71,14 @@ return {
       fields = { "*.dto.ts" },
       methods = { "*.controller.ts" },
     },
+    diagnostics_summary = {
+      width = 100,
+      sources = {
+        Codebook = {
+          label = "Possible spelling issues",
+          hint = "<leader>cw adds all of them to the dictionary",
+        },
+      },
+    },
   },
 }

@@ -192,7 +192,13 @@ Further decisions, explained in README.md ("Implementation notes"):
 - every diagnostic and every `Unused symbol` marker is drawn above its line by
   `core/annotations.lua`, one extmark per line so the order holds (errors first,
   the marker last); `core/diagnostics.lua` enables it as the `myconfig/above`
-  handler and keeps `virtual_text` off.
+  handler and keeps `virtual_text` off. A diagnostic source listed in
+  `lsp.diagnostics_summary.sources` is the exception: its messages become one
+  block above the first line of the buffer — `label` with the number of distinct
+  words, the words themselves wrapped at `width` columns, then `hint` in
+  `AnnotationHint`. Words are compared in lower case and shown as first met.
+  The key of the setting is the `source` field of the diagnostic, not the
+  server name.
 - unused code carries two different marks: `DiagnosticUnnecessary` for what the
   compiler proves unused, `settings/lsp/unused.lua`'s teal `Unused symbol '…'.`
   for a declaration no code references (`lsp.unused_skip` keeps DTO fields and
@@ -205,7 +211,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   `params.initializationOptions.configPath` from `before_init` — a relative one
   follows the working directory, and `config.init_options` is copied into the
   request before the callback runs. `<leader>cw` adds every unknown word of the
-  buffer in one `codebook.addWord`.
+  buffer in one `codebook.addWord`, and codebook's messages are summarized in
+  that block rather than drawn over the code.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

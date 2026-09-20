@@ -1,4 +1,5 @@
 local icons = require("settings.icons")
+local user = require("user.settings")
 
 local M = {}
 
@@ -7,6 +8,12 @@ local ns = vim.api.nvim_create_namespace("myconfig.annotations")
 local severity = vim.diagnostic.severity
 
 local bullet = icons.ui.dot .. " "
+
+local HINT_HIGHLIGHT = "AnnotationHint"
+
+local summary = user.lsp.diagnostics_summary or {}
+local summary_sources = summary.sources or {}
+local summary_width = summary.width or 0
 
 local unnecessary = vim.lsp.protocol.DiagnosticTag.Unnecessary
 
@@ -80,6 +87,79 @@ local function without_reported_unused(items, lnum)
   end, items)
 end
 
+local function subject(bufnr, item)
+  local ok, lines =
+    pcall(vim.api.nvim_buf_get_text, bufnr, item.lnum, item.col, item.end_lnum, item.end_col, {})
+  local word = ok and table.concat(lines) or ""
+  if word ~= "" then
+    return word
+  end
+  return item.text:match("'([^']+)'") or item.text
+end
+
+local function unique_words(bufnr, items)
+  table.sort(items, function(a, b)
+    if a.lnum ~= b.lnum then
+      return a.lnum < b.lnum
+    end
+    return (a.col or 0) < (b.col or 0)
+  end)
+  local seen, words = {}, {}
+  for _, item in ipairs(items) do
+    local word = subject(bufnr, item)
+    local key = vim.fn.tolower(word)
+    if not seen[key] then
+      seen[key] = true
+      words[#words + 1] = word
+    end
+  end
+  return words
+end
+
+local function summary_block(bufnr, config, items, hl)
+  local words = unique_words(bufnr, items)
+  local limit = summary_width > 0 and summary_width or math.huge
+  local chunks = { { bullet .. ("%s (%d):"):format(config.label, #words), hl } }
+  local current
+  for index, word in ipairs(words) do
+    local part = word .. (index == #words and "." or ",")
+    if not current then
+      current = part
+    elseif vim.fn.strdisplaywidth(current .. " " .. part) <= limit then
+      current = current .. " " .. part
+    else
+      chunks[#chunks + 1] = { current, hl }
+      current = part
+    end
+  end
+  if current then
+    chunks[#chunks + 1] = { current, hl }
+  end
+  if config.hint and config.hint ~= "" then
+    chunks[#chunks + 1] = { config.hint, HINT_HIGHLIGHT }
+  end
+  return chunks
+end
+
+local function summary_lines(bufnr, summaries)
+  local sources = vim.tbl_keys(summaries)
+  table.sort(sources)
+  local virt_lines = {}
+  for _, source in ipairs(sources) do
+    local items = summaries[source]
+    local hl, rank = items[1].hl, items[1].rank
+    for _, item in ipairs(items) do
+      if item.rank < rank then
+        hl, rank = item.hl, item.rank
+      end
+    end
+    for _, chunk in ipairs(summary_block(bufnr, summary_sources[source], items, hl)) do
+      virt_lines[#virt_lines + 1] = { chunk }
+    end
+  end
+  return virt_lines
+end
+
 local function render(bufnr)
   if not vim.api.nvim_buf_is_loaded(bufnr) then
     return
@@ -88,12 +168,22 @@ local function render(bufnr)
   top_lines[bufnr] = nil
   local last = vim.api.nvim_buf_line_count(bufnr) - 1
   local lines = {}
+  local summaries = {}
   for _, items in pairs(state[bufnr] or {}) do
     for _, item in ipairs(items) do
       local lnum = math.max(0, math.min(item.lnum, last))
-      lines[lnum] = lines[lnum] or {}
-      table.insert(lines[lnum], item)
+      if item.summary then
+        summaries[item.summary] = summaries[item.summary] or {}
+        table.insert(summaries[item.summary], item)
+      else
+        lines[lnum] = lines[lnum] or {}
+        table.insert(lines[lnum], item)
+      end
     end
+  end
+  local top = next(summaries) and summary_lines(bufnr, summaries) or {}
+  if #top > 0 then
+    lines[0] = lines[0] or {}
   end
   for lnum, items in pairs(lines) do
     items = without_reported_unused(items, lnum)
@@ -104,21 +194,23 @@ local function render(bufnr)
       return (a.col or 0) < (b.col or 0)
     end)
     local prefix = indent(bufnr, lnum)
-    local virt_lines = {}
+    local virt_lines = lnum == 0 and top or {}
     for _, item in ipairs(items) do
       virt_lines[#virt_lines + 1] = {
         { prefix, "NonText" },
         { bullet .. item.text, item.hl },
       }
     end
-    vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, 0, {
-      virt_lines = virt_lines,
-      virt_lines_above = true,
-      virt_lines_overflow = "scroll",
-    })
-    if lnum == 0 then
-      top_lines[bufnr] = #virt_lines
-      fill_top(bufnr, #virt_lines)
+    if #virt_lines > 0 then
+      vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, 0, {
+        virt_lines = virt_lines,
+        virt_lines_above = true,
+        virt_lines_overflow = "scroll",
+      })
+      if lnum == 0 then
+        top_lines[bufnr] = #virt_lines
+        fill_top(bufnr, #virt_lines)
+      end
     end
   end
 end
@@ -159,6 +251,7 @@ local function diagnostic_items(diagnostics)
       unnecessary = vim.tbl_contains(tags, unnecessary),
       rank = M.ranks[diagnostic.severity],
       hl = highlights[diagnostic.severity],
+      summary = summary_sources[diagnostic.source or ""] and diagnostic.source or nil,
       text = (diagnostic.message:gsub("%s*\n%s*", " ")),
     }
   end
@@ -166,6 +259,7 @@ local function diagnostic_items(diagnostics)
 end
 
 function M.setup()
+  vim.api.nvim_set_hl(0, HINT_HIGHLIGHT, { link = "NonText", default = true })
   vim.diagnostic.handlers["myconfig/above"] = {
     show = function(namespace, bufnr, diagnostics, _)
       M.set(bufnr, "diagnostic:" .. namespace, diagnostic_items(diagnostics))

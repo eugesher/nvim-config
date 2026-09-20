@@ -190,6 +190,7 @@ plain data the rest of the config reads:
 | `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
 | `lsp.unused_symbols`                                         | write `Unused symbol '…'.` above a declaration nothing references anywhere in the project; `<leader>uu` hides the markers in the current buffer                                          |
 | `lsp.unused_skip`                                            | globs of the file names where a declaration is never counted: `fields` for the DTOs, `methods` for the controllers; `*.{dto,entity}.ts` and the like work too                            |
+| `lsp.diagnostics_summary`                                    | `sources` maps a diagnostic `source` to the `label` and `hint` of its block above the first line; `width` wraps the word list, `0` never wraps; `sources = {}` turns it off              |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
 `~/.config/nvim` is lost on the next reinstall.
@@ -265,6 +266,17 @@ comments. Mason installs it automatically.
   words come from codebook's own diagnostics, taken from the buffer text the
   diagnostic covers, so a sub-word of a `camelCase` identifier is added exactly
   as the checker flagged it.
+- **The messages are collected above the first line of the buffer**
+  (`lsp.diagnostics_summary`): a count, the words, and how to add them all.
+
+  ```
+  ● Possible spelling issues (3):
+  qwe, asd, zxc.
+  <leader>cw adds all of them to the dictionary
+  ```
+
+  The word keeps its underline and its sign in the status column, so where it
+  sits is still visible.
 - **`<leader>us`** turns the checker off and on for the session.
 - **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
   wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
@@ -378,11 +390,11 @@ when "cleaned up".
   shared one-cell git segment, and line numbers take the git color, not the
   diagnostic one.
 - **Diagnostics are drawn above their line** (`core/annotations.lua`): one line
-  per diagnostic, every severity including codebook's spelling hints, each line
-  opened by `●` in the color of that severity. Neovim's own `virtual_lines` draws
-  them below the line and has no switch for it — `vim.diagnostic.Opts.VirtualLines`
-  knows `severity`, `current_line` and `format` and nothing else — so the config
-  registers a handler of its own, `myconfig/above`, and turns `virtual_text` off.
+  per diagnostic, every severity, each line opened by `●` in the color of that
+  severity. Neovim's own `virtual_lines` draws them below the line and has no
+  switch for it — `vim.diagnostic.Opts.VirtualLines` knows `severity`,
+  `current_line` and `format` and nothing else — so the config registers a
+  handler of its own, `myconfig/above`, and turns `virtual_text` off.
   Every annotation of a line lives in one extmark, which fixes their order:
   errors, warnings, information, hints, then the `Unused symbol` marker. A
   virtual line above the first line of a buffer stays invisible until the window
@@ -391,6 +403,18 @@ when "cleaned up".
   without it everything about the first import would be hidden. Diagnostics also
   arrive for buffers that are not loaded, since vtsls reports the whole project,
   and the handler drops those instead of drawing into nothing.
+- **A source named in `lsp.diagnostics_summary` gets one block above the first
+  line instead** — codebook does. Spelling is the one check that fires on almost
+  every second line, and a message per word buries the compiler between them.
+  The block is the `label` with the number of distinct words, the words, and
+  the `hint`, which is italic `AnnotationHint`. Words are read from the buffer
+  text each diagnostic covers, not from its message, so a sub-word of a
+  `camelCase` identifier is listed the way the checker found it; they are
+  compared in lower case and shown in the spelling of their first occurrence,
+  which keeps `Dto` and `DTO` one entry. The word list wraps at `width` columns
+  counted from the left edge of the buffer, never inside a word. The key of the
+  setting is the `source` a server puts on its diagnostics (`Codebook`), which
+  is what the diagnostic float shows.
 - **`<leader>1` … `<leader>9` use `bufferline.go_to(i, true)`**, the absolute
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which

@@ -62,6 +62,7 @@ M.opts = {
       LineNr = { fg = colors.surface2 },
       DiagnosticUnnecessary = { fg = colors.overlay0 },
       UnusedSymbol = { fg = colors.teal, style = { "italic" } },
+      AnnotationHint = { fg = colors.overlay0, style = { "italic" } },
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,
         -- style = { "underline" },
