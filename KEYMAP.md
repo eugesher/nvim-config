@@ -438,6 +438,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<C-Space>` | i    | blink.cmp: Show, Show Documentation, Hide Documentation | every file buffer |
 | `<CR>`      | i    | autopairs completion confirm                            |                   |
 | `<CR>`      | i    | blink.cmp: Accept                                       | every file buffer |
+| `<Esc>`     | i    | blink.cmp: Cancel                                       | every file buffer |
 | `<S-Tab>`   | s i  | blink.cmp: Select Prev, Snippet Backward                | every file buffer |
 | `<Tab>`     | s i  | blink.cmp: Select Next, Snippet Forward                 | every file buffer |
 | `[`         | i    | autopairs map key                                       | every file buffer |

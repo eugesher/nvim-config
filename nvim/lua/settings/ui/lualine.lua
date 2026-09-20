@@ -1,4 +1,5 @@
 local icons = require("settings.icons")
+local breadcrumbs = require("settings.structure.dropbar")
 
 local M = {}
 
@@ -118,8 +119,15 @@ function M.opts()
     },
     sections = {
       lualine_a = { "mode" },
-      lualine_b = {
-        "branch",
+      lualine_b = { "branch" },
+      lualine_c = {
+        { breadcrumbs.statusline, padding = { left = 0, right = 1 } },
+      },
+      lualine_x = {
+        macro_recording,
+        lsp_progress,
+        { dap_status, cond = dap_active },
+        neotest_status,
         {
           "diff",
           colored = true,
@@ -144,27 +152,6 @@ function M.opts()
           update_in_insert = false,
           always_visible = false,
         },
-      },
-      lualine_c = {
-        {
-          "filename",
-          file_status = true,
-          newfile_status = true,
-          path = 1,
-          shorting_target = 40,
-          symbols = {
-            modified = icons.ui.dot,
-            readonly = icons.ui.lock,
-            unnamed = "[No Name]",
-            newfile = "[New]",
-          },
-        },
-      },
-      lualine_x = {
-        macro_recording,
-        lsp_progress,
-        { dap_status, cond = dap_active },
-        neotest_status,
         "filetype",
       },
       lualine_y = { "progress" },

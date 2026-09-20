@@ -182,7 +182,12 @@ Further decisions, explained in README.md ("Implementation notes"):
 - aerial loads on `BufReadPost` with LSP first, so `{` / `}` jump by symbol and
   class fields show up.
 - dropbar's treesitter `valid_types` is narrowed to declarations. Its preview
-  `reorient` uses `winrestview`, because `:normal` breaks the fuzzy prompt.
+  `reorient` uses `winrestview`, because `:normal` breaks the fuzzy prompt. The
+  breadcrumbs are drawn at the bottom, by lualine's left section, not in the
+  winbar: `bar.enable` is `false` and `M.statusline()` in
+  `settings/structure/dropbar.lua` hands lualine dropbar's own string, while the
+  git and diagnostic counters sit in `lualine_x`. Its `symbol.on_click` wraps
+  the default one to raise the first menu to the bottom of the window.
 - `<leader>w` writes every named buffer in a loop, not with `:wall`, which
   errors on a buffer that has no file name.
 - nvim-autopairs keeps its `<CR>` mapping: blink.cmp owns the key and falls
@@ -218,7 +223,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   keymaps in `core/keymaps.lua` that keep an explicit named register); only
   `x` / `X` cut to the clipboard.
 - `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
-  jump through snippet fields only while the menu is closed.
+  jump through snippet fields only while the menu is closed; `<Esc>` closes the
+  menu before it leaves insert mode.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
 - lualine's LSP progress follows work-done tokens from `LspProgress` event data;

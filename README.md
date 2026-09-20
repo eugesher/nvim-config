@@ -97,7 +97,7 @@ the `http/` collections in this repository.
 | Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
 | Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
-| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the winbar), nvim-origami (fold line counts, auto-folded imports and comments)                                                 |
+| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the status line), nvim-origami (fold line counts, auto-folded imports and comments)                                            |
 | Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                           |
 | Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
 | HTTP client             | kulala.nvim                                                                                                                                                                  |
@@ -619,6 +619,29 @@ when "cleaned up".
   and the method out of `max_depth`. Its preview recenters through
   `winrestview()`, because `:normal` closes the fuzzy prompt. The filter in its
   menus needs the C library of telescope-fzf-native.nvim.
+- **The breadcrumbs sit at the bottom, in lualine's left section.** Neovim
+  attaches exactly two lines to a window: `'winbar'` above it and `'statusline'`
+  below, so the bottom is the status line and nothing else. lualine keeps
+  `globalstatus`, and its left section renders `M.statusline()` of
+  `settings/structure/dropbar.lua` — the very string dropbar would put in the
+  winbar, so the highlights, the click regions and `<leader>;` all keep working,
+  and the file name component is gone, because the breadcrumbs end in it.
+  dropbar itself never attaches: `bar.enable` is `false` and `attach_events` is
+  empty, and the window-level exclusions moved into that function, which asks
+  dropbar's own default for everything else. The git and diagnostic counters
+  moved to the right half of the line, so the breadcrumbs have the left one to
+  themselves. `bar.hover` is off, since the hover highlight is computed for row
+  1 of a window, which the status line never is.
+- **The drop-down menu is raised to the bottom of the window.** dropbar anchors
+  it at row 0 of the window it belongs to, which is where the winbar used to be;
+  a menu of the breadcrumbs now has to open at the other end. `symbol.on_click`
+  wraps dropbar's own handler and moves the window it opened, so the mouse and
+  `<leader>;` end up in the same place: a bordered float is positioned by its
+  border box, so the row is the window height less the menu's height and its two
+  border lines, and the bottom border lands on the last line of the window. Only
+  the first menu is moved, since a submenu is anchored to the menu it came from,
+  and the column dropbar computed is kept, which is the clicked component in
+  the window, not in the status line.
 - **aerial** loads on `BufReadPost` with the LSP backend first: its TypeScript
   query has no properties or fields (NestJS injections), and with a key-only load
   `{` / `}` would stay paragraph motions until the tree is opened once. Anonymous
@@ -652,7 +675,10 @@ when "cleaned up".
   selection while the menu is open and jump through snippet fields when it is
   closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
   menu to free it for the next field. Neither key accepts a completion — `<CR>`
-  does — and the dadbod source is enabled for SQL filetypes only.
+  does — and the dadbod source is enabled for SQL filetypes only. `<Esc>` is
+  `cancel` with a fallback: it closes the menu and stays in insert mode, and
+  only the next `<Esc>` leaves it. `cancel` reports back that it did nothing
+  while the menu is closed, so the key keeps its normal meaning everywhere else.
 - **nvim-autopairs** writes the closing bracket or quote to the right of the
   cursor, and `<BS>` on the opening one takes both away while the pair is still
   empty. It holds back where a closing character would be in the way: none is

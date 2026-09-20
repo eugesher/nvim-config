@@ -33,6 +33,57 @@ local EXCLUDED_FILETYPES = {
   "checkhealth",
 }
 
+local default_enable
+local default_on_click
+
+local function raise(menu)
+  local win = menu.prev_win
+  if
+    not win
+    or not vim.api.nvim_win_is_valid(win)
+    or not menu.win
+    or not vim.api.nvim_win_is_valid(menu.win)
+  then
+    return
+  end
+  local config = vim.api.nvim_win_get_config(menu.win)
+  local border = config.border ~= nil and config.border ~= "none" and 2 or 0
+  local height = vim.api.nvim_win_get_height(menu.win)
+  vim.api.nvim_win_set_config(menu.win, {
+    relative = "win",
+    win = win,
+    row = math.max(0, vim.api.nvim_win_get_height(win) - height - border),
+    col = config.col,
+  })
+end
+
+local function shows_breadcrumbs(buf, win)
+  if not vim.api.nvim_buf_is_valid(buf) or not vim.api.nvim_win_is_valid(win) then
+    return false
+  end
+  local filetype = vim.bo[buf].filetype
+  if
+    vim.tbl_contains(EXCLUDED_FILETYPES, filetype)
+    or filetype:match("^neotest%-")
+    or vim.bo[buf].buftype ~= ""
+    or vim.api.nvim_buf_get_name(buf) == ""
+  then
+    return false
+  end
+  return default_enable ~= nil and default_enable(buf, win, nil)
+end
+
+function M.statusline()
+  if not _G.dropbar then
+    return ""
+  end
+  local win = vim.api.nvim_get_current_win()
+  if not shows_breadcrumbs(vim.api.nvim_win_get_buf(win), win) then
+    return ""
+  end
+  return _G.dropbar()
+end
+
 local function kind_icons()
   local padded = {}
   for kind, glyph in pairs(icons.kinds) do
@@ -50,34 +101,13 @@ end
 
 function M.opts()
   local defaults = require("dropbar.configs").opts
-  local default_enable = defaults.bar.enable
+  default_enable = defaults.bar.enable
+  default_on_click = defaults.symbol.on_click
 
   return {
     bar = {
-      enable = function(buf, win, info)
-        buf = buf or vim.api.nvim_get_current_buf()
-        if not vim.api.nvim_buf_is_valid(buf) then
-          return false
-        end
-        local filetype = vim.bo[buf].filetype
-        if
-          vim.tbl_contains(EXCLUDED_FILETYPES, filetype)
-          or filetype:match("^neotest%-")
-          or vim.bo[buf].buftype ~= ""
-          or vim.api.nvim_buf_get_name(buf) == ""
-        then
-          return false
-        end
-        return default_enable(buf, win, info)
-      end,
-      attach_events = {
-        "TermOpen",
-        "BufEnter",
-        "BufWinEnter",
-        "BufWritePost",
-        "FileType",
-        "LspAttach",
-      },
+      enable = false,
+      attach_events = {},
       update_debounce = 32,
       update_events = {
         win = { "CursorMoved", "WinEnter", "WinResized" },
@@ -89,7 +119,7 @@ function M.opts()
         },
         global = { "DirChanged", "VimResized" },
       },
-      hover = true,
+      hover = false,
       sources = function(buf, _)
         local sources = require("dropbar.sources")
         local utils = require("dropbar.utils")
@@ -161,7 +191,13 @@ function M.opts()
     },
 
     symbol = {
-      on_click = defaults.symbol.on_click,
+      on_click = function(symbol, min_width, n_clicks, button, modifiers)
+        default_on_click(symbol, min_width, n_clicks, button, modifiers)
+        local menu = symbol.menu
+        if menu and menu.is_opened and not menu.prev_menu then
+          raise(menu)
+        end
+      end,
       preview = { reorient = center },
       jump = { reorient = center },
     },
