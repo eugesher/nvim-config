@@ -58,10 +58,13 @@ M.opts = {
   color_overrides = {},
   highlight_overrides = {},
   custom_highlights = function(colors)
+    local darken = require("catppuccin.utils.colors").darken
+    local warn_bg = user.colorscheme.transparent and colors.none
+      or darken(colors.peach, 0.095, colors.base)
     return {
       LineNr = { fg = colors.surface2 },
       DiagnosticUnnecessary = { fg = colors.overlay0 },
-      DiagnosticVirtualTextWarn = { fg = colors.peach, style = { "italic" } },
+      DiagnosticVirtualTextWarn = { fg = colors.peach, bg = warn_bg, style = { "italic" } },
       UnusedSymbol = { fg = colors.yellow, style = { "italic" } },
       AnnotationHint = { fg = colors.overlay0, style = { "italic" } },
       WinBar = {
