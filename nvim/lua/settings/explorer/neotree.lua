@@ -83,23 +83,28 @@ local window_mappings = {
   ["<space>"] = "none",
   ["<C-s>"] = "none",
   ["w"] = "none",
+  ["P"] = "none",
+  ["<C-f>"] = "none",
+  ["<C-b>"] = "none",
+  ["C"] = "none",
   ["<Tab>"] = "select",
   ["<C-S-i>"] = "invert_selection",
   ["<C-;>"] = "clear_selection",
   ["<2-LeftMouse>"] = "open",
   ["<cr>"] = "open",
+  ["l"] = "open",
   ["<esc>"] = "cancel",
-  ["P"] = {
+  ["H"] = {
     "toggle_preview",
     config = { use_float = true, use_snacks_image = false, use_image_nvim = false },
   },
-  ["<C-f>"] = { "scroll_preview", config = { direction = -10 } },
-  ["<C-b>"] = { "scroll_preview", config = { direction = 10 } },
-  ["l"] = "focus_preview",
+  ["J"] = { "scroll_preview", config = { direction = -10 } },
+  ["K"] = { "scroll_preview", config = { direction = 10 } },
+  ["L"] = "focus_preview",
   ["S"] = "open_split",
   ["s"] = "open_vsplit",
   ["t"] = "open_tabnew",
-  ["C"] = "close_node",
+  ["h"] = "close_node",
   ["z"] = "close_all_nodes",
   ["R"] = "refresh",
   ["a"] = { "add", config = { show_path = "none" } },
@@ -151,6 +156,18 @@ local function did_rename_files(args)
       vim.tbl_get(client.server_capabilities, "workspace", "fileOperations", "didRename", "filters")
     if filters and matches_filters(filters, args.destination) then
       client:notify(method, params)
+    end
+  end
+end
+
+local function open_or_set_root(source)
+  return function(state)
+    local commands = require("neo-tree.sources." .. source .. ".commands")
+    local node = state.tree:get_node()
+    if node and node.type == "directory" then
+      commands.set_root(state)
+    else
+      commands.open(state)
     end
   end
 end
@@ -294,14 +311,14 @@ function M.opts()
     filesystem = {
       window = {
         mappings = order_mappings({
-          ["H"] = "toggle_hidden",
+          ["."] = "toggle_hidden",
           ["/"] = "fuzzy_finder",
           ["D"] = "fuzzy_finder_directory",
           ["#"] = "fuzzy_sorter",
           ["f"] = "filter_on_submit",
           ["<C-x>"] = "clear_filter",
           ["<bs>"] = "navigate_up",
-          ["."] = "set_root",
+          ["<cr>"] = { open_or_set_root("filesystem"), desc = "Open, or set root on a folder" },
           ["[g"] = "prev_git_modified",
           ["]g"] = "next_git_modified",
           ["i"] = "show_file_details",
@@ -348,7 +365,8 @@ function M.opts()
       window = {
         mappings = order_mappings({
           ["<bs>"] = "navigate_up",
-          ["."] = "set_root",
+          ["<cr>"] = { open_or_set_root("buffers"), desc = "Open, or set root on a folder" },
+          ["."] = "none",
           ["d"] = "buffer_delete",
           ["bd"] = "buffer_delete",
           ["i"] = "show_file_details",

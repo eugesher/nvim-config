@@ -179,8 +179,8 @@ plain data the rest of the config reads:
 | `formatting.format_on_save`                                  | format on save; toggle with `<leader>uf` (buffer) / `<leader>uF` (global) or `:FormatDisable[!]` / `:FormatEnable[!]`                                                                    |
 | `formatting.timeout_ms`, `max_filesize`                      | milliseconds a formatter may block a save; files larger than `max_filesize` bytes are saved unformatted                                                                                  |
 | `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
-| `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `H` shows gitignored files |
-| `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `<cr>` on it merges instead of expanding; `false` keeps every folder on its own line  |
+| `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
+| `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
 | `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
@@ -626,7 +626,17 @@ when "cleaned up".
   fixes imports after a rename, and takes its width from a function: neo-tree
   also does arithmetic on the raw value, which a `"25%"` string breaks.
   **oil's `default_file_explorer` stays `false`**, or `nvim .` opens oil instead
-  of the tree.
+  of the tree. Inside the tree the keys follow `h` / `l`: `l` opens a node (a
+  folder expands, a file opens), `h` closes it, `.` toggles hidden files, `H`
+  toggles the preview, `J` / `K` scroll it and `L` focuses it. `<cr>` opens a
+  file and sets the root on a folder — one key for both, so it is a function
+  rather than a command name — and it is declared per source rather than
+  globally, because `set_root` exists in filesystem and buffers only and a
+  global one would leave `<cr>` unmapped in git_status; `toggle_hidden` is
+  filesystem's alone for the same reason. A key that has to go is mapped to
+  `"none"` (`P`, `C`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line
+  out instead brings neo-tree's own default for it back, since a source
+  inherits the global table and the defaults underneath it.
 - **fzf-lua's key tables replace the defaults** rather than extend them: the
   defaults bind Alt combinations. `vim.ui.select` is a stub that loads fzf-lua on
   the first call.
