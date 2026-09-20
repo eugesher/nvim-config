@@ -6,6 +6,13 @@ function M.safe_buffer_delete(bufnr, force)
   if bufnr == nil or bufnr == 0 then
     bufnr = vim.api.nvim_get_current_buf()
   end
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+  if not vim.api.nvim_buf_is_loaded(bufnr) then
+    vim.api.nvim_buf_delete(bufnr, { force = force == true })
+    return
+  end
   require("bufdelete").bufdelete(bufnr, force == true)
 end
 
@@ -131,6 +138,22 @@ local function delete_others()
   end
 end
 
+local function delete_all()
+  local loaded = {}
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].buflisted then
+      if vim.api.nvim_buf_is_loaded(bufnr) then
+        loaded[#loaded + 1] = bufnr
+      else
+        M.safe_buffer_delete(bufnr, false)
+      end
+    end
+  end
+  if #loaded > 0 then
+    require("bufdelete").bufdelete(loaded, false)
+  end
+end
+
 M.keys = {
   { "]b", "<cmd>BufferLineCycleNext<CR>", desc = "Next buffer" },
   { "[b", "<cmd>BufferLineCyclePrev<CR>", desc = "Previous buffer" },
@@ -142,6 +165,7 @@ M.keys = {
     end,
     desc = "Delete buffer (force)",
   },
+  { "<leader>ba", delete_all, desc = "Delete all buffers" },
   { "<leader>bo", delete_others, desc = "Delete other buffers (keep pinned)" },
   { "<leader>bp", "<cmd>BufferLinePick<CR>", desc = "Pick buffer" },
   { "<leader>bP", "<cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },

@@ -194,6 +194,10 @@ Further decisions, explained in README.md ("Implementation notes"):
   back to it while the completion menu is closed.
 - bufferline's tab numbers come from a `numbers` function counting the
   rendered order; its own `ordinal` is the position in the buffer list.
+- `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes a buffer a
+  session restored (listed, not loaded) with `nvim_buf_delete`: bufdelete.nvim
+  skips an unloaded buffer. `<leader>ba` deletes every listed buffer in one
+  bufdelete call, which leaves the empty buffer `<leader>q` leaves last.
 - every diagnostic and every `Unused symbol` marker is drawn above its line by
   `core/annotations.lua`, one extmark per line so the order holds (errors first,
   the marker last); `core/diagnostics.lua` enables it as the `myconfig/above`

@@ -419,6 +419,14 @@ when "cleaned up".
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
   keeps the window layout.
+- **A buffer a session restored is deleted without bufdelete.nvim.** A session
+  file lists its buffers with `badd`, so they are listed but not loaded until
+  they are opened, and bufdelete skips a buffer that is not loaded: after a
+  restore `<leader>bo` and `<leader>bd` left every untouched buffer in the
+  tabline. `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes that
+  buffer itself with `nvim_buf_delete`, which is what `:bdelete` does to it —
+  no window shows it and it cannot be modified, so there is no window layout to
+  keep and nothing to ask about.
 - **The number on a tab is its position, not bufferline's `ordinal`.** The
   plugin writes that number into the tab while it builds the components, before
   it sorts them and before the pinned group moves to the front, so
@@ -439,6 +447,14 @@ when "cleaned up".
   buffer of the `pinned` group, and deletes the rest through
   `safe_buffer_delete`. Pressed where the current buffer has no tab of its
   own — in neo-tree, in a panel — it does nothing, the same as the command.
+- **`<leader>ba` ends on one empty buffer.** `delete_all()` in
+  `settings/ui/bufferline.lua` hands every listed buffer to bufdelete.nvim in
+  one call, so the plugin finds nothing left to switch to and opens a fresh
+  `[No Name]` buffer in each window that held one — the state `<leader>q`
+  leaves when it closes the last buffer. The window layout stays, panels keep
+  their own buffers, and a modified buffer still asks whether to save it.
+  Deleting the buffers one by one would instead walk the windows through the
+  remaining files first.
 - **lualine tracks LSP progress per work-done token** from the `LspProgress`
   event data and drops a task on its `end`. Neither `ev.match` (the kind
   expanded to a path, `/cwd/end`) nor `vim.lsp.status()` (everything the ring

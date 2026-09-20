@@ -102,6 +102,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>9`  | n     | Go to buffer 9                     |        |
 | `<leader>b<` | n     | Move buffer left                   |        |
 | `<leader>b>` | n     | Move buffer right                  |        |
+| `<leader>ba` | n     | Delete all buffers                 |        |
 | `<leader>bD` | n     | Delete buffer (force)              |        |
 | `<leader>bd` | n     | Delete buffer                      |        |
 | `<leader>bo` | n     | Delete other buffers (keep pinned) |        |
