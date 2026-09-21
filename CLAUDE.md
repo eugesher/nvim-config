@@ -247,7 +247,12 @@ Further decisions, explained in README.md ("Implementation notes"):
   follows the working directory, and `config.init_options` is copied into the
   request before the callback runs. `<leader>cw` adds every unknown word of the
   buffer in one `codebook.addWord`, and codebook's messages are summarized in
-  that block rather than drawn over the code.
+  that block rather than drawn over the code. `settings/lsp/spelling.lua` covers
+  what the server skips (`spelling.check_paths`): a string literal holding a `/`
+  is never checked, so it sends codebook a shadow document — the buffer with
+  those slashes turned into spaces, under a URI of its own — and republishes the
+  hints only that copy produced into the `myconfig.spelling` namespace, with
+  codebook's `source`, so they join the same block.
 - `grr` opens Trouble, not a picker.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only

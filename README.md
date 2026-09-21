@@ -183,6 +183,7 @@ plain data the rest of the config reads:
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
+| `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
 | `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
 | `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
@@ -263,9 +264,15 @@ comments. Mason installs it automatically.
   `.codebook/words.toml`) and `Add to global dictionary` (the global one), along
   with the spelling suggestions.
 - **`<leader>cw` adds every unknown word of the buffer in one request.** The
-  words come from codebook's own diagnostics, taken from the buffer text the
-  diagnostic covers, so a sub-word of a `camelCase` identifier is added exactly
-  as the checker flagged it.
+  words come from codebook's own diagnostics and from the path check below,
+  taken from the buffer text the diagnostic covers, so a sub-word of a
+  `camelCase` identifier is added exactly as the checker flagged it.
+- **A string that holds a path is checked word by word**
+  (`spelling.check_paths`). codebook skips such a string whole, so
+  `'user/leagcy-auth'` is silently correct for it. The config sends the server a
+  copy of the buffer in which the slashes inside strings are spaces and keeps
+  the words only that copy flags; the hints read like codebook's own and
+  `<leader>cw` adds them as well.
 - **The messages are collected above the first line of the buffer**
   (`lsp.diagnostics_summary`): a count, the words, and how to add them all.
 
@@ -628,6 +635,23 @@ when "cleaned up".
   mark is its dictionary is still recognized. Without `configPath` a project
   without a `codebook.toml` loses every added word without a message: the server
   has no file to save to.
+- **The words inside a path string are checked through a second, invisible
+  document.** codebook reports nothing inside a string literal that contains a
+  `/` — a route, a URL, a path — while the same word in a comment or in a plain
+  string is flagged. `settings/lsp/spelling.lua` sends the server a shadow
+  document instead: the buffer with every `/` inside a string literal replaced
+  by a space, under a URI of its own (`.<name>.spelling.<ext>`, which is no
+  file on disk). One byte for one byte, so every diagnostic comes back on a
+  position of the real buffer; a per-client `textDocument/publishDiagnostics`
+  handler recognizes that URI, keeps the hints that fall inside a rewritten
+  string and publishes them into the `myconfig.spelling` namespace under
+  codebook's own `source`, which puts them in the summary block and in
+  `<leader>cw`. Import and export specifiers are left out, so package names
+  (`@nestjs/common`) stay unchecked, and so are template strings, which codebook
+  reads itself, slashes and all. A hint the server already sent for the real
+  document is dropped, whichever of the two publishes arrives first. The shadow
+  document is re-sent, debounced, on `TextChanged` and `InsertLeave`, and closed
+  when codebook leaves the buffer.
 
 ### Plugins
 

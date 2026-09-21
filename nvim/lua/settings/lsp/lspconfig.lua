@@ -27,6 +27,7 @@ end
 function M.init()
   require("settings.lsp.keymaps").setup()
   require("settings.lsp.unused").setup()
+  require("settings.lsp.spelling").setup()
 end
 
 function M.config()

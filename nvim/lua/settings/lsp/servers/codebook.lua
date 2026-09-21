@@ -1,3 +1,4 @@
+local spelling = require("settings.lsp.spelling")
 local user = require("user.settings")
 
 local M = {}
@@ -41,6 +42,9 @@ M.config = {
     checkWhileTyping = true,
     diagnosticSeverity = "hint",
   },
+  handlers = {
+    ["textDocument/publishDiagnostics"] = spelling.handler,
+  },
   before_init = function(params, config)
     local path = project_dictionary(config.root_dir)
     if path then
@@ -59,22 +63,24 @@ function M.toggle()
 end
 
 local function unknown_words(bufnr, client)
-  local namespace = vim.lsp.diagnostic.get_namespace(client.id)
+  local namespaces = { vim.lsp.diagnostic.get_namespace(client.id), spelling.namespace }
   local seen, words = {}, {}
-  for _, diagnostic in ipairs(vim.diagnostic.get(bufnr, { namespace = namespace })) do
-    local ok, lines = pcall(
-      vim.api.nvim_buf_get_text,
-      bufnr,
-      diagnostic.lnum,
-      diagnostic.col,
-      diagnostic.end_lnum,
-      diagnostic.end_col,
-      {}
-    )
-    local word = ok and table.concat(lines) or ""
-    if word ~= "" and not seen[word] then
-      seen[word] = true
-      words[#words + 1] = word
+  for _, namespace in ipairs(namespaces) do
+    for _, diagnostic in ipairs(vim.diagnostic.get(bufnr, { namespace = namespace })) do
+      local ok, lines = pcall(
+        vim.api.nvim_buf_get_text,
+        bufnr,
+        diagnostic.lnum,
+        diagnostic.col,
+        diagnostic.end_lnum,
+        diagnostic.end_col,
+        {}
+      )
+      local word = ok and table.concat(lines) or ""
+      if word ~= "" and not seen[word] then
+        seen[word] = true
+        words[#words + 1] = word
+      end
     end
   end
   table.sort(words)

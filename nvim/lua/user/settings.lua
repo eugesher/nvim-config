@@ -51,6 +51,7 @@ return {
 
   spelling = {
     project_dictionary = ".codebook/words.toml",
+    check_paths = true,
   },
 
   coverage = {
