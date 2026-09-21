@@ -8,9 +8,14 @@ local ns = vim.api.nvim_create_namespace("myconfig.annotations")
 local severity = vim.diagnostic.severity
 
 local bullet = icons.ui.dot .. " "
+local gap = string.rep(" ", 4)
+local marker_sign = icons.ui.unused
 
 local HINT_HIGHLIGHT = "AnnotationHint"
 local UNUSED_HIGHLIGHT = "UnusedSymbol"
+local SIGN_HIGHLIGHT = "UnusedSign"
+
+local SIGN_PRIORITY = 11
 
 local summary = user.lsp.diagnostics_summary or {}
 local summary_sources = summary.sources or {}
@@ -38,11 +43,6 @@ M.ranks = {
 local state = {}
 local scheduled = {}
 local top_lines = {}
-
-local function indent(bufnr, lnum)
-  local line = vim.api.nvim_buf_get_lines(bufnr, lnum, lnum + 1, false)[1] or ""
-  return line:match("^%s*")
-end
 
 local function fill_top(bufnr, count)
   for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -197,7 +197,13 @@ local function render(bufnr)
   end
   local top = next(summaries) and summary_lines(bufnr, summaries) or {}
   if #top > 0 then
-    lines[0] = lines[0] or {}
+    vim.api.nvim_buf_set_extmark(bufnr, ns, 0, 0, {
+      virt_lines = top,
+      virt_lines_above = true,
+      virt_lines_overflow = "scroll",
+    })
+    top_lines[bufnr] = #top
+    fill_top(bufnr, #top)
   end
   for lnum, items in pairs(lines) do
     items = without_reported_unused(items, lnum)
@@ -208,24 +214,22 @@ local function render(bufnr)
       return (a.col or 0) < (b.col or 0)
     end)
     items = without_duplicates(items)
-    local prefix = indent(bufnr, lnum)
-    local virt_lines = lnum == 0 and top or {}
+    local chunks = {}
+    local marked = false
     for _, item in ipairs(items) do
-      virt_lines[#virt_lines + 1] = {
-        { prefix, "NonText" },
-        { bullet .. item.text, item.hl },
-      }
+      chunks[#chunks + 1] = { #chunks == 0 and gap or " " }
+      chunks[#chunks + 1] = { bullet .. item.text, item.hl }
+      marked = marked or item.marker == true
     end
-    if #virt_lines > 0 then
+    if #chunks > 0 then
       vim.api.nvim_buf_set_extmark(bufnr, ns, lnum, 0, {
-        virt_lines = virt_lines,
-        virt_lines_above = true,
-        virt_lines_overflow = "scroll",
+        virt_text = chunks,
+        virt_text_pos = "eol",
+        hl_mode = "combine",
+        sign_text = marked and marker_sign or nil,
+        sign_hl_group = marked and SIGN_HIGHLIGHT or nil,
+        priority = SIGN_PRIORITY,
       })
-      if lnum == 0 then
-        top_lines[bufnr] = #virt_lines
-        fill_top(bufnr, #virt_lines)
-      end
     end
   end
 end
@@ -278,7 +282,8 @@ end
 function M.setup()
   vim.api.nvim_set_hl(0, HINT_HIGHLIGHT, { link = "NonText", default = true })
   vim.api.nvim_set_hl(0, UNUSED_HIGHLIGHT, { link = "DiagnosticVirtualTextWarn", default = true })
-  vim.diagnostic.handlers["myconfig/above"] = {
+  vim.api.nvim_set_hl(0, SIGN_HIGHLIGHT, { link = "DiagnosticSignWarn", default = true })
+  vim.diagnostic.handlers["myconfig/annotations"] = {
     show = function(namespace, bufnr, diagnostics, _)
       M.set(bufnr, "diagnostic:" .. namespace, diagnostic_items(diagnostics))
     end,
@@ -297,7 +302,7 @@ function M.setup()
   })
   vim.api.nvim_create_autocmd({ "WinScrolled", "WinEnter" }, {
     group = group,
-    desc = "Keep the annotations of the first line visible",
+    desc = "Keep the summary block above the first line visible",
     callback = function(event)
       if top_lines[event.buf] then
         fill_top(event.buf, top_lines[event.buf])

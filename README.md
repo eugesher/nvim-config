@@ -188,7 +188,7 @@ plain data the rest of the config reads:
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
 | `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
-| `lsp.unused_symbols`                                         | write `Unused symbol '…'.` above a declaration nothing references anywhere in the project; `<leader>uu` hides the markers in the current buffer                                          |
+| `lsp.unused_symbols`                                         | write `Unused symbol '…'.` behind the line of a declaration nothing references in the project and `○` left of its number; `<leader>uu` hides the markers in the current buffer           |
 | `lsp.unused_skip`                                            | globs of the places where a declaration is never counted: `fields` for DTO and entity fields, `methods` for controller methods, `paths` for whole files (node_modules)                   |
 | `lsp.diagnostics_summary`                                    | `sources` maps a diagnostic `source` to the `label` and `hint` of its block above the first line; `width` wraps the word list, `0` never wraps; `sources = {}` turns it off              |
 
@@ -389,21 +389,28 @@ when "cleaned up".
   set late (dbui). Coverage signs (priority 5) sit below gitsigns (6) in the
   shared one-cell git segment, and line numbers take the git color, not the
   diagnostic one.
-- **Diagnostics are drawn above their line** (`core/annotations.lua`): one line
-  per diagnostic, every severity, each line opened by `●` in the color of that
-  severity — in `UnusedSymbol` for a diagnostic tagged `Unnecessary`. Neovim's
-  own `virtual_lines` draws them below the line and has no switch for it —
-  `vim.diagnostic.Opts.VirtualLines` knows `severity`, `current_line` and
-  `format` and nothing else — so the config registers a handler of its own,
-  `myconfig/above`, and turns `virtual_text` off. Every annotation of a line
-  lives in one extmark, which fixes their order: errors, then the warnings and
-  the unused marks together, then hints and information. A
-  virtual line above the first line of a buffer stays invisible until the window
-  is given filler lines ([#16166](https://github.com/neovim/neovim/issues/16166)),
-  so the renderer sets `topfill` itself while the window sits at the top —
-  without it everything about the first import would be hidden. Diagnostics also
-  arrive for buffers that are not loaded, since vtsls reports the whole project,
-  and the handler drops those instead of drawing into nothing.
+- **Annotations are drawn at the end of their line** (`core/annotations.lua`):
+  every diagnostic and every `Unused symbol` marker, each opened by `●` in the
+  color of its severity — in `UnusedSymbol` for a diagnostic tagged
+  `Unnecessary` — four columns behind the code, the gap Neovim leaves in front
+  of its own virtual text. That handler exists because Neovim's `virtual_text`
+  has no room for a mark the config raises itself and `virtual_lines` draws
+  below the line with no switch for it — `vim.diagnostic.Opts.VirtualLines`
+  knows `severity`, `current_line` and `format` and nothing else — so the config
+  registers `myconfig/annotations` and turns both off. Every annotation of a
+  line lives in one extmark, which fixes their order: errors, then the warnings
+  and the unused marks together, then hints and information, one chain behind
+  the code. Diagnostics also arrive for buffers that are not loaded, since vtsls
+  reports the whole project, and the handler drops those instead of drawing into
+  nothing.
+- **An `Unused symbol` marker also puts `○` left of the line number.** The
+  extmark that carries the annotations of the line carries the sign as well, in
+  `UnusedSign`, which links to `DiagnosticSignWarn`. Its priority is 11: above a
+  hint, below a warning and an error, so the diagnostic of the same line keeps
+  the single cell of the status column while a spelling hint — summarized above
+  the buffer anyway — gives it up. Only what `settings/lsp/unused.lua` counts
+  gets the sign; what the compiler proves unused is a diagnostic and carries a
+  diagnostic sign already.
 - **A source named in `lsp.diagnostics_summary` gets one block above the first
   line instead** — codebook does. Spelling is the one check that fires on almost
   every second line, and a message per word buries the compiler between them.
@@ -415,7 +422,12 @@ when "cleaned up".
   which keeps `Dto` and `DTO` one entry. The word list wraps at `width` columns
   counted from the left edge of the buffer, never inside a word. The key of the
   setting is the `source` a server puts on its diagnostics (`Codebook`), which
-  is what the diagnostic float shows.
+  is what the diagnostic float shows. The block is the one annotation still
+  drawn in virtual lines, and a virtual line above the first line of a buffer
+  stays invisible until the window is given filler lines
+  ([#16166](https://github.com/neovim/neovim/issues/16166)), so the renderer
+  sets `topfill` itself while the window sits at the top — without it the whole
+  block would be hidden.
 - **`<leader>1` … `<leader>9` use `bufferline.go_to(i, true)`**, the absolute
   position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
   Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
@@ -526,14 +538,15 @@ when "cleaned up".
   exported class, a public method, a field, a type or a constant is valid code
   with nobody calling it, so no compiler diagnostic describes it:
   `settings/lsp/unused.lua` counts the references of every such declaration and
-  writes `Unused symbol 'name'.` above its line, through the same renderer the
+  writes `Unused symbol 'name'.` behind its line, through the same renderer the
   diagnostics use. Both report the same thing, so both are shown as one. A
   tagged diagnostic becomes a warning before Neovim stores it:
   `core/diagnostics.lua` wraps the two handlers a server answers diagnostics
   with — `textDocument/publishDiagnostics` and the pull variant
   `textDocument/diagnostic`, its related documents included — and rewrites the
   severity of everything tagged `Unnecessary`, so the sign, the counters of the
-  status line and trouble say the same thing the line above the code does; a
+  status line and trouble say the same thing the annotation behind the code
+  does; a
   hint would otherwise rank below every other annotation and count for nothing.
   Only a hint or an information is raised, never an error a server means as one,
   and the tag itself is left alone, so the code keeps its
@@ -543,16 +556,17 @@ when "cleaned up".
   warning group is replaced whole in `custom_highlights`, so the faint
   background catppuccin puts behind virtual text —
   `darken(peach, 0.095, base)`, `NONE` while `colorscheme.transparent` is on —
-  is repeated there, and the italics of `lsp_styles.virtual_text` with it. The marker yields to the
-  compiler: where a diagnostic of that line already carries the LSP
+  is repeated there, and the italics of `lsp_styles.virtual_text` with it. The
+  marker yields to the compiler: where a diagnostic of that line already carries
+  the LSP
   `Unnecessary` tag (`user_data.lsp.tags`) over the same columns — an unused
   local, a private field, a class nobody imports — the renderer drops the
-  `Unused symbol` line and leaves the diagnostic alone.
+  `Unused symbol` mark, its sign with it, and leaves the diagnostic alone.
 - **The reference count is a module of the config, not a plugin.**
-  symbol-usage.nvim did the same counting, but it draws virtual text of its own
-  and never removes a marker once a symbol gains a reference — "unused" then
-  hangs over code that is used — while in the `above` position every counted
-  symbol that *is* used costs an empty virtual line. The module requests
+  symbol-usage.nvim did the same counting, but it draws virtual text of its own,
+  a second row of marks beside the diagnostics, and never removes a marker once
+  a symbol gains a reference — "unused" then hangs over code that is used. The
+  module requests
   `textDocument/documentSymbol`, keeps that tree until the buffer changes, and
   sends one `textDocument/references` per declaration visible in the window,
   counting again after an edit, after a scroll and on `BufEnter`, since a usage

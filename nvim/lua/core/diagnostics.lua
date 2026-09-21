@@ -41,7 +41,7 @@ end)
 vim.diagnostic.config({
   virtual_text = false,
   virtual_lines = false,
-  ["myconfig/above"] = {
+  ["myconfig/annotations"] = {
     severity = { min = severity.HINT },
   },
   signs = {

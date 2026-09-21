@@ -109,6 +109,7 @@ M.ui = {
   arrow_left = "",
   arrow_right = "",
   dot = "●",
+  unused = "○",
   lock = "",
   check = "✓",
 }

@@ -66,6 +66,7 @@ M.opts = {
       DiagnosticUnnecessary = { fg = colors.overlay0 },
       DiagnosticVirtualTextWarn = { fg = colors.peach, bg = warn_bg, style = { "italic" } },
       UnusedSymbol = { link = "DiagnosticVirtualTextWarn" },
+      UnusedSign = { link = "DiagnosticSignWarn" },
       AnnotationHint = { fg = colors.overlay0, style = { "italic" } },
       WinBar = {
         sp = user.colorscheme.transparent and colors.dim or colors.surface0,

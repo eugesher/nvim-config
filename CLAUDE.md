@@ -211,13 +211,18 @@ Further decisions, explained in README.md ("Implementation notes"):
   behind: neo-tree renames the loaded ones only. oil deletes an unloaded buffer
   instead of renaming it when a file moves, so `OilActionsPre` loads those
   first (`load_buffers_under`) and lets oil rename them.
-- every diagnostic and every `Unused symbol` marker is drawn above its line by
-  `core/annotations.lua`, one extmark per line so the order holds (errors first,
-  the marker last); `core/diagnostics.lua` enables it as the `myconfig/above`
-  handler and keeps `virtual_text` off. A diagnostic source listed in
-  `lsp.diagnostics_summary.sources` is the exception: its messages become one
-  block above the first line of the buffer — `label` with the number of distinct
-  words, the words themselves wrapped at `width` columns, then `hint` in
+- every diagnostic and every `Unused symbol` marker is drawn at the end of its
+  line by `core/annotations.lua` (`virt_text_pos = "eol"`, four columns behind
+  the code), one extmark per line so the order holds (errors first, the marker
+  last); an `Unused symbol` marker adds `○` left of the line number through that
+  same extmark, in `UnusedSign` and with priority 11, above a hint and below a
+  warning, so a diagnostic sign keeps the one cell statuscol gives it;
+  `core/diagnostics.lua` enables the renderer as the `myconfig/annotations`
+  handler and keeps `virtual_text` and `virtual_lines` off. A diagnostic source
+  listed in `lsp.diagnostics_summary.sources` is the exception: its messages
+  become one block above the first line of the buffer, the only annotation still
+  drawn in virtual lines — `label` with the number of distinct words, the words
+  themselves wrapped at `width` columns, then `hint` in
   `AnnotationHint`. Words are compared in lower case and shown as first met.
   The key of the setting is the `source` field of the diagnostic, not the
   server name.
@@ -232,10 +237,10 @@ Further decisions, explained in README.md ("Implementation notes"):
   to reference is not counted: what tsserver names `…) callback`, `<class>` or
   `<function>`. A method counts in a class or an interface only, never in an
   object literal, and an enum member never counts, only the enum itself. The
-  marker never doubles such a diagnostic: `core/annotations.lua` drops it for
-  those columns. vtsls' reference code lens
-  is off — Neovim re-requests a lens vtsls leaves unresolved, which it does for
-  every symbol with no references.
+  marker never doubles such a diagnostic: `core/annotations.lua` drops it, and
+  its sign, for those columns. vtsls' reference code lens is off — Neovim
+  re-requests a lens vtsls leaves unresolved, which it does for every symbol
+  with no references.
 - codebook's project dictionary is `.codebook/words.toml`
   (`spelling.project_dictionary`), handed to the server as an absolute path in
   `params.initializationOptions.configPath` from `before_init` — a relative one
