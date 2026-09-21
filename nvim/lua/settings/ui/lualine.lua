@@ -1,0 +1,199 @@
+local icons = require("settings.icons")
+local breadcrumbs = require("settings.structure.dropbar")
+
+local M = {}
+
+M.event = "VeryLazy"
+
+local panels = { "neo-tree", "trouble", "dbui", "dap-view", "dap-view-term", "dap-repl", "aerial" }
+
+local function macro_recording()
+  local reg = vim.fn.reg_recording()
+  return reg == "" and "" or ("recording @" .. reg)
+end
+
+local lsp_tasks = {}
+local function lsp_progress()
+  local parts = {}
+  for _, task in ipairs(lsp_tasks) do
+    if vim.lsp.get_client_by_id(task.client_id) then
+      parts[#parts + 1] = task.text
+    end
+  end
+  return (table.concat(parts, ", "):gsub("%%", "%%%%"))
+end
+
+local function track_lsp_progress(data)
+  local value = data.params.value
+  if type(value) ~= "table" then
+    return
+  end
+  local key = data.client_id .. ":" .. tostring(data.params.token)
+  for i, task in ipairs(lsp_tasks) do
+    if task.key == key then
+      table.remove(lsp_tasks, i)
+      break
+    end
+  end
+  if value.kind ~= "end" then
+    local text = value.title or ""
+    if value.message then
+      text = text .. ": " .. value.message
+    end
+    if value.percentage then
+      text = string.format("%d%% %s", value.percentage, text)
+    end
+    lsp_tasks[#lsp_tasks + 1] = { key = key, client_id = data.client_id, text = text }
+  end
+end
+
+local function dap_active()
+  return package.loaded["dap"] ~= nil and require("dap").session() ~= nil
+end
+local function dap_status()
+  return icons.dap.stopped .. " " .. require("dap").status()
+end
+
+local function neotest_status()
+  if not package.loaded["neotest"] then
+    return ""
+  end
+  local ok, text = pcall(function()
+    local state = require("neotest").state
+    local total = { running = 0, failed = 0, passed = 0 }
+    local buf = vim.api.nvim_get_current_buf()
+    for _, id in ipairs(state.adapter_ids()) do
+      local counts = state.status_counts(id, { buffer = buf }) or {}
+      for key in pairs(total) do
+        total[key] = total[key] + (counts[key] or 0)
+      end
+    end
+    local parts = {}
+    for _, key in ipairs({ "running", "failed", "passed" }) do
+      if total[key] > 0 then
+        parts[#parts + 1] = icons.test[key] .. " " .. total[key]
+      end
+    end
+    return table.concat(parts, " ")
+  end)
+  return ok and text or ""
+end
+
+local function gitsigns_diff()
+  local status = vim.b.gitsigns_status_dict
+  if status then
+    return { added = status.added, modified = status.changed, removed = status.removed }
+  end
+end
+
+function M.opts()
+  return {
+    options = {
+      icons_enabled = true,
+      theme = require("settings.ui.theme").lualine_theme(),
+      component_separators = { left = "│", right = "│" },
+      section_separators = { left = "", right = "" },
+      disabled_filetypes = { statusline = {}, winbar = {} },
+      ignore_focus = panels,
+      always_divide_middle = true,
+      always_show_tabline = true,
+      globalstatus = true,
+      refresh = {
+        statusline = 1000,
+        tabline = 1000,
+        winbar = 1000,
+        refresh_time = 16,
+        events = {
+          "WinEnter",
+          "BufEnter",
+          "BufWritePost",
+          "SessionLoadPost",
+          "FileChangedShellPost",
+          "VimResized",
+          "Filetype",
+          "CursorMoved",
+          "CursorMovedI",
+          "ModeChanged",
+        },
+      },
+    },
+    sections = {
+      lualine_a = { "mode" },
+      lualine_b = { "branch" },
+      lualine_c = {
+        { breadcrumbs.statusline, padding = { left = 0, right = 1 } },
+      },
+      lualine_x = {
+        macro_recording,
+        lsp_progress,
+        { dap_status, cond = dap_active },
+        neotest_status,
+        {
+          "diff",
+          colored = true,
+          symbols = {
+            added = icons.git.added .. " ",
+            modified = icons.git.modified .. " ",
+            removed = icons.git.removed .. " ",
+          },
+          source = gitsigns_diff,
+        },
+        {
+          "diagnostics",
+          sources = { "nvim_diagnostic" },
+          sections = { "error", "warn", "info", "hint" },
+          symbols = {
+            error = icons.diagnostics.Error .. " ",
+            warn = icons.diagnostics.Warn .. " ",
+            info = icons.diagnostics.Info .. " ",
+            hint = icons.diagnostics.Hint .. " ",
+          },
+          colored = true,
+          update_in_insert = false,
+          always_visible = false,
+        },
+        "filetype",
+      },
+      lualine_y = { "progress" },
+      lualine_z = { "location" },
+    },
+    inactive_sections = {
+      lualine_a = {},
+      lualine_b = {},
+      lualine_c = { "filename" },
+      lualine_x = { "location" },
+      lualine_y = {},
+      lualine_z = {},
+    },
+    tabline = {},
+    winbar = {},
+    inactive_winbar = {},
+    extensions = { "lazy", "mason", "quickfix" },
+  }
+end
+
+function M.config(_, opts)
+  local lualine = require("lualine")
+  lualine.setup(opts)
+
+  local group = vim.api.nvim_create_augroup("settings_lualine", { clear = true })
+  vim.api.nvim_create_autocmd("LspProgress", {
+    group = group,
+    desc = "Show LSP progress in the status line",
+    callback = function(event)
+      track_lsp_progress(event.data)
+      lualine.refresh()
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "RecordingEnter", "RecordingLeave" }, {
+    group = group,
+    desc = "Show macro recording in the status line",
+    callback = function()
+      vim.schedule(function()
+        lualine.refresh()
+      end)
+    end,
+  })
+end
+
+return M

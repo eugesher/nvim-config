@@ -8,38 +8,39 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 
 ### Required
 
-| Dependency | Why | Install |
-| --- | --- | --- |
-| **Neovim 0.12+** | Core editor; the config uses 0.12 APIs throughout | `sudo snap install nvim --classic` |
-| **Git 2.31+** | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+ | `sudo apt install git` |
-| **Node.js 20+** and npm | TS/JS language servers, prettierd, js-debug-adapter, tree-sitter-cli | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm` |
-| **tree-sitter-cli ≥ 0.26.1** | The `main` branch of nvim-treesitter builds parsers with it | `npm install -g tree-sitter-cli` |
-| **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential` |
-| **curl** | Downloads by Mason and by kulala for its backend | `sudo apt install curl` |
-| **ripgrep** | Live grep in fzf-lua | `sudo apt install ripgrep` |
-| **fd-find** | File traversal in fzf-lua (ships as `fdfind`, needs an `fd` symlink) | `sudo apt install fd-find` |
-| **fzf > 0.36** | Picker engine behind fzf-lua | `sudo apt install fzf` |
-| **A Nerd Font** (v3) | Icons in the file tree, status line, pickers and breadcrumbs | [nerdfonts.com](https://www.nerdfonts.com/) — select it in your terminal; `ui.nerd_font` in `lua/user/settings.lua` records that |
-| **wl-clipboard** or **xclip** | System clipboard integration | `sudo apt install wl-clipboard` |
+| Dependency                      | Why                                                                                                                                                                   | Install                                                                                                                          |
+| ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Neovim 0.12+**                | Core editor; the config uses 0.12 APIs throughout                                                                                                                     | `sudo snap install nvim --classic`                                                                                               |
+| **Git 2.31+**                   | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+                                                                                                        | `sudo apt install git`                                                                                                           |
+| **Node.js 20+** and npm         | TS/JS language servers, prettierd, sql-formatter, js-debug-adapter, tree-sitter-cli                                                                                   | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
+| **tree-sitter-cli ≥ 0.26.1**    | The `main` branch of nvim-treesitter builds parsers with it                                                                                                           | `npm install -g tree-sitter-cli`                                                                                                 |
+| **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential`                                                                                               |
+| **curl**                        | Downloads by Mason and by kulala for its backend                                                                                                                      | `sudo apt install curl`                                                                                                          |
+| **ripgrep**                     | Live grep in fzf-lua                                                                                                                                                  | `sudo apt install ripgrep`                                                                                                       |
+| **fd-find**                     | File traversal in fzf-lua (ships as `fdfind`, needs an `fd` symlink)                                                                                                  | `sudo apt install fd-find`                                                                                                       |
+| **fzf > 0.36**                  | Picker engine behind fzf-lua                                                                                                                                          | `sudo apt install fzf`                                                                                                           |
+| **A Nerd Font** (v3)            | Icons in the file tree, status line, pickers and breadcrumbs                                                                                                          | [nerdfonts.com](https://www.nerdfonts.com/) — select it in your terminal; `ui.nerd_font` in `lua/user/settings.lua` records that |
+| **wl-clipboard** or **xclip**   | System clipboard integration                                                                                                                                          | `sudo apt install wl-clipboard`                                                                                                  |
 
 ### Optional — per feature
 
-| Dependency | What it enables |
-| --- | --- |
-| **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher |
-| **mysql-client** | MySQL database client for vim-dadbod |
-| **redis-tools** (`redis-cli`) | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window |
-| **kulala-core** | The engine behind the HTTP client: kulala 6.x runs every request through it. Downloaded automatically from GitHub releases on the first request into `~/.local/share/nvim/kulala.nvim/bin` (~100 MB), so a new machine needs network access once. That first request fails while the download runs — repeat it after the "Backend installed successfully" message |
-| **jq** | Pretty-printing JSON responses in kulala |
-| **libxml2-utils** (`xmllint`) | Pretty-printing XML responses in kulala |
-| **bat** | Syntax highlighting in picker previews (ships as `batcat`, needs a `bat` symlink) |
-| **git-delta** | Syntax highlighting for git diffs in picker previews |
+| Dependency                        | What it enables                                                                                                                                                                                                                                                                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher                                                                                                                                                                                                                                  |
+| **mysql-client**                  | MySQL database client for vim-dadbod                                                                                                                                                                                                                                                                                                                              |
+| **redis-tools** (`redis-cli`)     | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window                                                                                                                                                                                                                                                                         |
+| **kulala-core**                   | The engine behind the HTTP client: kulala 6.x runs every request through it. Downloaded automatically from GitHub releases on the first request into `~/.local/share/nvim/kulala.nvim/bin` (~100 MB), so a new machine needs network access once. That first request fails while the download runs — repeat it after the "Backend installed successfully" message |
+| **jq**                            | Pretty-printing JSON responses in kulala                                                                                                                                                                                                                                                                                                                          |
+| **libxml2-utils** (`xmllint`)     | Pretty-printing XML responses in kulala                                                                                                                                                                                                                                                                                                                           |
+| **bat**                           | Syntax highlighting in picker previews (ships as `batcat`, needs a `bat` symlink)                                                                                                                                                                                                                                                                                 |
+| **git-delta**                     | Syntax highlighting for git diffs in picker previews                                                                                                                                                                                                                                                                                                              |
 
 ### Installed automatically via `:Mason`
 
 `vtsls`, `eslint-lsp`, `lua-language-server`, `json-lsp`, `yaml-language-server`,
 `docker-language-server`, `dockerfile-language-server`, `codebook`,
-`bash-language-server`, `prettierd`, `prettier`, `stylua`, `js-debug-adapter`.
+`bash-language-server`, `prettierd`, `prettier`, `stylua`, `js-debug-adapter`,
+`sql-formatter`.
 
 ## Installation
 
@@ -86,26 +87,26 @@ the `http/` collections in this repository.
 
 ## What's inside
 
-| Area | Tooling |
-| --- | --- |
-| Plugin manager | lazy.nvim, versions pinned by `nvim/lazy-lock.json` |
-| Colorscheme and UI | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons |
-| LSP | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
-| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets |
-| Formatting | conform.nvim with prettierd / prettier and stylua |
-| Treesitter | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context |
-| Picker | fzf-lua, also behind `vim.ui.select` |
-| Files | neo-tree (project tree), oil.nvim (directory as an editable buffer) |
-| Code structure | aerial (symbol tree), dropbar (breadcrumbs in the winbar) |
-| Git | gitsigns, neogit, diffview.nvim, git-conflict.nvim |
-| Database | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion |
-| HTTP client | kulala.nvim |
-| Debugging | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter |
-| Tests and coverage | neotest (jest, vitest adapters), nvim-coverage |
-| Problems | trouble.nvim, todo-comments.nvim |
-| Refactoring | inc-rename.nvim, refactoring.nvim, multicursor.nvim |
-| Sessions | auto-session |
-| Spelling | codebook — a language server |
+| Area                    | Tooling                                                                                                                                                                      |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Plugin manager          | lazy.nvim, versions pinned by `nvim/lazy-lock.json`                                                                                                                          |
+| Colorscheme and UI      | catppuccin, lualine, bufferline, which-key, indent-blankline, nvim-web-devicons, statuscol.nvim (diagnostics and git signs on either side of the line numbers)               |
+| LSP                     | Neovim's client with nvim-lspconfig: vtsls, ESLint, lua_ls, jsonls (+ SchemaStore), yamlls, bashls, docker-language-server, dockerls; Mason and mason-lspconfig install them |
+| Completion and snippets | blink.cmp, LuaSnip, friendly-snippets, nvim-autopairs                                                                                                                        |
+| Formatting              | conform.nvim with prettierd / prettier, stylua and sql-formatter                                                                                                             |
+| Treesitter              | nvim-treesitter (`main`), nvim-treesitter-textobjects, nvim-treesitter-context                                                                                               |
+| Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
+| Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
+| Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the status line), nvim-origami (fold line counts, auto-folded imports and comments)                                            |
+| Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                           |
+| Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
+| HTTP client             | kulala.nvim                                                                                                                                                                  |
+| Debugging               | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter                                                                                                             |
+| Tests and coverage      | neotest (jest, vitest adapters), nvim-coverage                                                                                                                               |
+| Problems                | trouble.nvim, todo-comments.nvim                                                                                                                                             |
+| Refactoring             | inc-rename.nvim, refactoring.nvim, multicursor.nvim                                                                                                                          |
+| Sessions                | auto-session                                                                                                                                                                 |
+| Spelling                | codebook — a language server                                                                                                                                                 |
 
 ## Configuration structure
 
@@ -118,9 +119,13 @@ nvim/
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
 │   │                     # autocmds, diagnostics, filetypes, lazy.nvim bootstrap
 │   ├── plugins/          # thin lazy.nvim specs, one file per area
-│   ├── settings/         # the configuration of every plugin, one file per plugin
-│   │   └── lsp/          # servers list, Mason, capabilities, LspAttach keymaps,
-│   │                     # servers/<name>.lua per language server
+│   ├── settings/         # the configuration of every plugin
+│   │   ├── init.lua      # settings.spec(): a lazy.nvim spec from a settings module
+│   │   ├── icons.lua     # every glyph of the config
+│   │   ├── <group>/      # one folder per plugins/<group>.lua, one file per plugin:
+│   │   │                 # completion/blink.lua, git/neogit.lua, ui/theme.lua, …
+│   │   └── lsp/          # lspconfig.lua (server list), mason.lua, capabilities,
+│   │                     # LspAttach keymaps, servers/<name>.lua per language server
 │   ├── user/settings.lua # the values meant to be changed (next section)
 │   └── myconfig/health.lua  # :checkhealth myconfig
 └── after/ftplugin/       # buffer-local keymaps of .http and .sql buffers
@@ -128,466 +133,75 @@ nvim/
 
 The layers never mix:
 
-- **`lua/plugins/`** only says *which* plugin: repository, dependencies, build
+- **`lua/plugins/`** only says _which_ plugin: repository, dependencies, build
   step, branch or version. Each spec is built with
-  `require("settings").spec("folke/trouble.nvim", "trouble")`.
-- **`lua/settings/<name>.lua`** says *how*: it returns
-  `{ event / ft / cmd / keys, opts, init, config, which_key }`, and everything a
-  plugin is configured with lives there — options, keymaps with their
-  descriptions, highlights are the one exception and sit in `settings/theme.lua`.
-  Options are written out in full, defaults included, but only the documented
-  ones; the first line of every file names the plugin version they were checked
-  against.
+  `require("settings").spec("folke/trouble.nvim", "problems.trouble")`, where
+  `problems` is the name of the plugins file the spec sits in.
+- **`lua/settings/<group>/<name>.lua`** says _how_: it returns any of `enabled`,
+  `cond`, `event`, `ft`, `cmd`, `keys`, `opts`, `init`, `config`, `priority`,
+  `lazy` and `which_key`. `settings.spec()` hands those to lazy.nvim and ignores
+  everything else, so a module may also export helpers. Everything a plugin is
+  configured with lives there — options, keymaps with their descriptions;
+  highlights are the one exception and sit in `settings/ui/theme.lua`. Options
+  are written out in full, defaults included, but only the documented ones.
+  `which_key` describes keymaps a plugin creates itself, or Neovim commands that
+  belong to it (the fold `z` keys in `structure/origami.lua`); which-key groups
+  are declared only in `settings/whichkey/whichkey.lua`.
 - **`lua/core/`** holds what Neovim does without any plugin.
 - **`after/ftplugin/`** holds keymaps that belong to one filetype.
+
+Code files carry no explanatory comments — only tool directives and
+commented-out code kept for later. What would otherwise be explained next to the
+code is collected in [Implementation notes](#implementation-notes).
 
 ## Customization
 
 `nvim/lua/user/settings.lua` is the single place meant for personal values —
 plain data the rest of the config reads:
 
-| Setting | Default | Effect |
-| --- | --- | --- |
-| `editor.indent_width` | `2` | `'shiftwidth'`, `'tabstop'`, `'softtabstop'` |
-| `editor.scrolloff` | `8` | lines kept above and below the cursor |
-| `editor.relative_number` | `true` | relative line numbers |
-| `ui.border` | `"rounded"` | border of every floating window (`'winborder'`) |
-| `ui.panel_height` | `12` | height of the bottom panels: Trouble, debugger, test output |
-| `ui.nerd_font` | `true` | set to `false` without a Nerd Font; `:checkhealth myconfig` then reminds you |
-| `colorscheme.flavour` | `"mocha"` | catppuccin flavour: latte, frappe, macchiato, mocha |
-| `colorscheme.transparent` | `false` | let the terminal background show through |
-| `colorscheme.window_bg` | `"#000000"` | base background of windows, panels and floats |
-| `treesitter.max_filesize`, `max_line_length` | 1.5 MB, 2000 | larger files get no treesitter |
-| `formatting.format_on_save` | `true` | toggle with `<leader>uf` (buffer) / `<leader>uF` (global) |
-| `formatting.timeout_ms`, `max_filesize` | 3000, 1 MB | how long a formatter may block a save; larger files are not formatted |
-| `explorer.position`, `width`, `hide_gitignored` | `"left"`, 34, `true` | neo-tree panel |
-| `http.default_env` | `"dev"` | kulala environment on startup |
-| `coverage.command` | `npm run test:cov` | what `:CoverageRun` executes |
-| `database.position`, `width` | `"left"`, 40 | vim-dadbod-ui drawer |
-| `lsp.inlay_hints` | `true` | inlay hints; `<leader>ui` toggles per buffer |
-| `lsp.disable_watchers` | `false` | stop file watching to save CPU in huge monorepos |
+| Setting                                                      | Effect                                                                                                                                                                                   |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `editor.indent_width`                                        | width of one indent step: `'shiftwidth'`, `'tabstop'`, `'softtabstop'`                                                                                                                   |
+| `editor.scrolloff`                                           | lines kept above and below the cursor                                                                                                                                                    |
+| `editor.relative_number`                                     | `true`: numbers relative to the cursor (the current line keeps its absolute number); `false`: absolute numbers                                                                           |
+| `editor.readonly_dirs`                                       | files inside a directory with one of these names, at any depth, open with `'readonly'` and `'nomodifiable'`: no edits, no saves; `{}` turns it off                                       |
+| `ui.border`                                                  | border of every floating window (`'winborder'`): `none`, `single`, `double`, `rounded`, `solid`, `shadow`, `bold`                                                                        |
+| `ui.panel_height`                                            | height in lines of the bottom panels — Trouble, debugger, test output — which share one split                                                                                            |
+| `ui.nerd_font`                                               | the terminal uses a Nerd Font v3; Neovim cannot see the font, so `:checkhealth myconfig` trusts this flag — set `false` without one                                                      |
+| `ui.title`                                                   | text in the terminal's window and tab title (`'titlestring'`); `%{}` holds a Vim expression, and `fnamemodify(getcwd(), ':t')` is the name of the current directory                      |
+| `colorscheme.enabled`                                        | `false` drops catppuccin and every color tweak of the config: Neovim's default colorscheme, each plugin with its own colors, the other `colorscheme.*` values ignored                    |
+| `colorscheme.flavour`                                        | catppuccin flavor: latte, frappe, macchiato, mocha                                                                                                                                       |
+| `colorscheme.transparent`                                    | let the terminal background show through the editor surfaces instead of `window_bg`                                                                                                      |
+| `colorscheme.transparent_floats`                             | the same for floating windows: which-key, pickers, hover docs; the completion menu follows `transparent`                                                                                 |
+| `colorscheme.window_bg`                                      | base background of windows, panels and floats                                                                                                                                            |
+| `treesitter.max_filesize`, `max_line_length`                 | buffers larger than this many bytes, or with a longer line, get no treesitter highlighting or indentation, and no treesitter or LSP folds (manual folds only)                            |
+| `folding.auto_fold_kinds`                                    | LSP fold kinds closed when a file is opened: `comment`, `imports`, `region`; `{}` turns auto-folding off                                                                                 |
+| `formatting.format_on_save`                                  | format on save; toggle with `<leader>uf` (buffer) / `<leader>uF` (global) or `:FormatDisable[!]` / `:FormatEnable[!]`                                                                    |
+| `formatting.timeout_ms`, `max_filesize`                      | milliseconds a formatter may block a save; files larger than `max_filesize` bytes are saved unformatted                                                                                  |
+| `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
+| `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
+| `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
+| `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
+| `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
+| `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
+| `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
+| `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
+| `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
+| `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
+| `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
+| `lsp.unused_symbols`                                         | write `Unused symbol '…'.` behind the line of a declaration nothing references in the project and `○` left of its number; `<leader>uu` hides the markers in the current buffer           |
+| `lsp.unused_skip`                                            | globs of the places where a declaration is never counted: `fields` for DTO and entity fields, `methods` for controller methods, `paths` for whole files (node_modules)                   |
+| `lsp.diagnostics_summary`                                    | `sources` maps a diagnostic `source` to the `label` and `hint` of its block above the first line; `width` wraps the word list, `0` never wraps; `sources = {}` turns it off              |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
 `~/.config/nvim` is lost on the next reinstall.
 
 ## Key bindings
 
-`<leader>?` in the editor lists the keys of the current buffer. The tables below
-cover the whole configuration, and two scripts keep them and the scheme honest.
-Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
-
-- **`nvim --headless -l scripts/audit-keymaps.lua`** loads every plugin, opens a
-  `.ts`, `.lua`, `.sql`, `.http`, `.yml` and `Dockerfile` buffer with their
-  language servers attached, and checks every keymap: a key defined twice or
-  hiding a global one, two keys sharing one description, a key that is also the
-  start of longer ones without being a which-key group, a keymap without a
-  description, and the key policy — nothing on Alt but `<A-j>` / `<A-k>`,
-  `]n` `[n` `an` `in` `]c` `[c` left to Neovim, `<leader>a` and `<leader>gL`
-  kept free, only groups in `settings/whichkey.lua`. Deliberate exceptions sit
-  in the whitelist at the top of the script, each with its reason; exit code 1
-  means a new problem. `--list` prints every keymap it looked at.
-- **`nvim --headless -l scripts/dump-keymaps.lua --readme`** rebuilds the tables
-  below from the keymaps that actually exist.
-
-Keys that exist only for a moment are not listed: the multicursor layer
-(`<Tab>` / `<S-Tab>` between cursors, `<C-q>`, `<Esc>`) and the keys inside
-plugin panels (`?` or `g?` shows them there).
-
-<!-- keymaps:start -->
-
-_Generated by `scripts/dump-keymaps.lua` from the keymaps that exist once every
-plugin is loaded — do not edit by hand. Rebuild after `./install.sh` with
-`nvim --headless -l scripts/dump-keymaps.lua --readme`. Leader is `Space`,
-local leader is `\`. Modes: n normal, x visual, s select, o operator-pending,
-i insert, t terminal. "Buffer" lists the filetypes where a key is
-buffer-local (LSP keys appear once a language server is attached)._
-
-### General
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<` | x | Indent left, keep selection |  |
-| `<Esc>` | n | Clear search highlight |  |
-| `<leader>?` | n | Buffer keymaps (which-key) |  |
-| `<leader>Q` | n | Quit all |  |
-| `<leader>w` | n | Write buffer |  |
-| `<M-j>` | n | Move line down |  |
-| `<M-j>` | x | Move selection down |  |
-| `<M-k>` | n | Move line up |  |
-| `<M-k>` | x | Move selection up |  |
-| `>` | x | Indent right, keep selection |  |
-| `a=` | x o | Around assignment |  |
-| `aa` | x o | Around parameter |  |
-| `ac` | x o | Around class |  |
-| `af` | x o | Around function |  |
-| `ai` | x o | Around conditional |  |
-| `al` | x o | Around loop |  |
-| `i=` | x o | Inside assignment |  |
-| `ia` | x o | Inside parameter |  |
-| `ic` | x o | Inside class |  |
-| `if` | x o | Inside function |  |
-| `ii` | x o | Inside conditional |  |
-| `il` | x o | Inside loop |  |
-| `J` | n | Join lines (keep cursor) |  |
-| `p` | x | Paste without overwriting the register |  |
-
-### Navigation
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<C-D>` | n | Half page down (centered) |  |
-| `<C-Down>` | n | Decrease window height |  |
-| `<C-H>` | n | Go to left window |  |
-| `<C-J>` | n | Go to lower window |  |
-| `<C-K>` | n | Go to upper window |  |
-| `<C-L>` | n | Go to right window |  |
-| `<C-Left>` | n | Decrease window width |  |
-| `<C-Right>` | n | Increase window width |  |
-| `<C-U>` | n | Half page up (centered) |  |
-| `<C-Up>` | n | Increase window height |  |
-| `<leader>1` | n | Go to buffer 1 |  |
-| `<leader>2` | n | Go to buffer 2 |  |
-| `<leader>3` | n | Go to buffer 3 |  |
-| `<leader>4` | n | Go to buffer 4 |  |
-| `<leader>5` | n | Go to buffer 5 |  |
-| `<leader>6` | n | Go to buffer 6 |  |
-| `<leader>7` | n | Go to buffer 7 |  |
-| `<leader>8` | n | Go to buffer 8 |  |
-| `<leader>9` | n | Go to buffer 9 |  |
-| `<leader>b<` | n | Move buffer left |  |
-| `<leader>b>` | n | Move buffer right |  |
-| `<leader>bD` | n | Delete buffer (force) |  |
-| `<leader>bd` | n | Delete buffer |  |
-| `<leader>bo` | n | Delete other buffers |  |
-| `<leader>bP` | n | Toggle pin |  |
-| `<leader>bp` | n | Pick buffer |  |
-| `<leader>q` | n | Delete buffer |  |
-| `[a` | n x o | Previous parameter |  |
-| `[b` | n | Previous buffer |  |
-| `[f` | n x o | Previous function |  |
-| `[q` | n | :cprevious |  |
-| `]a` | n x o | Next parameter |  |
-| `]b` | n | Next buffer |  |
-| `]f` | n x o | Next function |  |
-| `]q` | n | :cnext |  |
-| `N` | n | Previous match (centered) |  |
-| `n` | n | Next match (centered) |  |
-
-### LSP / Code
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<C-W>d` | n | Show diagnostics under the cursor |  |
-| `<leader>ca` | n x | Code action | every file buffer |
-| `<leader>cD` | n | Buffer diagnostics to loclist | every file buffer |
-| `<leader>cd` | n | Line diagnostics | every file buffer |
-| `<leader>cf` | n x | Format buffer / selection |  |
-| `<leader>cL` | n | Toggle code lenses | lua, typescript, yaml.docker-compose |
-| `<leader>cl` | n | Run code lens | lua, typescript, yaml.docker-compose |
-| `<leader>cM` | n x | Move to file | typescript |
-| `<leader>cm` | n | Add missing imports | typescript |
-| `<leader>co` | n | Organize imports | typescript |
-| `<leader>cr` | n | Rename symbol (live preview) | dockerfile, lua, typescript, yaml.docker-compose |
-| `<leader>cs` | n | Source actions | typescript |
-| `<leader>cu` | n | Remove unused imports | typescript |
-| `[D` | n | Jump to the first diagnostic in the current buffer |  |
-| `[d` | n | Jump to the previous diagnostic in the current buffer |  |
-| `[e` | n | Previous error |  |
-| `]D` | n | Jump to the last diagnostic in the current buffer |  |
-| `]d` | n | Jump to the next diagnostic in the current buffer |  |
-| `]e` | n | Next error |  |
-| `gd` | n | Go to definition | dockerfile, lua, typescript, yaml.docker-compose |
-| `gO` | n | vim.lsp.buf.document_symbol() |  |
-| `gra` | n x | vim.lsp.buf.code_action() |  |
-| `gri` | n | Implementations | lua, typescript |
-| `grn` | n | Rename symbol (live preview) | dockerfile, lua, typescript, yaml.docker-compose |
-| `grr` | n | References (Trouble) | lua, typescript |
-| `grt` | n | Type definition | lua, typescript |
-| `grx` | n | vim.lsp.codelens.run() |  |
-| `gs` | n | Go to source definition | typescript |
-| `K` | n | vim.lsp.buf.hover() | dockerfile, lua, typescript, yaml.docker-compose |
-
-### Find
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>f/` | n | Lines in buffer |  |
-| `<leader>fb` | n | Buffers |  |
-| `<leader>fc` | n | Commands |  |
-| `<leader>fD` | n | Workspace diagnostics |  |
-| `<leader>fd` | n | Buffer diagnostics |  |
-| `<leader>fF` | n | Files (incl. ignored) |  |
-| `<leader>ff` | n | Files |  |
-| `<leader>fG` | n | Live grep (rg --glob) |  |
-| `<leader>fg` | n | Live grep |  |
-| `<leader>fh` | n | Help tags |  |
-| `<leader>fk` | n | Keymaps |  |
-| `<leader>fo` | n | Outline symbols |  |
-| `<leader>fq` | n | Quickfix list |  |
-| `<leader>fR` | n | Resume last picker |  |
-| `<leader>fr` | n | Recent files |  |
-| `<leader>fS` | n | Workspace symbols |  |
-| `<leader>fs` | n | Document symbols |  |
-| `<leader>fw` | n | Grep word under cursor |  |
-| `<leader>fw` | x | Grep selection |  |
-
-### Explorer
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `-` | n | Parent directory (oil) |  |
-| `<leader>be` | n | Buffers (explorer) |  |
-| `<leader>E` | n | Explorer: reveal file |  |
-| `<leader>e` | n | Explorer |  |
-
-### Git
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>gB` | n | Blame (file) | lua |
-| `<leader>gb` | n | Git branches |  |
-| `<leader>gC` | n | Git commits |  |
-| `<leader>gc` | n | Commit |  |
-| `<leader>gD` | n | Close diff view |  |
-| `<leader>gd` | n | Diff view (all changes) |  |
-| `<leader>ge` | n | Git status (explorer) |  |
-| `<leader>gF` | n | Repository history |  |
-| `<leader>gf` | n | File history |  |
-| `<leader>gg` | n | Neogit (status) |  |
-| `<leader>ghb` | n | Blame line | lua |
-| `<leader>ghD` | n | Diff against last commit | lua |
-| `<leader>ghd` | n | Diff against index | lua |
-| `<leader>ghi` | n | Preview hunk inline | lua |
-| `<leader>ghp` | n | Preview hunk | lua |
-| `<leader>ghq` | n | All hunks to quickfix | lua |
-| `<leader>ghR` | n | Reset buffer | lua |
-| `<leader>ghr` | n | Reset hunk | lua |
-| `<leader>ghr` | x s | Reset lines | lua |
-| `<leader>ghS` | n | Stage buffer | lua |
-| `<leader>ghs` | n | Stage / unstage hunk | lua |
-| `<leader>ghs` | x s | Stage / unstage lines | lua |
-| `<leader>ghU` | n | Unstage buffer | lua |
-| `<leader>gl` | n | Log |  |
-| `<leader>gm` | n | Merge tool (conflicts) |  |
-| `<leader>gP` | n | Pull |  |
-| `<leader>gp` | n | Push |  |
-| `<leader>gS` | n | Git stash |  |
-| `<leader>gs` | n | Git status |  |
-| `<leader>gtb` | n | Toggle line blame | lua |
-| `<leader>gtw` | n | Toggle word diff | lua |
-| `<leader>gxq` | n | Conflicts to quickfix |  |
-| `[h` | n | Previous hunk | lua |
-| `]h` | n | Next hunk | lua |
-| `ah` | x o | Hunk | lua |
-| `ih` | x o | Hunk | lua |
-
-### Database
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>Da` | n | Add connection |  |
-| `<leader>Df` | n | Find buffer in drawer |  |
-| `<leader>Dq` | n | Last query info |  |
-| `<leader>Dr` | n | Rename buffer |  |
-| `<leader>Du` | n | Toggle drawer |  |
-| `<LocalLeader>e` | n | Edit bind parameters | sql |
-| `<LocalLeader>w` | n | Save query | sql |
-| `<LocalLeader>X` | n | Execute buffer | sql |
-| `<LocalLeader>x` | n | Execute statement under cursor | sql |
-| `<LocalLeader>x` | x | Execute selection | sql |
-
-### Debug
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<F10>` | n | Debug: step over |  |
-| `<F11>` | n | Debug: step into |  |
-| `<F5>` | n | Debug: continue / start |  |
-| `<leader>da` | n | Attach to process |  |
-| `<leader>dB` | n | Conditional breakpoint |  |
-| `<leader>db` | n | Toggle breakpoint |  |
-| `<leader>dC` | n | Run to cursor |  |
-| `<leader>dc` | n | Continue / start |  |
-| `<leader>de` | n x | Evaluate expression |  |
-| `<leader>df` | n | Frames |  |
-| `<leader>di` | n | Step into |  |
-| `<leader>dj` | n | Down the stack |  |
-| `<leader>dk` | n | Up the stack |  |
-| `<leader>dl` | n | Run last configuration |  |
-| `<leader>dO` | n | Step out |  |
-| `<leader>do` | n | Step over |  |
-| `<leader>dp` | n | Log point |  |
-| `<leader>dr` | n | Toggle REPL |  |
-| `<leader>ds` | n | Scopes |  |
-| `<leader>dt` | n | Terminate session |  |
-| `<leader>du` | n | Toggle debugger panel |  |
-| `<leader>dv` | n | Toggle inline values |  |
-| `<leader>dw` | n x | Watch expression under cursor |  |
-| `<leader>dx` | n | Clear all breakpoints |  |
-| `<S-F11>` | n | Debug: step out |  |
-| `<S-F5>` | n | Debug: terminate session |  |
-
-### Test
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>ta` | n | Run all tests |  |
-| `<leader>tcc` | n | Toggle coverage signs |  |
-| `<leader>tcl` | n | Load and show coverage |  |
-| `<leader>tcr` | n | Run tests with coverage |  |
-| `<leader>tcs` | n | Coverage summary |  |
-| `<leader>tcx` | n | Clear coverage |  |
-| `<leader>td` | n | Debug nearest test |  |
-| `<leader>tf` | n | Run tests in file |  |
-| `<leader>tl` | n | Run last test |  |
-| `<leader>tO` | n | Toggle output panel |  |
-| `<leader>to` | n | Show test output |  |
-| `<leader>tS` | n | Stop test run |  |
-| `<leader>ts` | n | Toggle test tree |  |
-| `<leader>tt` | n | Run nearest test |  |
-| `<leader>tW` | n | Toggle watch for project |  |
-| `<leader>tw` | n | Toggle watch for file |  |
-| `[t` | n | Previous failed test |  |
-| `]t` | n | Next failed test |  |
-
-### HTTP
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>ha` | n x | Run all requests | http |
-| `<leader>hb` | n | Show body | http |
-| `<leader>hc` | n | Copy as curl | http |
-| `<leader>hE` | n | Export to Postman | http |
-| `<leader>he` | n | Select environment | http |
-| `<leader>hH` | n | Show headers | http |
-| `<leader>hh` | n x | Run request under cursor | http |
-| `<leader>hI` | n | OpenAPI explorer | http |
-| `<leader>hi` | n | Inspect request (dry run) | http |
-| `<leader>hn` | n | Next request | http |
-| `<leader>hp` | n | Previous request | http |
-| `<leader>hr` | n | Replay last request | http |
-| `<leader>hS` | n | Scratchpad | http |
-| `<leader>hs` | n | Show headers and body | http |
-| `<leader>hX` | n | Clear script variables | http |
-| `<leader>hx` | n | Close response window | http |
-
-### Problems
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>xc` | n | Close all Trouble windows |  |
-| `<leader>xl` | n | Location list (Trouble) |  |
-| `<leader>xq` | n | Quickfix list (Trouble) |  |
-| `<leader>xr` | n | LSP references / definitions |  |
-| `<leader>xt` | n | Todo comments |  |
-| `<leader>xX` | n | Project diagnostics (Trouble) |  |
-| `<leader>xx` | n | Buffer diagnostics (Trouble) |  |
-| `[td` | n | Previous todo comment |  |
-| `]td` | n | Next todo comment |  |
-
-### Refactor
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>rA` | n | Swap parameter with previous |  |
-| `<leader>ra` | n | Swap parameter with next |  |
-| `<leader>rB` | n | Extract block to file |  |
-| `<leader>rb` | n | Extract block as function |  |
-| `<leader>rc` | n | Clear debug prints |  |
-| `<leader>rE` | x | Extract function to file |  |
-| `<leader>re` | x | Extract function |  |
-| `<leader>rI` | n | Inline function |  |
-| `<leader>ri` | n | Inline variable |  |
-| `<leader>rn` | n | Rename symbol (live preview) |  |
-| `<leader>rP` | n | Debug print location |  |
-| `<leader>rp` | n | Debug print variable |  |
-| `<leader>rp` | x | Debug print selection |  |
-| `<leader>rr` | n x | Select refactor |  |
-| `<leader>rv` | x | Extract variable |  |
-
-### Multicursor
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<C-LeftDrag>` | n | Drag cursor selection |  |
-| `<C-LeftMouse>` | n | Add / remove cursor |  |
-| `<C-LeftRelease>` | n | Finish cursor selection |  |
-| `<leader>m=` | n | Align cursor columns |  |
-| `<leader>mA` | x | Cursor on each selected line |  |
-| `<leader>ma` | n x | Cursor on every match |  |
-| `<leader>mj` | n x | Add cursor below |  |
-| `<leader>mk` | n x | Add cursor above |  |
-| `<leader>mN` | n x | Add cursor at previous match |  |
-| `<leader>mn` | n x | Add cursor at next match |  |
-| `<leader>mp` | x | Cursors by pattern in selection |  |
-| `<leader>mq` | n | Clear cursors |  |
-| `<leader>mr` | n | Restore last cursors |  |
-| `<leader>mS` | n x | Skip previous match |  |
-| `<leader>ms` | n x | Skip next match |  |
-| `<leader>mX` | x | Rotate text backwards |  |
-| `<leader>mx` | x | Rotate text between cursors |  |
-
-### Session
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>sD` | n | Delete session |  |
-| `<leader>sd` | n | Toggle auto save |  |
-| `<leader>sf` | n | Find session |  |
-| `<leader>sl` | n | Restore last session |  |
-| `<leader>sp` | n | Purge orphaned sessions |  |
-| `<leader>ss` | n | Restore session |  |
-
-### Outline
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>;` | n | Pick breadcrumb |  |
-| `<leader>O` | n | Outline navigator |  |
-| `<leader>o` | n | Outline (symbol tree) |  |
-| `{` | n | Previous symbol | dockerfile, lua, sql, typescript, yaml.docker-compose |
-| `}` | n | Next symbol | dockerfile, lua, sql, typescript, yaml.docker-compose |
-
-### UI toggles
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>uF` | n | Toggle format on save (global) |  |
-| `<leader>uf` | n | Toggle format on save (buffer) |  |
-| `<leader>ui` | n | Toggle inlay hints | dockerfile, lua, typescript, yaml.docker-compose |
-| `<leader>uk` | n | Toggle sticky context |  |
-| `<leader>us` | n | Toggle spell checking |  |
-
-### Tooling
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<leader>lc` | n | Check health |  |
-| `<leader>li` | n | LSP clients |  |
-| `<leader>ll` | n | Lazy |  |
-| `<leader>lm` | n | Mason |  |
-| `<leader>lp` | n | Lazy profile |  |
-| `<leader>lr` | n | Restart LSP |  |
-| `<leader>lu` | n | Lazy update |  |
-
-### Insert mode
-
-| Keys | Mode | Description | Buffer |
-| --- | --- | --- | --- |
-| `<C-B>` | i | blink.cmp: Scroll Documentation Up | every file buffer |
-| `<C-E>` | i | blink.cmp: Hide | every file buffer |
-| `<C-F>` | i | blink.cmp: Scroll Documentation Down | every file buffer |
-| `<C-J>` | i | blink.cmp: Select Next | every file buffer |
-| `<C-K>` | i | blink.cmp: Select Prev | every file buffer |
-| `<C-N>` | i | blink.cmp: Select Next | every file buffer |
-| `<C-P>` | i | blink.cmp: Select Prev | every file buffer |
-| `<C-S>` | i | vim.lsp.buf.signature_help() |  |
-| `<C-Space>` | i | blink.cmp: Show, Show Documentation, Hide Documentation | every file buffer |
-| `<CR>` | i | blink.cmp: Accept | every file buffer |
-| `<S-Tab>` | s i | blink.cmp: Snippet Backward | every file buffer |
-| `<Tab>` | s i | blink.cmp: Snippet Forward | every file buffer |
-
-<!-- keymaps:end -->
+`<leader>?` in the editor lists the keys of the current buffer and `<leader>K`
+all of them, Neovim's own commands included. Every key of the configuration,
+with the scripts that keep the scheme consistent, is listed in
+[KEYMAP.md](KEYMAP.md).
 
 ## Databases
 
@@ -608,6 +222,7 @@ buffer-local (LSP keys appear once a language server is attached)._
   ```
 
   and add the connection without it: `mysql://app@127.0.0.1:3306/app_db`.
+
 - **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
   MySQL client ignores the port and connects to the local Unix socket.
 - Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
@@ -646,12 +261,34 @@ comments. Mason installs it automatically.
   spelling never inflates the error counters in the status line, the buffer tabs
   or the problems panel.
 - **`<leader>ca` on a flagged word** offers `Add to dictionary` (the project's
-  `codebook.toml`) and `Add to global dictionary` (the global one), along with
-  the spelling suggestions.
+  `.codebook/words.toml`) and `Add to global dictionary` (the global one), along
+  with the spelling suggestions.
+- **`<leader>cw` adds every unknown word of the buffer in one request.** The
+  words come from codebook's own diagnostics and from the path check below,
+  taken from the buffer text the diagnostic covers, so a sub-word of a
+  `camelCase` identifier is added exactly as the checker flagged it.
+- **A string that holds a path is checked word by word**
+  (`spelling.check_paths`). codebook skips such a string whole, so
+  `'user/leagcy-auth'` is silently correct for it. The config sends the server a
+  copy of the buffer in which the slashes inside strings are spaces and keeps
+  the words only that copy flags; the hints read like codebook's own and
+  `<leader>cw` adds them as well.
+- **The messages are collected above the first line of the buffer**
+  (`lsp.diagnostics_summary`): a count, the words, and how to add them all.
+
+  ```
+  ● Possible spelling issues (3):
+  qwe, asd, zxc.
+  <leader>cw adds all of them to the dictionary
+  ```
+
+  The word keeps its underline and its sign in the status column, so where it
+  sits is still visible.
 - **`<leader>us`** turns the checker off and on for the session.
 - **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
   wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
-  one is `codebook.toml` at the project root.
+  one is `.codebook/words.toml` in the project root, written on the first word
+  added and meant to be committed with the project.
 - **`ignore_paths` takes glob patterns.** A bare `"node_modules"` matches only a
   file with that exact name — use `"**/node_modules/**"`. The server rewrites the
   file whenever a word is added and drops keys that hold their default value.
@@ -661,6 +298,541 @@ comments. Mason installs it automatically.
 
 `install.sh` creates `~/.config/codebook/codebook.toml` with these defaults when
 the file does not exist, and leaves an existing one alone.
+
+## Implementation notes
+
+Settings that look like mistakes but are deliberate, and workarounds that break
+when "cleaned up".
+
+### Structure and colors
+
+- **Highlights go only through `custom_highlights` in `settings/ui/theme.lua`,
+  never `color_overrides`.** Palette-level overrides tie `CursorLine` to
+  `Normal`, and the cursor line can no longer be told apart. Other modules take
+  colors from the helpers there — `palette()`, `lualine_theme()`,
+  `bufferline_highlights()`, `neo_tree_handlers()` — which return the plugin's
+  own defaults when `colorscheme.enabled` is `false`. catppuccin is switched off
+  with `cond` (it stays installed and locked), and lazy.nvim raises an error on a
+  `require` of such a plugin, so nothing else requires catppuccin.
+- **`user/settings.lua` is pure data** — no `vim.*` calls, no functions — so any
+  module can require it at any time.
+- **A new panel filetype goes into every exclusion list:** `PANELS` in
+  `settings/session/autosession.lua` (a restored empty tree or a dead debugger
+  panel is worse than no session), `EXCLUDED_FILETYPES` in
+  `settings/structure/dropbar.lua`, `disable.ft` in
+  `settings/whichkey/whichkey.lua`, `panels` in `settings/ui/lualine.lua`,
+  `ft_ignore` in `settings/ui/statuscol.lua`, and the lists in
+  `settings/treesitter/treesitter-context.lua` and `settings/ui/indent.lua`.
+- **`:checkhealth myconfig` lives in `lua/myconfig/`:** checkhealth looks for
+  `lua/<name>/health.lua`, and a `core/health.lua` would add a second
+  `:checkhealth core` report. Its lists of servers, tools, the debug adapter and
+  the sessions directory come from the settings that use them.
+
+### Editor
+
+- **Leaders are set first in `init.lua`:** a keymap created before that binds to
+  the old leader, and plugin specs read the leader at import time.
+- **Visual-mode keymaps use mode `x`, not `v`:** `v` also covers Select mode,
+  where typed text must replace a snippet placeholder.
+- **The terminal's window and tab title names the current directory.** Neovim
+  writes a title only with `'title'` on; without it a kitty tab keeps the name
+  of the program kitty started, `bash`. `ui.title` is the `'titlestring'`, and
+  the `getcwd()` in it follows the root of neo-tree: the tree's `cwd_target`
+  points the tab's directory at the root it shows, so `.` on a folder renames
+  the tab as well.
+- **Only `x` / `X` put deleted text on the clipboard.** `'clipboard'` is
+  `unnamedplus`, so every delete would otherwise replace the system clipboard.
+  `d`, `D`, `c`, `C`, `s` and `S` (Normal and Visual mode) write to the black
+  hole register instead; `y` copies and `x` / `X` cut: `x` on a selection cuts
+  it, `Vx` cuts a line, and `xp` still swaps two characters. The keymaps are
+  `expr` mappings that add `"_` only when no register was given, so `"add` still
+  fills register `a`; an explicit `"+` or `"*` looks the same as no register and
+  goes to the black hole too. In oil a file is moved with `Vx` and `p`: after
+  `dd`, `p` would paste the clipboard as a new file name.
+- **`<leader>w` writes every named buffer.** `:wall` writes them as well, but it
+  ends with `E141: No file name for buffer N` as soon as a buffer that was never
+  saved is open. `write_all()` in `core/keymaps.lua` walks the buffer list
+  instead and takes the modified buffers that have a name and an empty
+  `'buftype'`; each is written with `:silent write`, so the per-file reports do
+  not add up to a hit-enter prompt, and one message gives the number written. A
+  write that fails or is declined — a read-only file asks first, the same way
+  `:w` does — is reported and stays out of that number. The writes go through
+  `BufWritePre`, so format on save runs for a buffer in the background too.
+- **A file buffer takes the place of the empty `[No Name]` buffer.** Neovim
+  starts with an unnamed buffer, and opening the first file from neo-tree or a
+  picker leaves it behind in the buffer list and in bufferline. The
+  `replace_empty_buffer` autocmd in `core/autocmds.lua` removes it as soon as a
+  file buffer is shown in a window, and only if it is really empty: listed,
+  without a name, without a `'buftype'`, unmodified and a single empty line, and
+  no window showing it. A scratch buffer that has text in it stays, and so does
+  an empty one that is still on screen in a split. While a session is being
+  restored the autocmd steps aside (`g:SessionLoad`): the session script itself
+  wipes the unnamed buffer it started from, and finding it already gone ends the
+  restore with `E517: No buffers were wiped out`, which makes auto-session turn
+  off its automatic saving for the rest of that session.
+- **`<leader>a` restarts Neovim with `:restart!`, not `:restart`.** Neovim 0.12
+  starts a new server with the same arguments and reattaches the terminal UI, so
+  the configuration is read again without leaving the shell, and `'confirm'`
+  turns an unsaved buffer into a "Save changes?" prompt rather than a silent
+  exit. The bang skips the `mksession` round trip `:restart` does on its own and
+  leaves the session to auto-session, which saves it on exit and restores it on
+  the next start, breakpoints (`save_extra_data`) and the git branch tag
+  included. Started as `nvim <file>`, the new instance opens that file again and
+  restores no session: auto-session saves none for a start with file arguments
+  (`args_allow_files_auto_save = false`). Neovim's own `ZR` is `:restart`; the
+  key does what `1ZR` does.
+- **`'inccommand'` stays `nosplit`**, which inc-rename's live preview needs, and
+  `'sessionoptions'` includes `localoptions`, without which auto-session loses
+  filetype options and buffer-local keymaps on restore.
+- **`'timeoutlen'` is 400 ms**, and which-key opens after 200 ms, before an
+  ambiguous key times out. TODO jumps are `]td` / `[td` because `]t` / `[t`
+  belong to neotest.
+- **The status column is split by source** (statuscol.nvim):
+  `[diagnostics, breakpoints, TODO, tests] [line number] [git, coverage]`. A plain
+  sign column packs a line's signs to the left, so a git bar would take the
+  diagnostic cell. The plugin loads at startup, or windows shift sideways once it
+  takes over. `:terminal` windows are reset on `TermOpen` and panels are listed
+  by filetype, because statuscol's `bt_ignore` misses buffers whose `buftype` is
+  set late (dbui). Coverage signs (priority 5) sit below gitsigns (6) in the
+  shared one-cell git segment, and line numbers take the git color, not the
+  diagnostic one.
+- **Annotations are drawn at the end of their line** (`core/annotations.lua`):
+  every diagnostic and every `Unused symbol` marker, each opened by `●` in the
+  color of its severity — in `UnusedSymbol` for a diagnostic tagged
+  `Unnecessary` — four columns behind the code, the gap Neovim leaves in front
+  of its own virtual text. That handler exists because Neovim's `virtual_text`
+  has no room for a mark the config raises itself and `virtual_lines` draws
+  below the line with no switch for it — `vim.diagnostic.Opts.VirtualLines`
+  knows `severity`, `current_line` and `format` and nothing else — so the config
+  registers `myconfig/annotations` and turns both off. Every annotation of a
+  line lives in one extmark, which fixes their order: errors, then the warnings
+  and the unused marks together, then hints and information, one chain behind
+  the code. Diagnostics also arrive for buffers that are not loaded, since vtsls
+  reports the whole project, and the handler drops those instead of drawing into
+  nothing.
+- **An `Unused symbol` marker also puts `○` left of the line number.** The
+  extmark that carries the annotations of the line carries the sign as well, in
+  `UnusedSign`, which links to `DiagnosticSignWarn`. Its priority is 11: above a
+  hint, below a warning and an error, so the diagnostic of the same line keeps
+  the single cell of the status column while a spelling hint — summarized above
+  the buffer anyway — gives it up. Only what `settings/lsp/unused.lua` counts
+  gets the sign; what the compiler proves unused is a diagnostic and carries a
+  diagnostic sign already.
+- **A source named in `lsp.diagnostics_summary` gets one block above the first
+  line instead** — codebook does. Spelling is the one check that fires on almost
+  every second line, and a message per word buries the compiler between them.
+  The block is the `label` with the number of distinct words, the words, and
+  the `hint`, which is italic `AnnotationHint`. Words are read from the buffer
+  text each diagnostic covers, not from its message, so a sub-word of a
+  `camelCase` identifier is listed the way the checker found it; they are
+  compared in lower case and shown in the spelling of their first occurrence,
+  which keeps `Dto` and `DTO` one entry. The word list wraps at `width` columns
+  counted from the left edge of the buffer, never inside a word. The key of the
+  setting is the `source` a server puts on its diagnostics (`Codebook`), which
+  is what the diagnostic float shows. The block is the one annotation still
+  drawn in virtual lines, and a virtual line above the first line of a buffer
+  stays invisible until the window is given filler lines
+  ([#16166](https://github.com/neovim/neovim/issues/16166)), so the renderer
+  sets `topfill` itself while the window sits at the top — without it the whole
+  block would be hidden.
+- **`<leader>1` … `<leader>9` use `bufferline.go_to(i, true)`**, the absolute
+  position shown on the tab; `:BufferLineGoToBuffer` counts only visible tabs.
+  Buffers are closed only through `safe_buffer_delete` (bufdelete.nvim), which
+  keeps the window layout.
+- **A buffer a session restored is deleted without bufdelete.nvim.** A session
+  file lists its buffers with `badd`, so they are listed but not loaded until
+  they are opened, and bufdelete skips a buffer that is not loaded: after a
+  restore `<leader>bo` and `<leader>bd` left every untouched buffer in the
+  tabline. `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes that
+  buffer itself with `nvim_buf_delete`, which is what `:bdelete` does to it —
+  no window shows it and it cannot be modified, so there is no window layout to
+  keep and nothing to ask about.
+- **The number on a tab is its position, not bufferline's `ordinal`.** The
+  plugin writes that number into the tab while it builds the components, before
+  it sorts them and before the pinned group moves to the front, so
+  `numbers = "ordinal"` showed the place a buffer holds in the buffer list:
+  pinning one tab was enough to leave the tabline reading 3, 1, 2, 4, 5 while
+  `<leader>3` still went to the third tab. The `numbers` function in
+  `settings/ui/bufferline.lua` numbers a tab by the position of its element in
+  bufferline's rendered component list, the list `go_to(i, true)` indexes, so
+  the label and the key always name the same buffer. That list is one render
+  behind whenever the order changes, so the function compares it, after the
+  render, with the order it numbered from and asks for one more
+  `redrawtabline` when the two differ; on a settled tabline it schedules
+  nothing.
+- **`<leader>bo` keeps the pinned buffers.** `:BufferLineCloseOthers` walks the
+  whole tab list and closes everything but the current buffer, pins included.
+  The key runs `delete_others()` in `settings/ui/bufferline.lua` instead: it
+  reads bufferline's own components, leaves out the current buffer and every
+  buffer of the `pinned` group, and deletes the rest through
+  `safe_buffer_delete`. Pressed where the current buffer has no tab of its
+  own — in neo-tree, in a panel — it does nothing, the same as the command.
+- **`<leader>ba` ends on one empty buffer.** `delete_all()` in
+  `settings/ui/bufferline.lua` hands every listed buffer to bufdelete.nvim in
+  one call, so the plugin finds nothing left to switch to and opens a fresh
+  `[No Name]` buffer in each window that held one — the state `<leader>q`
+  leaves when it closes the last buffer. The window layout stays, panels keep
+  their own buffers, and a modified buffer still asks whether to save it.
+  Deleting the buffers one by one would instead walk the windows through the
+  remaining files first.
+- **lualine tracks LSP progress per work-done token** from the `LspProgress`
+  event data and drops a task on its `end`. Neither `ev.match` (the kind
+  expanded to a path, `/cwd/end`) nor `vim.lsp.status()` (everything the ring
+  buffer collected, finished tasks' titles included) can tell that a task is
+  over: built on them, the status line kept "Analyzing '…' and its
+  dependencies" long after vtsls had loaded the project. Progress text escapes
+  `%` (`" 45%: Loading"` is E539 in `'statusline'`); the nvim-dap and neotest
+  components stay empty until those plugins are loaded and never load them.
+- **Files under `node_modules` open `'readonly'` and `'nomodifiable'`**
+  (`editor.readonly_dirs`): `'readonly'` alone still takes a change and lets
+  `:w!` write it. A `BufReadPost` autocmd sets both however the file is opened —
+  go to definition, a picker, a restored session — at any depth, a pnpm
+  store in `node_modules/.pnpm/…` included. An LSP edit into such a file fails with
+  "Buffer is not 'modifiable'", which vtsls does not send for library code
+  anyway; `:setlocal modifiable noreadonly` unlocks one buffer.
+
+### LSP
+
+- **Never enable ts_ls next to vtsls:** every diagnostic would appear twice.
+  vtsls resolves its root from its own markers, because nvim-lspconfig's
+  `root_dir` always wins over `root_markers`.
+- **LSP keymaps exist only for methods the server supports.** The single
+  LspAttach (`settings/lsp/keymaps.lua`) creates them buffer-locally, and
+  LspDetach removes a key once the last client that registered it has left. The
+  pass repeats on dynamic capability registration: docker-language-server
+  registers rename about three seconds after attaching.
+- **`grn`, `<leader>cr` and `<leader>rn` are one rename** with inc-rename's
+  preview; `gd`, `gri` and `grt` open fzf-lua pickers, while `grr` opens Trouble —
+  a list that stays open is easier to walk through than a picker.
+- **Auto-imports follow `lsp.import_style`, `shortest` by default.** In a NestJS
+  monorepo with a single `tsconfig.json` at the root, `non-relative` writes every
+  import without a path alias as a path from `baseUrl`
+  (`apps/admin/src/modules/login/presentation/controllers/login.controller`), and
+  that is what `<leader>cm` inserts. `shortest` compares both forms: an alias
+  wins where one exists (`@app/config` is shorter than the relative path into
+  another top-level directory), and a file of the same module arrives as
+  `./presentation/controllers/login.controller`. `project-relative` does not help
+  here, as it treats the directory of the `tsconfig.json` as the project and
+  drops the aliases of `libs/` with it. The value reaches completion,
+  `<leader>cM` and the import rewrite on a file move as well.
+- **Docker files get two servers.** docker-language-server lints Dockerfiles
+  through BuildKit but answers completion and hover with nothing, so dockerls
+  supplies those; `removeOverlappingIssues` keeps their diagnostics from
+  doubling. Compose and Bake files get compound filetypes (`yaml.docker-compose`,
+  `hcl.dockerbake`, in `core/filetypes.lua`) so the server is not handed every
+  `.hcl` file, and Bake buffers go out with the `dockerbake` language id — with
+  `hcl` the server parses them as Dockerfiles.
+- **yamlls** drops nvim-lspconfig's `yaml.gitlab` / `yaml.helm-values`, filetypes
+  Neovim never produces, and hides rename in compose buffers: its empty
+  `prepareRename` ended every service rename with "Nothing to rename".
+- **ESLint only lints.** Its `prettier/prettier` rule is silenced at the server
+  because Prettier already formats on save, and nothing is fixed on save. A
+  "Delete `␊`" diagnostic means `rulesCustomizations` in
+  `settings/lsp/servers/eslint.lua` needs a look; after editing `.prettierrc` run
+  `prettierd restart`.
+- **SQL is formatted by sql-formatter**, which Mason installs with the other
+  tools. The `--language` conform passes (`formatting.sql_dialect`) is a default
+  only: sql-formatter looks for a `.sql-formatter.json` from Neovim's working
+  directory upwards and that file wins over the flag, so a project pins its own
+  dialect, indent and keyword case. `=` is no substitute — the treesitter SQL
+  indents align the lines a query already has and never re-wrap it. Query buffers
+  of vim-dadbod-ui are ordinary files and are formatted on save as well.
+- **Unused code is found in two ways and drawn as one.** What TypeScript can
+  prove unused — imports, locals, parameters, private members, and whatever
+  ESLint tags the same way — arrives as a hint carrying the LSP `Unnecessary`
+  tag, and Neovim paints the code itself with `DiagnosticUnnecessary`:
+  `overlay0`, dimmer than a comment's `overlay2` and without its italics. An
+  exported class, a public method, a field, a type or a constant is valid code
+  with nobody calling it, so no compiler diagnostic describes it:
+  `settings/lsp/unused.lua` counts the references of every such declaration and
+  writes `Unused symbol 'name'.` behind its line, through the same renderer the
+  diagnostics use. Both report the same thing, so both are shown as one. A
+  tagged diagnostic becomes a warning before Neovim stores it:
+  `core/diagnostics.lua` wraps the two handlers a server answers diagnostics
+  with — `textDocument/publishDiagnostics` and the pull variant
+  `textDocument/diagnostic`, its related documents included — and rewrites the
+  severity of everything tagged `Unnecessary`, so the sign, the counters of the
+  status line and trouble say the same thing the annotation behind the code
+  does; a
+  hint would otherwise rank below every other annotation and count for nothing.
+  Only a hint or an information is raised, never an error a server means as one,
+  and the tag itself is left alone, so the code keeps its
+  `DiagnosticUnnecessary` dimming. Above the line such a diagnostic is drawn in
+  `UnusedSymbol` rather than in the color of its severity, and `UnusedSymbol`
+  links to `DiagnosticVirtualTextWarn`: one group colors both marks. That
+  warning group is replaced whole in `custom_highlights`, so the faint
+  background catppuccin puts behind virtual text —
+  `darken(peach, 0.095, base)`, `NONE` while `colorscheme.transparent` is on —
+  is repeated there, and the italics of `lsp_styles.virtual_text` with it. The
+  marker yields to the compiler: where a diagnostic of that line already carries
+  the LSP
+  `Unnecessary` tag (`user_data.lsp.tags`) over the same columns — an unused
+  local, a private field, a class nobody imports — the renderer drops the
+  `Unused symbol` mark, its sign with it, and leaves the diagnostic alone.
+- **The reference count is a module of the config, not a plugin.**
+  symbol-usage.nvim did the same counting, but it draws virtual text of its own,
+  a second row of marks beside the diagnostics, and never removes a marker once
+  a symbol gains a reference — "unused" then hangs over code that is used. The
+  module requests
+  `textDocument/documentSymbol`, keeps that tree until the buffer changes, and
+  sends one `textDocument/references` per declaration visible in the window,
+  counting again after an edit, after a scroll and on `BufEnter`, since a usage
+  may have been deleted in another buffer. Counted are classes, interfaces,
+  enums, functions, the methods and fields of a class or an interface, and the
+  constants, types and arrow functions of a module; a local inside a function
+  body is left to the compiler, which grays it out anyway. What carries no name
+  a reference could point at is skipped: a function handed to a call, which
+  tsserver names after that call (`setTimeout() callback`, and
+  `register("plain") callback` when the call has arguments of its own), and an
+  anonymous declaration, which it names `<class>` or `<function>` — the `class`
+  a factory returns among them. Each of those counts zero references forever and
+  would carry a marker for good. A member of an object literal is left out as
+  well — the `useFactory` of a Nest module, the handler of a route table,
+  `parse` in a bag of helpers: a count finds the calls that go through the
+  object, but never the ones a framework makes by convention, and the marker was
+  noise more often than not. A method is therefore counted in a class or an
+  interface only, which is also where `lsp.unused_skip` applies. The members of
+  an enum are skipped for the same reason: a value of one travels through a
+  database column, a payload or a migration, where nothing points at the name,
+  and the enum itself carries the count. tsserver reports a member as a variable
+  whose parent is the enum, which is how they are told apart from the constants
+  of a module.
+- **`lsp.unused_skip` lists where a count is meaningless.** The fields of a
+  `*.dto.ts` are filled by the framework through the validation decorators, the
+  fields of a `*.entity.ts` by the ORM through the column decorators, and the
+  methods of a `*.controller.ts` are routes nothing calls from the code, so all
+  three are skipped. `fields` and `methods` are globs (`vim.glob`, the LSP
+  syntax with `*`, `?` and `{}`) matched against the name of the file, not its
+  path, and everything else in those files is still counted. `paths` matches the
+  whole path instead and takes the file out entirely — `**/node_modules/**`,
+  where every declaration belongs to a dependency, most of them are meant for
+  other projects and each open file would cost a request per symbol. Nothing
+  counts there until `<leader>uu` asks for the markers by hand. A method reached
+  only through a decorator somewhere else — a lifecycle hook, a queue handler —
+  is marked as well: the count is honest, the framework is not part of it.
+- **vtsls' reference code lens stays off.** It answers a `codeLens/resolve` with
+  the unresolved lens whenever the symbol has no references, because the command
+  VS Code puts behind "0 references" has an empty id. Neovim keeps such a lens
+  unresolved, draws an empty virtual line above the declaration and asks again on
+  the next redraw of that row: one file with a handful of unused declarations
+  sent about 15000 `codeLens/resolve` requests in 20 seconds. The counts come
+  from `settings/lsp/unused.lua` instead, and `<leader>cl` / `<leader>cL` keep
+  working for the code lenses of other servers.
+- **The LSP log is off** (`vim.lsp.log.set_level(vim.log.levels.OFF)`): it grows
+  to gigabytes. Turn it on only to debug a server.
+- **codebook:** `<leader>us` stops the server rather than hiding its
+  diagnostics, since a disabled diagnostic namespace is still counted by
+  `vim.diagnostic.count()` and the status line would keep showing it.
+  `exit_timeout = 500`, because the server never exits on its own.
+- **The project dictionary reaches codebook as an absolute path.** The server
+  takes it in `initializationOptions.configPath`, and 0.3.42 resolves a relative
+  value against its own working directory instead of the project root, so the
+  dictionary would follow `:cd` rather than the project. `before_init` joins
+  `spelling.project_dictionary` onto the resolved `root_dir` and writes the
+  result into `params.initializationOptions`: `config.init_options` has already
+  been copied into the initialize request by then, and a change made there
+  arrives nowhere. `.codebook` is a root marker as well, so a project whose only
+  mark is its dictionary is still recognized. Without `configPath` a project
+  without a `codebook.toml` loses every added word without a message: the server
+  has no file to save to.
+- **The words inside a path string are checked through a second, invisible
+  document.** codebook reports nothing inside a string literal that contains a
+  `/` — a route, a URL, a path — while the same word in a comment or in a plain
+  string is flagged. `settings/lsp/spelling.lua` sends the server a shadow
+  document instead: the buffer with every `/` inside a string literal replaced
+  by a space, under a URI of its own (`.<name>.spelling.<ext>`, which is no
+  file on disk). One byte for one byte, so every diagnostic comes back on a
+  position of the real buffer; a per-client `textDocument/publishDiagnostics`
+  handler recognizes that URI, keeps the hints that fall inside a rewritten
+  string and publishes them into the `myconfig.spelling` namespace under
+  codebook's own `source`, which puts them in the summary block and in
+  `<leader>cw`. Import and export specifiers are left out, so package names
+  (`@nestjs/common`) stay unchecked, and so are template strings, which codebook
+  reads itself, slashes and all. A hint the server already sent for the real
+  document is dropped, whichever of the two publishes arrives first. The shadow
+  document is re-sent, debounced, on `TextChanged` and `InsertLeave`, and closed
+  when codebook leaves the buffer.
+
+### Plugins
+
+- **neotest discovery is off:** it walks the whole workspace and freezes the
+  editor in a NestJS monorepo, so the tree is built from the files opened and
+  run. The Jest command has no trailing `--`: the adapter appends its own flags,
+  and after `--` Jest takes them as path patterns, never writes the results file
+  and reports every test as failed. Jest and Vitest run from the package root of
+  a monorepo.
+- **Coverage** is loaded with `:Coverage`, not `:CoverageLoad`, which reads the
+  report without placing the signs.
+- **Debugger:** attaching to a local `nest start --debug` has no
+  `localRoot` / `remoteRoot` — with them js-debug treats the process as remote and
+  breakpoints stay provisional — while the container configuration needs the
+  pair. ts-node launches load `tsconfig-paths/register` for `@app/…` aliases. The
+  session listeners that open the panel must not be keyed `dap-view`, the name
+  the plugin uses for its own, and `terminal_win_cmd` stays unset, or a second
+  terminal window is left behind. nvim-dap-virtual-text reads `enable_commands`
+  (its README says `enabled_commands`); with js-debug every value gets the
+  "changed" highlight, because js-debug hands out a new frame id on every stop.
+  nvim-dap-view's own virtual text stays off, so values don't show twice.
+- **git-conflict's `disable_diagnostics` is off:** it calls
+  `vim.diagnostic.disable()`, which Neovim 0.12 no longer has, so the config
+  switches diagnostics off itself. Its highlights need a background color, or
+  the plugin falls back to its own.
+- **diffview** turns diagnostics off in every view (conflict markers and old file
+  versions flood with errors) and moves keys that would shadow global groups:
+  `<leader>e` / `<leader>b` → `<localleader>e` / `<localleader>b`, conflict
+  choices → `<leader>gx…`, `<C-A-d>` → `<localleader>d`. neogit's GUI and Alt
+  keys likewise move to the localleader layer, and its `]c` / `[c` to `]o` / `[o`.
+- **neogit creates its buffer keys without descriptions**, so which-key showed
+  them blank or with Vim's own meaning (`l` as "Right"). A `FileType` autocmd in
+  `settings/git/neogit.lua` waits until neogit has mapped a buffer and describes
+  every key that `mappings` binds to an action, through `maparg()` / `mapset()`
+  with the mapping itself unchanged. The status buffer gets all status actions;
+  the commit, log, reflog, refs and stash views only those they take from it
+  (close, open, peek, scroll, yank, fold, refresh), because keys such as `o` and
+  `x` mean something else there. Popup buffers are left alone: they print their
+  keys themselves. Keys neogit maps outside the documented `mappings` (`R`, `V`,
+  `+`, `<Esc>`, `o` in the log and commit views) stay without a description, and
+  `zc` / `zC` / `zO` keep which-key's fold descriptions.
+- **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
+  would otherwise open an empty buffer), sends `workspace/didRenameFiles` so vtsls
+  fixes imports after a rename, and takes its width from a function: neo-tree
+  also does arithmetic on the raw value, which a `"25%"` string breaks.
+  **oil's `default_file_explorer` stays `false`**, or `nvim .` opens oil instead
+  of the tree. Inside the tree the keys follow `h` / `l`: `l` opens a node (a
+  folder expands, a file opens), `h` closes it, `.` toggles hidden files, `H`
+  toggles the preview, `J` / `K` scroll it and `L` focuses it. `<cr>` opens a
+  file and sets the root on a folder — one key for both, so it is a function
+  rather than a command name — and it is declared per source rather than
+  globally, because `set_root` exists in filesystem and buffers only and a
+  global one would leave `<cr>` unmapped in git_status; `toggle_hidden` is
+  filesystem's alone for the same reason. A key that has to go is mapped to
+  `"none"` (`P`, `C`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line
+  out instead brings neo-tree's own default for it back, since a source
+  inherits the global table and the defaults underneath it.
+- **Deleting a path closes the buffers under it.** A folder is where both
+  explorers leave them open: neo-tree removes the directory with `rm -Rf` and
+  clears buffers only in the libuv fallback it never reaches, oil clears none
+  at all, not even for a single file. The buffers of the deleted files stayed
+  in the tabline, and `auto_mkdir` recreates a parent directory on write, so
+  `:w` in one of them brought the whole tree back. neo-tree's `file_deleted`
+  event and oil's `User OilActionsPost` hand the path to
+  `delete_buffers_under` in `settings/ui/bufferline.lua`, which closes the
+  buffer of that path and of every path below it through `safe_buffer_delete`,
+  forced, the way neo-tree closes the buffer of a file it deleted on its own.
+  The oil handler answers for the `oil://` adapter only and for a path that is
+  really gone, so a failed action or a remote adapter leaves its buffers
+  alone.
+- **A rename reaches the buffers a session only listed.** neo-tree renames the
+  buffers under a moved path itself, but it walks the loaded ones only, and a
+  restored session lists its buffers without loading them until they are
+  opened: after a restart the tabline kept the old paths, and the tab led to a
+  file that was no longer there. `rename_buffers_under` in
+  `settings/ui/bufferline.lua` runs from the same `file_renamed` and
+  `file_moved` handler that notifies the servers, after neo-tree has done its
+  own part, and replaces every buffer it left behind with one under the new
+  path, listed or not the way it was.
+- **oil drops an unloaded buffer instead of moving it.** For a folder it walks
+  the buffer list and renames every buffer under the old path, but for a file
+  it hands its `rename_buffer` a name rather than a buffer number, and that
+  function deletes a buffer it finds unloaded instead of renaming it: a file
+  moved to another folder, or renamed, took its tab with it whenever the buffer
+  came from a restored session. The `OilActionsPre` handler in
+  `settings/explorer/oil.lua` loads the listed buffers under the source of
+  every `move` action first, through `load_buffers_under`, and oil renames them
+  itself — loading them is what it does to them in the folder case anyway.
+- **fzf-lua's key tables replace the defaults** rather than extend them: the
+  defaults bind Alt combinations. `vim.ui.select` is a stub that loads fzf-lua on
+  the first call.
+- **dropbar** narrows treesitter `valid_types` to declarations: the defaults also
+  match `class_body`, `property_identifier` and statements, which push the class
+  and the method out of `max_depth`. Its preview recenters through
+  `winrestview()`, because `:normal` closes the fuzzy prompt. The filter in its
+  menus needs the C library of telescope-fzf-native.nvim.
+- **The breadcrumbs sit at the bottom, in lualine's left section.** Neovim
+  attaches exactly two lines to a window: `'winbar'` above it and `'statusline'`
+  below, so the bottom is the status line and nothing else. lualine keeps
+  `globalstatus`, and its left section renders `M.statusline()` of
+  `settings/structure/dropbar.lua` — the very string dropbar would put in the
+  winbar, so the highlights, the click regions and `<leader>;` all keep working,
+  and the file name component is gone, because the breadcrumbs end in it.
+  dropbar itself never attaches: `bar.enable` is `false` and `attach_events` is
+  empty, and the window-level exclusions moved into that function, which asks
+  dropbar's own default for everything else. The git and diagnostic counters
+  moved to the right half of the line, so the breadcrumbs have the left one to
+  themselves. `bar.hover` is off, since the hover highlight is computed for row
+  1 of a window, which the status line never is.
+- **The drop-down menu is raised to the bottom of the window.** dropbar anchors
+  it at row 0 of the window it belongs to, which is where the winbar used to be;
+  a menu of the breadcrumbs now has to open at the other end. `symbol.on_click`
+  wraps dropbar's own handler and moves the window it opened, so the mouse and
+  `<leader>;` end up in the same place: a bordered float is positioned by its
+  border box, so the row is the window height less the menu's height and its two
+  border lines, and the bottom border lands on the last line of the window. Only
+  the first menu is moved, since a submenu is anchored to the menu it came from,
+  and the column dropbar computed is kept, which is the clicked component in
+  the window, not in the status line.
+- **aerial** loads on `BufReadPost` with the LSP backend first: its TypeScript
+  query has no properties or fields (NestJS injections), and with a key-only load
+  `{` / `}` would stay paragraph motions until the tree is opened once. Anonymous
+  callbacks that vtsls reports as symbols are filtered out.
+- **Folds come from the LSP when an attached server provides them**, from
+  treesitter otherwise, and stay manual in a file above `treesitter.max_filesize`:
+  `update_folds()` in `settings/treesitter/treesitter.lua` decides on `FileType`
+  and whenever a server attaches or detaches. nvim-origami's own switch to LSP
+  folds is off, because it ignores that limit, and `vim.lsp.foldexpr()` freezes
+  Neovim on such a file for minutes. origami keeps the rest: line counts with
+  diagnostics and git changes on a closed fold (hidden in neogit buffers),
+  auto-folded comments and imports, and folds paused while searching — it removes
+  `search` from `'foldopen'` and keeps only the fold under the cursor open once
+  the search is over. Its `h` / `l` / `^` / `$` keymaps stay off. Auto-folding
+  works through LSP folds only and does not reach the file Neovim starts with;
+  files opened later are folded.
+- **Trouble:** `<leader>xX` leaves out diagnostics from TypeScript's library
+  sources (lib.dom.d.ts alone brings some eighty hints); the LSP lists report an
+  empty result, so `grr` on an unreferenced symbol is not silent.
+- **refactoring.nvim** keys are operators (`expr` mappings), except the menu of
+  all refactors: opening a window while an `expr` mapping is evaluated fails
+  with E565.
+- **vim-dadbod-ui** notifications use its own floats, not `vim.notify`: with
+  Neovim's handler an error becomes a Vimscript trace inside the plugin. MySQL
+  table helpers use `{dbname}`, because `{schema}` is empty when the URL names a
+  database, and the hidden system schemas are anchored regexes.
+- **kulala**'s `pathresolver` keeps its documented default although 6.x never
+  calls it: kulala-core resolves request variables itself.
+- **blink.cmp** uses the prebuilt Rust matcher of the pinned tag; without network
+  access set its implementation to `"lua"`. `<Tab>` / `<S-Tab>` move the
+  selection while the menu is open and jump through snippet fields when it is
+  closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
+  menu to free it for the next field. Neither key accepts a completion — `<CR>`
+  does — and the dadbod source is enabled for SQL filetypes only. `<Esc>` is
+  `cancel` with a fallback: it closes the menu and stays in insert mode, and
+  only the next `<Esc>` leaves it. `cancel` reports back that it did nothing
+  while the menu is closed, so the key keeps its normal meaning everywhere else.
+- **The `from` of an import or export comes from a source of its own.** After an
+  unfinished `import x ` or `export * ` the only word that may follow is
+  `from`, but a tsserver older than 5.0 answers that position with every
+  identifier it knows, auto-imports included, and no `from` among them —
+  `autoUseWorkspaceTsdk` hands vtsls the TypeScript of the project, so the
+  version that answers is the project's. `settings/completion/imports.lua` is a
+  blink.cmp source that offers the keyword there itself, with a score offset
+  above every other source, and the `transform_items` of the `lsp` provider
+  drops the `from` a newer TypeScript sends for the same position, so the word
+  is never offered twice. The clause is read from the line in front of the
+  cursor, which keeps `export const x = ` and `export default ` out of it.
+- **nvim-autopairs** writes the closing bracket or quote to the right of the
+  cursor, and `<BS>` on the opening one takes both away while the pair is still
+  empty. It holds back where a closing character would be in the way: none is
+  added in front of a word or of `%`, `'`, `[`, `"`, `.`, `` ` `` or `$`
+  (`ignored_next_char`), typing the closing character over the one it added
+  moves the cursor past it instead of doubling it, and nothing is paired while a
+  macro is recorded or replayed, so a recorded `(` stays a single `(`. `<CR>`
+  between the two halves opens an indented line between them: blink.cmp keeps
+  the key for accepting a completion and falls back to nvim-autopairs whenever
+  the menu is closed. `check_ts` stays off — its own rules already cover the
+  quotes and brackets of these filetypes, and the treesitter check needs a list
+  of node types per language — and `disable_filetype` names neo-tree's popup
+  input, the one prompt here that takes insert-mode keys. `<C-w>` and `<C-h>`
+  stay Vim's own (`map_c_w`, `map_c_h`).
 
 ## Known limitations
 
@@ -675,8 +847,8 @@ the file does not exist, and leaves an existing one alone.
 - **Trouble, the debugger panel and the test output share one bottom split.**
   Starting a debug session closes Trouble, the panels take each other's place
   instead of stacking, and all of them use `ui.panel_height`.
-- **The first HTTP request needs the network**: kulala downloads its backend
-  (kulala-core, ~100 MB) and that request fails while the download runs.
+- **The first HTTP request needs the network**: kulala downloads its backend (kulala-core, ~100 MB) and that request
+  fails while the download runs.
 - **The keymap scripts read the installed copy** in `~/.config/nvim`, not the
   checkout — run `./install.sh` before them.
 
@@ -684,9 +856,11 @@ the file does not exist, and leaves an existing one alone.
 
 ```
 .
-├── install.sh   # checks Neovim, copies nvim/ → ~/.config/nvim, creates codebook.toml
-├── CLAUDE.md    # notes for Claude Code: architecture, rules, non-obvious decisions
-├── nvim/        # the configuration itself (becomes ~/.config/nvim)
-├── scripts/     # maintenance: keymap audit and tables, cspell → codebook migration
-└── http/        # .http request collections, kept outside nvim/ on purpose
+├── install.sh     # checks Neovim, copies nvim/ → ~/.config/nvim, creates codebook.toml
+├── CLAUDE.md      # notes for Claude Code: architecture, rules, non-obvious decisions
+├── KEYMAP.md      # every key binding, generated by scripts/dump-keymaps.lua
+├── .codebook/     # spelling dictionary of this repository: its terms and identifiers
+├── nvim/          # the configuration itself (becomes ~/.config/nvim)
+├── scripts/       # maintenance: keymap audit and tables, cspell → codebook migration
+└── http/          # .http request collections, kept outside nvim/ on purpose
 ```

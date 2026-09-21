@@ -1,23 +1,24 @@
--- defaults verified against codebook-lsp 0.3.42 and nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-12)
---
--- Spell checking for code. codebook is a language server (Rust + tree-sitter +
--- Spellbook), not a plugin: it splits camelCase / PascalCase / snake_case /
--- SCREAMING_SNAKE_CASE itself, suggests fixes in the original case, and tells
--- identifiers, strings and comments apart — so the hand-written "definitions
--- only" filter of the old config is gone and is not coming back.
--- cspell.nvim (archived) and cspell-lsp (deprecated) are not part of this config.
---
--- Dictionaries live outside ~/.config/nvim, which install.sh overwrites whole:
--- the global one in ~/.config/codebook/codebook.toml, the project one in
--- codebook.toml next to .git. `<leader>ca` offers "Add to dictionary" wherever
--- a word is flagged.
+local spelling = require("settings.lsp.spelling")
+local user = require("user.settings")
 
 local M = {}
 
+local function project_dictionary(root)
+  local path = user.spelling.project_dictionary
+  if type(path) ~= "string" or path == "" then
+    return nil
+  end
+  if vim.startswith(path, "/") or vim.startswith(path, "~") then
+    return vim.fs.normalize(path)
+  end
+  if not root then
+    return nil
+  end
+  return vim.fs.joinpath(root, path)
+end
+
 M.config = {
   cmd = { "codebook-lsp", "serve" },
-  -- The filetypes of this stack, not the language list of the server: TS/JS
-  -- sources, configs and documents. `http` and `sql` are ours (tasks 14, 15).
   filetypes = {
     "typescript",
     "typescriptreact",
@@ -34,38 +35,80 @@ M.config = {
     "http",
     "gitcommit",
   },
-  -- A project config wins over the global one; `.git` keeps the server rooted
-  -- at the repository even when the project has no codebook.toml of its own.
-  root_markers = { "codebook.toml", ".codebook.toml", ".git" },
-  -- Neovim's default is `false`: never force-stop, just ask and wait. codebook
-  -- does not exit on its own, so without this the client stays registered (and
-  -- its diagnostics on screen) after `<leader>us` — see M.toggle below.
+  root_markers = { ".codebook", "codebook.toml", ".codebook.toml", ".git" },
   exit_timeout = 500,
   init_options = {
     logLevel = "info",
     checkWhileTyping = true,
-    -- Spelling is not an error. HINT keeps it out of the error and warning
-    -- counters of the status line and the buffer tabs (task 03) and sorts it
-    -- below real problems in the panel (task 20). Done on the server, not by
-    -- rewriting diagnostics afterwards: one option instead of a handler that
-    -- would have to cover both push and pull diagnostics. The server's own
-    -- default is "information".
     diagnosticSeverity = "hint",
   },
+  handlers = {
+    ["textDocument/publishDiagnostics"] = spelling.handler,
+  },
+  before_init = function(params, config)
+    local path = project_dictionary(config.root_dir)
+    if path then
+      params.initializationOptions =
+        vim.tbl_deep_extend("force", params.initializationOptions or {}, { configPath = path })
+    end
+  end,
 }
 
--- `<leader>us` (settings/lsp/init.lua). Stops the server instead of hiding its
--- diagnostics: a disabled diagnostic namespace still shows up in
--- `vim.diagnostic.get()` and `vim.diagnostic.count()`, so the status line and
--- the problems list would keep counting spelling items that are no longer drawn
--- anywhere (checked against Neovim 0.12.5). Stopping the client clears them
--- everywhere; switching back on re-attaches to the open buffers.
-local enabled = true -- settings/lsp/init.lua enables codebook at startup
+local enabled = true
 
 function M.toggle()
   enabled = not enabled
   vim.lsp.enable("codebook", enabled)
   vim.notify("codebook: spelling " .. (enabled and "enabled" or "disabled"))
+end
+
+local function unknown_words(bufnr, client)
+  local namespaces = { vim.lsp.diagnostic.get_namespace(client.id), spelling.namespace }
+  local seen, words = {}, {}
+  for _, namespace in ipairs(namespaces) do
+    for _, diagnostic in ipairs(vim.diagnostic.get(bufnr, { namespace = namespace })) do
+      local ok, lines = pcall(
+        vim.api.nvim_buf_get_text,
+        bufnr,
+        diagnostic.lnum,
+        diagnostic.col,
+        diagnostic.end_lnum,
+        diagnostic.end_col,
+        {}
+      )
+      local word = ok and table.concat(lines) or ""
+      if word ~= "" and not seen[word] then
+        seen[word] = true
+        words[#words + 1] = word
+      end
+    end
+  end
+  table.sort(words)
+  return words
+end
+
+function M.add_buffer_words()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local client = vim.lsp.get_clients({ bufnr = bufnr, name = "codebook" })[1]
+  if not client then
+    vim.notify("codebook: not attached to this buffer", vim.log.levels.WARN)
+    return
+  end
+  local words = unknown_words(bufnr, client)
+  if #words == 0 then
+    vim.notify("codebook: no unknown words in this buffer")
+    return
+  end
+  client:exec_cmd({
+    title = "Add unknown words to dictionary",
+    command = "codebook.addWord",
+    arguments = words,
+  }, { bufnr = bufnr })
+  vim.notify("codebook: added " .. #words .. " word(s) to the project dictionary")
+end
+
+function M.keymaps(_, _, map)
+  map("n", "<leader>cw", M.add_buffer_words, "Add unknown words to dictionary")
 end
 
 return M
