@@ -1,6 +1,7 @@
 local user = require("user.settings")
 local icons = require("settings.icons")
 local sql_filetypes = require("settings.database.dadbod-completion").ft
+local imports = require("settings.completion.imports")
 
 local M = {}
 
@@ -182,16 +183,22 @@ M.opts = {
   },
 
   sources = {
-    default = { "lsp", "snippets", "path", "buffer" },
+    default = { "imports", "lsp", "snippets", "path", "buffer" },
     per_filetype = per_filetype(),
     transform_items = function(_, items)
       return items
     end,
     min_keyword_length = 0,
     providers = {
+      imports = {
+        name = "Import",
+        module = "settings.completion.imports",
+        score_offset = 200,
+      },
       lsp = {
         score_offset = 100,
         fallbacks = { "buffer" },
+        transform_items = imports.without_from,
       },
       snippets = {
         score_offset = 80,

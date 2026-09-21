@@ -808,6 +808,17 @@ when "cleaned up".
   `cancel` with a fallback: it closes the menu and stays in insert mode, and
   only the next `<Esc>` leaves it. `cancel` reports back that it did nothing
   while the menu is closed, so the key keeps its normal meaning everywhere else.
+- **The `from` of an import or export comes from a source of its own.** After an
+  unfinished `import x ` or `export * ` the only word that may follow is
+  `from`, but a tsserver older than 5.0 answers that position with every
+  identifier it knows, auto-imports included, and no `from` among them —
+  `autoUseWorkspaceTsdk` hands vtsls the TypeScript of the project, so the
+  version that answers is the project's. `settings/completion/imports.lua` is a
+  blink.cmp source that offers the keyword there itself, with a score offset
+  above every other source, and the `transform_items` of the `lsp` provider
+  drops the `from` a newer TypeScript sends for the same position, so the word
+  is never offered twice. The clause is read from the line in front of the
+  cursor, which keeps `export const x = ` and `export default ` out of it.
 - **nvim-autopairs** writes the closing bracket or quote to the right of the
   cursor, and `<BS>` on the opening one takes both away while the pair is still
   empty. It holds back where a closing character would be in the way: none is

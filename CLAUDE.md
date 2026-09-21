@@ -260,6 +260,10 @@ Further decisions, explained in README.md ("Implementation notes"):
 - `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
   jump through snippet fields only while the menu is closed; `<Esc>` closes the
   menu before it leaves insert mode.
+- `settings/completion/imports.lua` is a blink.cmp source of its own: it offers
+  the `from` of an unfinished `import x ` / `export * `, which a tsserver older
+  than 5.0 never sends there, and the `lsp` provider's `transform_items` drops
+  the one a newer TypeScript does send, so the word appears once and first.
 - trouble's `symbols` mode is unused: aerial owns the structure view.
 - codebook has `exit_timeout = 500`, since it never exits on its own.
 - lualine's LSP progress follows work-done tokens from `LspProgress` event data;
