@@ -429,6 +429,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `)`         | i    | autopairs map key                                       | every file buffer |
 | `<BS>`      | i    | autopairs delete                                        | every file buffer |
 | `<C-B>`     | i    | blink.cmp: Scroll Documentation Up                      | every file buffer |
+| `<C-CR>`    | i    | blink.cmp: Cancel                                       | every file buffer |
 | `<C-E>`     | i    | blink.cmp: Hide                                         | every file buffer |
 | `<C-F>`     | i    | blink.cmp: Scroll Documentation Down                    | every file buffer |
 | `<C-J>`     | i    | blink.cmp: Select Next                                  | every file buffer |
@@ -439,7 +440,6 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<C-Space>` | i    | blink.cmp: Show, Show Documentation, Hide Documentation | every file buffer |
 | `<CR>`      | i    | autopairs completion confirm                            |                   |
 | `<CR>`      | i    | blink.cmp: Accept                                       | every file buffer |
-| `<Esc>`     | i    | blink.cmp: Cancel                                       | every file buffer |
 | `<S-Tab>`   | s i  | blink.cmp: Select Prev, Snippet Backward                | every file buffer |
 | `<Tab>`     | s i  | blink.cmp: Select Next, Snippet Forward                 | every file buffer |
 | `[`         | i    | autopairs map key                                       | every file buffer |

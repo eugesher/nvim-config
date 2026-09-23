@@ -269,10 +269,10 @@ comments. Mason installs it automatically.
   `camelCase` identifier is added exactly as the checker flagged it.
 - **A string that holds a path is checked word by word**
   (`spelling.check_paths`). codebook skips such a string whole, so
-  `'user/leagcy-auth'` is silently correct for it. The config sends the server a
-  copy of the buffer in which the slashes inside strings are spaces and keeps
-  the words only that copy flags; the hints read like codebook's own and
-  `<leader>cw` adds them as well.
+  `'user/leagcy-auth'` is silently correct for it, and so is the path of an
+  `import` or an `export`. The config sends the server a copy of the buffer in
+  which the slashes inside strings are spaces and keeps the words only that copy
+  flags; the hints read like codebook's own and `<leader>cw` adds them as well.
 - **The messages are collected above the first line of the buffer**
   (`lsp.diagnostics_summary`): a count, the words, and how to add them all.
 
@@ -573,16 +573,15 @@ when "cleaned up".
   symbol-usage.nvim did the same counting, but it draws virtual text of its own,
   a second row of marks beside the diagnostics, and never removes a marker once
   a symbol gains a reference — "unused" then hangs over code that is used. The
-  module requests
-  `textDocument/documentSymbol`, keeps that tree until the buffer changes, and
-  sends one `textDocument/references` per declaration visible in the window,
-  counting again after an edit, after a scroll and on `BufEnter`, since a usage
-  may have been deleted in another buffer. Counted are classes, interfaces,
-  enums, functions, the methods and fields of a class or an interface, and the
-  constants, types and arrow functions of a module; a local inside a function
-  body is left to the compiler, which grays it out anyway. What carries no name
-  a reference could point at is skipped: a function handed to a call, which
-  tsserver names after that call (`setTimeout() callback`, and
+  module requests `textDocument/documentSymbol`, keeps that tree until the
+  buffer changes, and sends one `textDocument/references` per declaration
+  visible in the window, counting again after an edit, after a scroll and on
+  `BufEnter`, since a usage may have been deleted in another buffer. Counted are
+  classes, interfaces, enums, functions, the methods and fields of a class, and
+  the constants, types and arrow functions of a module; a local inside a
+  function body is left to the compiler, which grays it out anyway. What carries
+  no name a reference could point at is skipped: a function handed to a call,
+  which tsserver names after that call (`setTimeout() callback`, and
   `register("plain") callback` when the call has arguments of its own), and an
   anonymous declaration, which it names `<class>` or `<function>` — the `class`
   a factory returns among them. Each of those counts zero references forever and
@@ -590,26 +589,31 @@ when "cleaned up".
   well — the `useFactory` of a Nest module, the handler of a route table,
   `parse` in a bag of helpers: a count finds the calls that go through the
   object, but never the ones a framework makes by convention, and the marker was
-  noise more often than not. A method is therefore counted in a class or an
-  interface only, which is also where `lsp.unused_skip` applies. The members of
-  an enum are skipped for the same reason: a value of one travels through a
-  database column, a payload or a migration, where nothing points at the name,
-  and the enum itself carries the count. tsserver reports a member as a variable
-  whose parent is the enum, which is how they are told apart from the constants
-  of a module.
+  noise more often than not. A member is therefore counted in a class only,
+  which is also where `lsp.unused_skip` applies. The body of an interface is
+  left out for a reason of the same kind: an interface describes a shape that
+  crosses a boundary (a request body, a configuration file, the row of a query),
+  and its fields and methods are filled, read and implemented there without the
+  code naming them, so a count of zero says nothing about the shape. The
+  interface itself still carries the count. The members of an enum are skipped
+  for the same reason: a value of one travels through a database column, a
+  payload or a migration, where nothing points at the name, and the enum itself
+  carries the count. tsserver reports a member as a variable whose parent is the
+  enum, which is how they are told apart from the constants of a module.
 - **`lsp.unused_skip` lists where a count is meaningless.** The fields of a
   `*.dto.ts` are filled by the framework through the validation decorators, the
   fields of a `*.entity.ts` by the ORM through the column decorators, and the
   methods of a `*.controller.ts` are routes nothing calls from the code, so all
   three are skipped. `fields` and `methods` are globs (`vim.glob`, the LSP
   syntax with `*`, `?` and `{}`) matched against the name of the file, not its
-  path, and everything else in those files is still counted. `paths` matches the
-  whole path instead and takes the file out entirely — `**/node_modules/**`,
-  where every declaration belongs to a dependency, most of them are meant for
-  other projects and each open file would cost a request per symbol. Nothing
-  counts there until `<leader>uu` asks for the markers by hand. A method reached
-  only through a decorator somewhere else — a lifecycle hook, a queue handler —
-  is marked as well: the count is honest, the framework is not part of it.
+  path; they reach the members of a class, the only ones counted at all, and
+  everything else in those files is still counted. `paths` matches the whole
+  path instead and takes the file out entirely — `**/node_modules/**`, where
+  every declaration belongs to a dependency, most of them are meant for other
+  projects and each open file would cost a request per symbol. Nothing counts
+  there until `<leader>uu` asks for the markers by hand. A method reached only
+  through a decorator somewhere else — a lifecycle hook, a queue handler — is
+  marked as well: the count is honest, the framework is not part of it.
 - **vtsls' reference code lens stays off.** It answers a `codeLens/resolve` with
   the unresolved lens whenever the symbol has no references, because the command
   VS Code puts behind "0 references" has an empty id. Neovim keeps such a lens
@@ -646,9 +650,11 @@ when "cleaned up".
   handler recognizes that URI, keeps the hints that fall inside a rewritten
   string and publishes them into the `myconfig.spelling` namespace under
   codebook's own `source`, which puts them in the summary block and in
-  `<leader>cw`. Import and export specifiers are left out, so package names
-  (`@nestjs/common`) stay unchecked, and so are template strings, which codebook
-  reads itself, slashes and all. A hint the server already sent for the real
+  `<leader>cw`. The path of an `import`, an `export` or a `require` goes through
+  that copy like any other string, so a package name (`@nestjs/common`) is read
+  word by word, the way codebook itself reads a name without a slash
+  (`nestjs-pino`). Template strings are the exception: codebook reads those on
+  its own, slashes and all. A hint the server already sent for the real
   document is dropped, whichever of the two publishes arrives first. The shadow
   document is re-sent, debounced, on `TextChanged` and `InsertLeave`, and closed
   when codebook leaves the buffer.
@@ -694,21 +700,28 @@ when "cleaned up".
   `+`, `<Esc>`, `o` in the log and commit views) stay without a description, and
   `zc` / `zC` / `zO` keep which-key's fold descriptions.
 - **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
-  would otherwise open an empty buffer), sends `workspace/didRenameFiles` so vtsls
-  fixes imports after a rename, and takes its width from a function: neo-tree
-  also does arithmetic on the raw value, which a `"25%"` string breaks.
+  would otherwise open an empty buffer), sends `workspace/didRenameFiles` so
+  vtsls fixes imports after a rename, and takes its width from a function:
+  neo-tree also does arithmetic on the raw value, which a `"25%"` string breaks.
   **oil's `default_file_explorer` stays `false`**, or `nvim .` opens oil instead
   of the tree. Inside the tree the keys follow `h` / `l`: `l` opens a node (a
   folder expands, a file opens), `h` closes it, `.` toggles hidden files, `H`
-  toggles the preview, `J` / `K` scroll it and `L` focuses it. `<cr>` opens a
-  file and sets the root on a folder — one key for both, so it is a function
-  rather than a command name — and it is declared per source rather than
-  globally, because `set_root` exists in filesystem and buffers only and a
-  global one would leave `<cr>` unmapped in git_status; `toggle_hidden` is
-  filesystem's alone for the same reason. A key that has to go is mapped to
-  `"none"` (`P`, `C`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line
-  out instead brings neo-tree's own default for it back, since a source
-  inherits the global table and the defaults underneath it.
+  toggles the preview, `J` / `K` scroll it and `L` focuses it. `d` moves a node
+  to the trash and `D` removes it for good: the key that can be taken back is
+  the lower-case one, and `u` (which undoes a trash and nothing else) and `U`
+  (restore from the trash) follow `d`. On Linux the trash is `gio trash` or,
+  without it, neo-tree's own freedesktop implementation. neo-tree's own `T` for
+  the trash is gone, since the buffers source implements it as a plain delete,
+  and the directory search moved from `D` to `F`, beside `/` and `f`. `D` is a
+  no-op in the symbol list, where the tree holds no files. `<cr>` opens a file
+  and sets the root on a folder — one key for both, so it is a function rather
+  than a command name — and it is declared per source rather than globally,
+  because `set_root` exists in filesystem and buffers only and a global one
+  would leave `<cr>` unmapped in git_status; `toggle_hidden` is filesystem's
+  alone for the same reason. A key that has to go is mapped to `"none"` (`P`,
+  `C`, `T`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line out instead
+  brings neo-tree's own default for it back, since a source inherits the global
+  table and the defaults underneath it.
 - **Deleting a path closes the buffers under it.** A folder is where both
   explorers leave them open: neo-tree removes the directory with `rm -Rf` and
   clears buffers only in the libuv fallback it never reaches, oil clears none
@@ -804,10 +817,15 @@ when "cleaned up".
   selection while the menu is open and jump through snippet fields when it is
   closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
   menu to free it for the next field. Neither key accepts a completion — `<CR>`
-  does — and the dadbod source is enabled for SQL filetypes only. `<Esc>` is
-  `cancel` with a fallback: it closes the menu and stays in insert mode, and
-  only the next `<Esc>` leaves it. `cancel` reports back that it did nothing
-  while the menu is closed, so the key keeps its normal meaning everywhere else.
+  does — and the dadbod source is enabled for SQL filetypes only. `cancel` sits
+  on `<C-CR>`: it closes the menu and stays in insert mode, and it reports back
+  that it did nothing while the menu is closed, so the key keeps its normal
+  meaning everywhere else. The terminal has to send Ctrl and Enter as one key of
+  its own for that — Neovim asks for the "CSI u" encoding at startup
+  (`:help tui-csiu`), and a terminal that supports neither it nor
+  modifyOtherKeys sends a plain `<CR>`, which accepts the selection instead.
+  `<Esc>` is left unmapped, so it leaves insert mode at once and the menu goes
+  with it.
 - **The `from` of an import or export comes from a source of its own.** After an
   unfinished `import x ` or `export * ` the only word that may follow is
   `from`, but a tsserver older than 5.0 answers that position with every

@@ -195,9 +195,11 @@ Further decisions, explained in README.md ("Implementation notes"):
 - bufferline's tab numbers come from a `numbers` function counting the
   rendered order; its own `ordinal` is the position in the buffer list.
 - neo-tree's tree keys are `h` / `l` based (`l` open, `h` close, `.` hidden
-  files, `H` / `J` / `K` / `L` preview). `<cr>` (a function: open a file, set
-  the root on a folder) and `.` (toggle_hidden) sit in the source tables, not
-  the global one: those commands do not exist in every source. A key is
+  files, `H` / `J` / `K` / `L` preview). `d` trashes a node and `D` deletes it,
+  so the reversible key is the lower-case one; neo-tree's own `T` is gone and
+  the directory search moved from `D` to `F`. `<cr>` (a function: open a file,
+  set the root on a folder) and `.` (toggle_hidden) sit in the source tables,
+  not the global one: those commands do not exist in every source. A key is
   removed with `"none"`, never by dropping its line.
 - `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes a buffer a
   session restored (listed, not loaded) with `nvim_buf_delete`: bufdelete.nvim
@@ -235,10 +237,11 @@ Further decisions, explained in README.md ("Implementation notes"):
   before Neovim stores it, `core/annotations.lua` draws it in `UnusedSymbol`,
   and `UnusedSymbol` links to `DiagnosticVirtualTextWarn`. A symbol with no name
   to reference is not counted: what tsserver names `…) callback`, `<class>` or
-  `<function>`. A method counts in a class or an interface only, never in an
-  object literal, and an enum member never counts, only the enum itself. The
-  marker never doubles such a diagnostic: `core/annotations.lua` drops it, and
-  its sign, for those columns. vtsls' reference code lens is off — Neovim
+  `<function>`. A method and a field count in a class only — never in an
+  interface, never in an object literal — and an enum member never counts, only
+  the enum itself. The marker never doubles such a diagnostic:
+  `core/annotations.lua` drops it, and its sign, for those columns. vtsls'
+  reference code lens is off — Neovim
   re-requests a lens vtsls leaves unresolved, which it does for every symbol
   with no references.
 - codebook's project dictionary is `.codebook/words.toml`
@@ -258,8 +261,9 @@ Further decisions, explained in README.md ("Implementation notes"):
   keymaps in `core/keymaps.lua` that keep an explicit named register); only
   `x` / `X` cut to the clipboard.
 - `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
-  jump through snippet fields only while the menu is closed; `<Esc>` closes the
-  menu before it leaves insert mode.
+  jump through snippet fields only while the menu is closed; `<C-CR>` closes the
+  menu without leaving insert mode, and `<Esc>` is unmapped, so it leaves insert
+  mode at once.
 - `settings/completion/imports.lua` is a blink.cmp source of its own: it offers
   the `from` of an unfinished `import x ` / `export * `, which a tsserver older
   than 5.0 never sends there, and the `lsp` provider's `transform_items` drops

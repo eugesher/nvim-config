@@ -29,26 +29,6 @@ local function shadow_uri(bufnr)
   )
 end
 
-local modules = {
-  import_statement = true,
-  export_statement = true,
-  import_require_clause = true,
-}
-
-local function specifier(node)
-  local parent = node:parent()
-  for _ = 1, 2 do
-    if not parent then
-      return false
-    end
-    if modules[parent:type()] then
-      return true
-    end
-    parent = parent:parent()
-  end
-  return false
-end
-
 local function templated(node)
   local parent = node:parent()
   return parent ~= nil and parent:type():find("template") ~= nil
@@ -65,7 +45,7 @@ local function string_ranges(bufnr)
     for child in node:iter_children() do
       if child:named() then
         if child:type():find("string") and child:named_child_count() == 0 then
-          if not specifier(child) and not templated(child) then
+          if not templated(child) then
             ranges[#ranges + 1] = { child:range() }
           end
         else

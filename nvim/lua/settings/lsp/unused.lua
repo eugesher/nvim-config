@@ -67,12 +67,10 @@ local function tracked(bufnr, symbol, parent_kind, script)
       and parent_kind ~= kinds.Enum
   end
   if symbol.kind == kinds.Property then
-    return (parent_kind == kinds.Class or parent_kind == kinds.Interface)
-      and not ignored_file(bufnr, user.lsp.unused_skip.fields)
+    return parent_kind == kinds.Class and not ignored_file(bufnr, user.lsp.unused_skip.fields)
   end
   if symbol.kind == kinds.Method then
-    return (parent_kind == kinds.Class or parent_kind == kinds.Interface)
-      and not ignored_file(bufnr, user.lsp.unused_skip.methods)
+    return parent_kind == kinds.Class and not ignored_file(bufnr, user.lsp.unused_skip.methods)
   end
   return true
 end
