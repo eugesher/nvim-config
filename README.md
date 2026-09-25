@@ -702,26 +702,29 @@ when "cleaned up".
 - **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
   would otherwise open an empty buffer), sends `workspace/didRenameFiles` so
   vtsls fixes imports after a rename, and takes its width from a function:
-  neo-tree also does arithmetic on the raw value, which a `"25%"` string breaks.
-  **oil's `default_file_explorer` stays `false`**, or `nvim .` opens oil instead
-  of the tree. Inside the tree the keys follow `h` / `l`: `l` opens a node (a
-  folder expands, a file opens), `h` closes it, `.` toggles hidden files, `H`
-  toggles the preview, `J` / `K` scroll it and `L` focuses it. `d` moves a node
-  to the trash and `D` removes it for good: the key that can be taken back is
-  the lower-case one, and `u` (which undoes a trash and nothing else) and `U`
-  (restore from the trash) follow `d`. On Linux the trash is `gio trash` or,
-  without it, neo-tree's own freedesktop implementation. neo-tree's own `T` for
-  the trash is gone, since the buffers source implements it as a plain delete,
-  and the directory search moved from `D` to `F`, beside `/` and `f`. `D` is a
-  no-op in the symbol list, where the tree holds no files. `<cr>` opens a file
-  and sets the root on a folder — one key for both, so it is a function rather
-  than a command name — and it is declared per source rather than globally,
-  because `set_root` exists in filesystem and buffers only and a global one
-  would leave `<cr>` unmapped in git_status; `toggle_hidden` is filesystem's
-  alone for the same reason. A key that has to go is mapped to `"none"` (`P`,
-  `C`, `T`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line out instead
-  brings neo-tree's own default for it back, since a source inherits the global
-  table and the defaults underneath it.
+  neo-tree also does arithmetic on the raw value, which a `"25%"` string
+  breaks. **oil's `default_file_explorer` stays `false`**, or `nvim .` opens
+  oil instead of the tree. Inside the tree the keys follow `h` / `l`: `l`
+  opens a node (a folder expands, a file opens), `h` closes it together with
+  every node opened inside it (`close_all_subnodes`, not `close_node`, so a
+  folder always reopens collapsed and `z` stays the way to fold the whole
+  tree), `.` toggles hidden files, `H` toggles the preview, `J` / `K` scroll
+  it and `L` focuses it. `d` moves a node to the trash and `D` removes it for
+  good: the key that can be taken back is the lower-case one, and `u` (which
+  undoes a trash and nothing else) and `U` (restore from the trash) follow
+  `d`. On Linux the trash is `gio trash` or, without it, neo-tree's own
+  freedesktop implementation. neo-tree's own `T` for the trash is gone, since
+  the buffers source implements it as a plain delete, and the directory search
+  moved from `D` to `F`, beside `/` and `f`. `D` is a no-op in the symbol
+  list, where the tree holds no files. `<cr>` opens a file and sets the root
+  on a folder — one key for both, so it is a function rather than a command
+  name — and it is declared per source rather than globally, because
+  `set_root` exists in filesystem and buffers only and a global one would
+  leave `<cr>` unmapped in git_status; `toggle_hidden` is filesystem's alone
+  for the same reason. A key that has to go is mapped to `"none"` (`P`, `C`,
+  `T`, `<C-f>` / `<C-b>`, and `.` in buffers): leaving the line out instead
+  brings neo-tree's own default for it back, since a source inherits the
+  global table and the defaults underneath it.
 - **Deleting a path closes the buffers under it.** A folder is where both
   explorers leave them open: neo-tree removes the directory with `rm -Rf` and
   clears buffers only in the libuv fallback it never reaches, oil clears none

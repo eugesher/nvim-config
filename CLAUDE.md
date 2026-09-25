@@ -195,12 +195,13 @@ Further decisions, explained in README.md ("Implementation notes"):
 - bufferline's tab numbers come from a `numbers` function counting the
   rendered order; its own `ordinal` is the position in the buffer list.
 - neo-tree's tree keys are `h` / `l` based (`l` open, `h` close, `.` hidden
-  files, `H` / `J` / `K` / `L` preview). `d` trashes a node and `D` deletes it,
-  so the reversible key is the lower-case one; neo-tree's own `T` is gone and
-  the directory search moved from `D` to `F`. `<cr>` (a function: open a file,
-  set the root on a folder) and `.` (toggle_hidden) sit in the source tables,
-  not the global one: those commands do not exist in every source. A key is
-  removed with `"none"`, never by dropping its line.
+  files, `H` / `J` / `K` / `L` preview). `h` is `close_all_subnodes`, not
+  `close_node`: it collapses the subtree it closes. `d` trashes a node and `D`
+  deletes it, so the reversible key is the lower-case one; neo-tree's own `T`
+  is gone and the directory search moved from `D` to `F`. `<cr>` (a function:
+  open a file, set the root on a folder) and `.` (toggle_hidden) sit in the
+  source tables, not the global one: those commands do not exist in every
+  source. A key is removed with `"none"`, never by dropping its line.
 - `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes a buffer a
   session restored (listed, not loaded) with `nvim_buf_delete`: bufdelete.nvim
   skips an unloaded buffer. `<leader>ba` deletes every listed buffer in one

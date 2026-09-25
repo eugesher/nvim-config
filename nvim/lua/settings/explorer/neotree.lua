@@ -105,7 +105,7 @@ local window_mappings = {
   ["S"] = "open_split",
   ["s"] = "open_vsplit",
   ["t"] = "open_tabnew",
-  ["h"] = "close_node",
+  ["h"] = "close_all_subnodes",
   ["z"] = "close_all_nodes",
   ["R"] = "refresh",
   ["a"] = { "add", config = { show_path = "none" } },
