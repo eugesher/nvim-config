@@ -33,7 +33,7 @@ return {
   formatting = {
     format_on_save = true,
     timeout_ms = 5000,
-    max_filesize = 1024 * 1024,
+    max_filesize = 4 * 1024 * 1024,
     sql_dialect = "mysql",
   },
 

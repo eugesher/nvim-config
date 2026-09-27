@@ -226,7 +226,16 @@ with the scripts that keep the scheme consistent, is listed in
 - **`127.0.0.1`, not `localhost`**, for a server in Docker: with `localhost` the
   MySQL client ignores the port and connects to the local Unix socket.
 - Connections can also come from the environment: `DBUI_URL` (+ `DBUI_NAME`),
-  or one variable per connection, `DB_UI_<NAME>=mysql://…`.
+  or one variable per connection, `DB_UI_<NAME>=mysql://…`. A connection is
+  keyed by its name and its source, and the sources are not deduplicated: one
+  left in both `connections.json` and `DBUI_URL` shows up twice in the drawer,
+  so the file becomes `[]` when a connection moves to the environment. Without
+  `DBUI_NAME` the name is the last segment of the URL, and saved queries live
+  in `<save location>/<name>`, so a renamed connection stops finding them.
+- **A Redis password goes to `REDISCLI_AUTH`, not into the URL.** dadbod hands a
+  password from the URL to `redis-cli` as `-a`, which warns "Using a password on
+  the command line interface may not be safe" into every result. Export the
+  variable instead and leave the URL bare.
 - **Redis** has no browser in the drawer. One-off commands go through `:DB`, and
   the result opens in a buffer: `:DB redis://127.0.0.1:6379 KEYS user:*`,
   `:DB redis://127.0.0.1:6379 TTL session:abc`. Interactive work happens in
@@ -811,8 +820,15 @@ when "cleaned up".
   with E565.
 - **vim-dadbod-ui** notifications use its own floats, not `vim.notify`: with
   Neovim's handler an error becomes a Vimscript trace inside the plugin. MySQL
-  table helpers use `{dbname}`, because `{schema}` is empty when the URL names a
-  database, and the hidden system schemas are anchored regexes.
+  table helpers use `{dbname}`, because `{schema}` is empty when the URL names
+  a database, and the hidden system schemas are anchored regexes. Its `config`
+  re-sources `plugin/dadbod.vim` when `:DB` has gone missing: the command
+  belongs to vim-dadbod, but it is listed among this plugin's lazy triggers,
+  and lazy deletes a trigger by name once the plugin loads — which removes the
+  real command whenever vim-dadbod was loaded first. Opening a `.sql` buffer
+  does exactly that through vim-dadbod-completion, and without the command
+  both `<localleader>x` and a one-off `:DB` fail with E464. Re-sourcing is
+  idempotent: the file clears its own augroup and keeps existing globals.
 - **kulala**'s `pathresolver` keeps its documented default although 6.x never
   calls it: kulala-core resolves request variables itself.
 - **blink.cmp** uses the prebuilt Rust matcher of the pinned tag; without network

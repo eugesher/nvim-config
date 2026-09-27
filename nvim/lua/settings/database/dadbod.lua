@@ -121,6 +121,13 @@ function M.init()
   g.omni_sql_no_default_maps = 1
 end
 
+function M.config()
+  if vim.fn.exists(":DB") ~= 2 then
+    vim.g.loaded_dadbod = nil
+    vim.cmd("runtime! plugin/dadbod.vim")
+  end
+end
+
 local EXECUTE = "<Plug>(DBUI_ExecuteQuery)"
 
 local function from_drawer(mode)

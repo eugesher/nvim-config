@@ -277,5 +277,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   `settings/treesitter/treesitter.lua` picks LSP or treesitter folds, so a file
   above `treesitter.max_filesize` never gets `vim.lsp.foldexpr()`, which freezes
   Neovim there.
+- vim-dadbod-ui's `config` puts `:DB` back when lazy.nvim's trigger deletion
+  took the real command with it: `:DB` belongs to vim-dadbod, not to the UI
+  that lists it among its lazy triggers.
 - `<leader>fp` and `<leader>cR` were removed as duplicates of `<leader>li` and
   `<leader>lr`.
