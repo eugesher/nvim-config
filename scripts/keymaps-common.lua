@@ -1,45 +1,25 @@
--- Shared by audit-keymaps.lua and dump-keymaps.lua: loads the installed config
--- the way a real session ends up (every plugin loaded, sample buffers of the
--- main filetypes open with their language servers attached) and collects the
--- keymaps that exist afterwards.
---
--- `nvim -l` skips the user config and turns 'loadplugins' off, and lazy.nvim
--- does nothing while that option is off — both are undone in `bootstrap()`.
--- The config examined is `stdpath("config")`, i.e. the copy install.sh made.
-
 local M = {}
 
--- Modes queried one by one. `v` is `x` + `s`; `c` holds no keymaps of this config.
 M.MODES = { "n", "x", "s", "o", "i", "t" }
 
 M.config_dir = vim.fn.stdpath("config")
 M.repo_root =
   vim.fs.dirname(vim.fs.dirname(vim.fn.fnamemodify(debug.getinfo(1, "S").source:sub(2), ":p")))
 
--- Buffer number → label (the filetype of a sample buffer).
 M.labels = {}
 
 function M.out(line)
   io.stdout:write(line, "\n")
 end
 
--- Keys ------------------------------------------------------------------------
-
---- Canonical, readable form of a key sequence: `<Space>cr`, `<C-L>`, `<M-j>`.
---- Leaders are expanded, and `<C-l>` / `<C-L>` / the modifier encoding Neovim
---- stores for some defaults all end up the same.
 function M.key(lhs)
   return M.key_of_raw(vim.api.nvim_replace_termcodes(lhs, true, true, true))
 end
 
---- Canonical form of stored key bytes (`lhsraw`). A bare `<C-j>` expands to
---- the NL byte, which `keytrans()` calls `<NL>`, while the same key set with
---- modifiers reads `<C-J>`: both become `<C-J>`.
 function M.key_of_raw(raw)
   return (vim.fn.keytrans(raw):gsub("<NL>", "<C-J>"))
 end
 
---- The keys of a canonical sequence: `<Space>`, `c`, `r`.
 function M.tokens(key)
   local tokens, i = {}, 1
   while i <= #key do
@@ -51,7 +31,6 @@ function M.tokens(key)
   return tokens
 end
 
---- Whether `short` is a whole-key prefix of `long` (`<F1>` is not one of `<F10>`).
 function M.is_prefix(short, long)
   local a = type(short) == "table" and short or M.tokens(short)
   local b = type(long) == "table" and long or M.tokens(long)
@@ -66,8 +45,6 @@ function M.is_prefix(short, long)
   return true
 end
 
---- Keymaps that are machinery rather than commands: `<Plug>` / `<SNR>` targets,
---- the hover handler on `<MouseMove>` and which-key's own trigger keys.
 function M.is_internal(key, desc)
   return key:find("^<Plug>") ~= nil
     or key:find("^<SNR>") ~= nil
@@ -95,9 +72,6 @@ function M.label(scope)
   return buf and (M.labels[buf] or scope) or scope
 end
 
--- Sources ---------------------------------------------------------------------
-
---- Shortens a file path for the report.
 function M.short(path)
   path = vim.fs.normalize(path)
   local prefixes = {
@@ -114,7 +88,6 @@ function M.short(path)
 end
 
 local LAZY_KEYS = "lazy.nvim keys"
--- Frames that only pass a keymap through.
 local PASS_THROUGH = { "vim/keymap.lua", "keymaps-common.lua", "lazy/core/util.lua" }
 
 local function caller()
@@ -141,7 +114,6 @@ local function caller()
 end
 
 local lazy_owners
---- The plugin whose lazy.nvim `keys` spec defines a key.
 local function lazy_owner(mode, key)
   if not lazy_owners then
     lazy_owners = {}
@@ -163,7 +135,6 @@ local function lazy_owner(mode, key)
   return lazy_owners[mode .. "\0" .. key]
 end
 
---- Report form of a recorded source.
 function M.pretty(source, mode, key)
   if source == LAZY_KEYS then
     local owner = lazy_owner(mode, key)
@@ -172,13 +143,6 @@ function M.pretty(source, mode, key)
   return source
 end
 
--- Recording -------------------------------------------------------------------
-
---- Records every keymap definition made through the API from now on, so that a
---- key set twice in the same scope is visible: the second definition silently
---- replaces the first, and `nvim_get_keymap` only shows the survivor. Neovim's
---- own defaults count as the first definition of their keys. Vimscript `:map`
---- commands bypass the API; those keymaps are found through their `sid`.
 function M.start_recording()
   local state = { active = {}, redefinitions = {}, defaults = {} }
   M.recording = state
@@ -241,16 +205,10 @@ function M.start_recording()
   return state
 end
 
--- Loading ---------------------------------------------------------------------
-
---- Loads the config and every plugin.
 function M.bootstrap()
   vim.o.loadplugins = true
   dofile(M.config_dir .. "/init.lua")
-  -- Also off under `-l`: without it no ftplugin runs, and the buffer-local keys
-  -- of after/ftplugin/{http,sql}.lua never exist.
   vim.cmd("filetype plugin indent on")
-  -- Headless there is no UI, so lazy.nvim's VeryLazy never fires on its own.
   vim.api.nvim_exec_autocmds("UIEnter", {})
   vim.wait(2000, function()
     return vim.g.did_very_lazy == true
@@ -264,9 +222,6 @@ function M.bootstrap()
   vim.wait(500)
 end
 
--- One buffer per filetype that brings keymaps of its own. The Lua sample is a
--- file of this repository when there is one: gitsigns attaches only inside a
--- git work tree.
 local SAMPLES = {
   {
     file = "service.ts",
@@ -285,7 +240,6 @@ local SAMPLES = {
   { file = "Dockerfile", lines = { "FROM node:22", "WORKDIR /app" } },
 }
 
--- Language servers this config enables for a filetype and can actually start.
 local function expected_servers(filetype)
   local ok, lsp = pcall(require, "settings.lsp")
   local names = {}
@@ -304,7 +258,6 @@ local function expected_servers(filetype)
   return names
 end
 
---- Opens the sample buffers and waits for their language servers and git signs.
 function M.open_samples(timeout_ms)
   local dir = vim.fn.tempname()
   vim.fn.mkdir(dir, "p")
@@ -333,12 +286,9 @@ function M.open_samples(timeout_ms)
       end
       return true
     end, 200)
-    -- Dynamic capability registration (docker-language-server) repeats the LSP
-    -- keymap pass a moment after attaching; git signs arrive asynchronously.
     vim.wait(2500, function()
       return not in_repo or vim.b[buf].gitsigns_head ~= nil
     end, 200)
-    -- blink.cmp sets its keys on the buffer at InsertEnter, not before.
     vim.api.nvim_exec_autocmds("InsertEnter", { buffer = buf })
     vim.wait(1000)
     local attached = vim.tbl_map(function(client)
@@ -351,10 +301,6 @@ function M.open_samples(timeout_ms)
   return opened
 end
 
--- Collecting ------------------------------------------------------------------
-
---- Keymaps of one scope (`nil`: global ones), as records:
---- { mode, key, tokens, desc, scope, buffer, default, source }.
 function M.collect(buf)
   local scope = M.scope_id(buf)
   local maps = {}
@@ -376,7 +322,6 @@ function M.collect(buf)
         desc = raw.desc or "",
         scope = scope,
         buffer = buf,
-        -- Still Neovim's own keymap: nothing replaced it.
         default = scope == "global"
           and original ~= nil
           and original.rhs == raw.rhs

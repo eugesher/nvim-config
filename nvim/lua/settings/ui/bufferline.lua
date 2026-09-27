@@ -1,0 +1,231 @@
+local icons = require("settings.icons")
+
+local M = {}
+
+function M.safe_buffer_delete(bufnr, force)
+  if bufnr == nil or bufnr == 0 then
+    bufnr = vim.api.nvim_get_current_buf()
+  end
+  if not vim.api.nvim_buf_is_valid(bufnr) then
+    return
+  end
+  if not vim.api.nvim_buf_is_loaded(bufnr) then
+    vim.api.nvim_buf_delete(bufnr, { force = force == true })
+    return
+  end
+  require("bufdelete").bufdelete(bufnr, force == true)
+end
+
+function M.delete_buffers_under(path)
+  local root = vim.fs.normalize(path)
+  local prefix = root .. "/"
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        M.safe_buffer_delete(bufnr, true)
+      end
+    end
+  end
+end
+
+function M.load_buffers_under(path)
+  local root = vim.fs.normalize(path)
+  local prefix = root .. "/"
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" and vim.bo[bufnr].buflisted and not vim.api.nvim_buf_is_loaded(bufnr) then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        vim.fn.bufload(bufnr)
+      end
+    end
+  end
+end
+
+function M.rename_buffers_under(source, destination)
+  local root = vim.fs.normalize(source)
+  local prefix = root .. "/"
+  local target = vim.fs.normalize(destination)
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    local name = vim.api.nvim_buf_get_name(bufnr)
+    if name ~= "" and not vim.api.nvim_buf_is_loaded(bufnr) then
+      name = vim.fs.normalize(name)
+      if name == root or vim.startswith(name, prefix) then
+        local listed = vim.bo[bufnr].buflisted
+        vim.api.nvim_buf_delete(bufnr, {})
+        vim.bo[vim.fn.bufadd(target .. name:sub(#root + 1))].buflisted = listed
+      end
+    end
+  end
+end
+
+local function close(bufnr)
+  M.safe_buffer_delete(bufnr, false)
+end
+
+local numbering = { source = nil, positions = {}, ids = {} }
+
+local function element_ids()
+  return vim.tbl_map(function(element)
+    return element.id
+  end, require("bufferline.state").components)
+end
+
+local function tab_number(opts)
+  local components = require("bufferline.state").components
+  if numbering.source ~= components then
+    numbering = { source = components, positions = {}, ids = element_ids() }
+    for position, id in ipairs(numbering.ids) do
+      numbering.positions[id] = position
+    end
+    vim.schedule(function()
+      if not vim.deep_equal(numbering.ids, element_ids()) then
+        vim.cmd("redrawtabline")
+      end
+    end)
+  end
+  return (numbering.positions[opts.id] or opts.ordinal) .. "."
+end
+
+M.event = "VeryLazy"
+
+function M.init()
+  vim.o.mousemoveevent = true
+end
+
+M.opts = {
+  options = {
+    mode = "buffers",
+    themable = true,
+    numbers = tab_number,
+    close_command = close,
+    right_mouse_command = close,
+    left_mouse_command = "buffer %d",
+    indicator = { style = "underline" },
+    buffer_close_icon = icons.ui.close,
+    modified_icon = icons.ui.dot,
+    close_icon = icons.ui.close,
+    left_trunc_marker = icons.ui.arrow_left,
+    right_trunc_marker = icons.ui.arrow_right,
+    max_name_length = 24,
+    max_prefix_length = 18,
+    truncate_names = true,
+    tab_size = 24,
+    diagnostics = "nvim_lsp",
+    diagnostics_update_in_insert = false,
+    diagnostics_update_on_event = true,
+    diagnostics_indicator = function(_, _, counts)
+      local parts = {}
+      if counts.error then
+        parts[#parts + 1] = icons.diagnostics.Error .. " " .. counts.error
+      end
+      if counts.warning then
+        parts[#parts + 1] = icons.diagnostics.Warn .. " " .. counts.warning
+      end
+      return table.concat(parts, " ")
+    end,
+    offsets = {
+      {
+        filetype = "neo-tree",
+        text = "Explorer",
+        text_align = "left",
+        highlight = "Directory",
+        separator = true,
+      },
+    },
+    color_icons = true,
+    show_buffer_icons = true,
+    show_buffer_close_icons = true,
+    show_close_icon = false,
+    show_tab_indicators = true,
+    show_duplicate_prefix = true,
+    duplicates_across_groups = true,
+    persist_buffer_sort = true,
+    move_wraps_at_ends = false,
+    separator_style = "thick",
+    enforce_regular_tabs = false,
+    always_show_bufferline = true,
+    auto_toggle_bufferline = true,
+    hover = { enabled = true, delay = 200, reveal = { "close" } },
+    sort_by = "insert_after_current",
+    pick = { alphabet = "abcdefghijklmopqrstuvwxyzABCDEFGHIJKLMOPQRSTUVWXYZ1234567890" },
+    groups = { items = {}, options = { toggle_hidden_on_enter = true } },
+  },
+}
+
+function M.config(_, opts)
+  local bufferline = require("bufferline")
+  opts.options.style_preset = bufferline.style_preset.default
+  opts.highlights = require("settings.ui.theme").bufferline_highlights()
+  bufferline.setup(opts)
+end
+
+local function delete_current()
+  M.safe_buffer_delete(0, false)
+end
+
+local function delete_others()
+  local groups = require("bufferline.groups")
+  local elements = require("bufferline.state").components
+  local current = vim.api.nvim_get_current_buf()
+  local shown = vim.iter(elements):any(function(element)
+    return element.id == current
+  end)
+  if not shown then
+    return
+  end
+  for _, element in ipairs(elements) do
+    if element.id ~= current and not groups._is_pinned(element) then
+      M.safe_buffer_delete(element.id, false)
+    end
+  end
+end
+
+local function delete_all()
+  local loaded = {}
+  for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.bo[bufnr].buflisted then
+      if vim.api.nvim_buf_is_loaded(bufnr) then
+        loaded[#loaded + 1] = bufnr
+      else
+        M.safe_buffer_delete(bufnr, false)
+      end
+    end
+  end
+  if #loaded > 0 then
+    require("bufdelete").bufdelete(loaded, false)
+  end
+end
+
+M.keys = {
+  { "]b", "<cmd>BufferLineCycleNext<CR>", desc = "Next buffer" },
+  { "[b", "<cmd>BufferLineCyclePrev<CR>", desc = "Previous buffer" },
+  { "<leader>bd", delete_current, desc = "Delete buffer" },
+  {
+    "<leader>bD",
+    function()
+      M.safe_buffer_delete(0, true)
+    end,
+    desc = "Delete buffer (force)",
+  },
+  { "<leader>ba", delete_all, desc = "Delete all buffers" },
+  { "<leader>bo", delete_others, desc = "Delete other buffers (keep pinned)" },
+  { "<leader>bp", "<cmd>BufferLinePick<CR>", desc = "Pick buffer" },
+  { "<leader>bP", "<cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },
+  { "<leader>b>", "<cmd>BufferLineMoveNext<CR>", desc = "Move buffer right" },
+  { "<leader>b<lt>", "<cmd>BufferLineMovePrev<CR>", desc = "Move buffer left" },
+  { "<leader>q", delete_current, desc = "Delete buffer" },
+}
+for i = 1, 9 do
+  M.keys[#M.keys + 1] = {
+    "<leader>" .. i,
+    function()
+      require("bufferline").go_to(i, true)
+    end,
+    desc = "Go to buffer " .. i,
+  }
+end
+
+return M
