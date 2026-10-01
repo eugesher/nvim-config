@@ -146,7 +146,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `]e`         | n    | Next error                                            |                                                        |
 | `gd`         | n    | Go to definition                                      | dockerfile, lua, typescript, yaml.docker-compose       |
 | `gO`         | n    | vim.lsp.buf.document_symbol()                         |                                                        |
-| `gra`        | n x  | vim.lsp.buf.code_action()                             |                                                        |
+| `gra`        | n x  | Code action                                           | every file buffer                                      |
 | `gri`        | n    | Implementations                                       | lua, typescript                                        |
 | `grn`        | n    | Rename symbol (live preview)                          | dockerfile, lua, typescript, yaml.docker-compose       |
 | `grr`        | n    | References (Trouble)                                  | lua, typescript                                        |
@@ -498,7 +498,11 @@ and `source` (a substring of the defining file) narrow an entry down.
   Refactor groups.
 - `gri`, `grr`, `grt`: Neovim's LSP defaults, replaced on LspAttach
   (`settings/lsp/keymaps.lua`) by fzf-lua pickers and, for references, by
-  Trouble. `gra` stays Neovim's.
+  Trouble.
+- `gra`, `<leader>ca`: one code action menu on two keys — Neovim's own `gra`,
+  replaced on LspAttach, and an alias in the Code group. Both leave out disabled
+  actions (see "`<leader>ca` and `gra` leave out disabled code actions" in
+  README.md).
 - `<leader>q` and `<leader>bd` both close the buffer.
 - `ih` and `ah`: gitsigns has a single hunk text object, and both select it.
 - Neovim defaults given another meaning: `<C-l>` (redraw → window to the right;

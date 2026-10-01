@@ -96,8 +96,9 @@ lsp/mason).
   (`<C-c>` / `<C-v>` / `<C-s>` as copy / paste / save), nothing on Alt except
   `<A-j>` / `<A-k>` (move lines).
 - Neovim's LSP keys stay (`K`, `grn`, `gra`, `grr`, `gri`, `grt`, `gO`, `<C-s>`
-  in insert); ours are aliases. `grn`, `gri`, `grr`, `grt` are deliberately
-  repointed on LspAttach (inc-rename, fzf-lua pickers, Trouble).
+  in insert); ours are aliases. `grn`, `gra`, `gri`, `grr`, `grt` are
+  deliberately repointed on LspAttach (inc-rename, a code action menu without
+  disabled actions, fzf-lua pickers, Trouble).
 - Never map `]n` / `[n`, `an` / `in` (Neovim 0.12 treesitter selection) or
   `]c` / `[c` (diff mode).
 - Every keymap has a `desc`, written next to its plugin (`keys` or the module's
@@ -257,7 +258,10 @@ Further decisions, explained in README.md ("Implementation notes"):
   those slashes turned into spaces, under a URI of its own — and republishes the
   hints only that copy produced into the `myconfig.spelling` namespace, with
   codebook's `source`, so they join the same block.
-- `grr` opens Trouble, not a picker.
+- `grr` opens Trouble, not a picker, folded to one line per file; that list
+  never refreshes by itself (`auto_refresh = false`).
+- `<leader>ca` and `gra` filter out disabled code actions: resolving one in
+  fzf-lua's preview crashes an old tsserver.
 - `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
   keymaps in `core/keymaps.lua` that keep an explicit named register); only
   `x` / `X` cut to the clipboard.

@@ -8,6 +8,8 @@ local ALLOWED_DUPLICATES = {
   { lhs = "grn" },
   { lhs = "<leader>cr" },
   { lhs = "<leader>rn" },
+  { lhs = "gra", source = "settings/lsp/keymaps.lua" },
+  { lhs = "<leader>ca" },
   { lhs = "gri", source = "settings/lsp/keymaps.lua" },
   { lhs = "grr", source = "settings/lsp/keymaps.lua" },
   { lhs = "grt", source = "settings/lsp/keymaps.lua" },

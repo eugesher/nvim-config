@@ -6,8 +6,7 @@ local START = "<!-- keymaps:start -->"
 local FINISH = "<!-- keymaps:end -->"
 
 local NATIVE = {
-  n = { "gra", "gO", "grx", "]d", "[d", "]D", "[D", "<C-W>d", "]q", "[q" },
-  x = { "gra" },
+  n = { "gO", "grx", "]d", "[d", "]D", "[D", "<C-W>d", "]q", "[q" },
   i = { "<C-S>" },
 }
 

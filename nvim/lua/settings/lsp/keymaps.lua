@@ -26,6 +26,24 @@ local function picker(name, fallback)
   end
 end
 
+local function references()
+  local trouble = require("trouble")
+  if trouble.is_open("lsp_references") then
+    trouble.close("lsp_references")
+  else
+    trouble.fold_close_all({ mode = "lsp_references", focus = true })
+    trouble.fold_reduce("lsp_references")
+  end
+end
+
+local function code_action()
+  vim.lsp.buf.code_action({
+    filter = function(action)
+      return not action.disabled
+    end,
+  })
+end
+
 local function highlight_group(buf)
   return "settings_lsp_highlight_" .. buf
 end
@@ -47,7 +65,7 @@ local function on_attach(event)
     bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
   end
   if supports("textDocument/references") then
-    bmap("n", "grr", "<cmd>Trouble lsp_references toggle focus=true<cr>", "References (Trouble)")
+    bmap("n", "grr", references, "References (Trouble)")
   end
   if supports("textDocument/implementation") then
     bmap("n", "gri", picker("lsp_implementations", vim.lsp.buf.implementation), "Implementations")
@@ -59,7 +77,8 @@ local function on_attach(event)
     bmap("n", "gD", vim.lsp.buf.declaration, "Go to declaration")
   end
   if supports("textDocument/codeAction") then
-    bmap({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, "Code action")
+    bmap({ "n", "x" }, "<leader>ca", code_action, "Code action")
+    bmap({ "n", "x" }, "gra", code_action, "Code action")
   end
   if supports("textDocument/rename") then
     local function rename()

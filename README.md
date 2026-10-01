@@ -513,6 +513,11 @@ when "cleaned up".
 - **`grn`, `<leader>cr` and `<leader>rn` are one rename** with inc-rename's
   preview; `gd`, `gri` and `grt` open fzf-lua pickers, while `grr` opens Trouble —
   a list that stays open is easier to walk through than a picker.
+- **`<leader>ca` and `gra` leave out disabled code actions.** Neovim lists them
+  when the menu is invoked by hand, marked `(disabled)`, and choosing one only
+  shows the reason. fzf-lua's preview sends `codeAction/resolve` for each action
+  it shows, and tsserver 4.8 answers that for a disabled refactor with a
+  `Debug Failure` stack trace.
 - **Auto-imports follow `lsp.import_style`, `shortest` by default.** In a NestJS
   monorepo with a single `tsconfig.json` at the root, `non-relative` writes every
   import without a path alias as a path from `baseUrl`
@@ -814,7 +819,14 @@ when "cleaned up".
   files opened later are folded.
 - **Trouble:** `<leader>xX` leaves out diagnostics from TypeScript's library
   sources (lib.dom.d.ts alone brings some eighty hints); the LSP lists report an
-  empty result, so `grr` on an unreferenced symbol is not silent.
+  empty result, so `grr` on an unreferenced symbol is not silent. `grr` opens
+  the references folded to one line per file (`zo` / `zR` unfold them): it calls
+  trouble's `fold_close_all` and `fold_reduce`, which wait for the first render,
+  since trouble overrides a `foldlevel` given in `win.wo` with its own `99`. The
+  list does not refresh by itself (`auto_refresh = false` for `lsp_references`):
+  trouble would query the symbol under the cursor again after every jump, drop
+  the reference just opened and add files unfolded. `r` still refreshes it by
+  hand, and the files that brings in arrive unfolded.
 - **refactoring.nvim** keys are operators (`expr` mappings), except the menu of
   all refactors: opening a window while an `expr` mapping is evaluated fails
   with E565.
