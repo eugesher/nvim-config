@@ -31,6 +31,7 @@ local highlights = {
 }
 
 M.unused_highlight = UNUSED_HIGHLIGHT
+M.sign_highlight = SIGN_HIGHLIGHT
 
 M.ranks = {
   [severity.ERROR] = 1,

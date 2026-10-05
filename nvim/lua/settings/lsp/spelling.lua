@@ -1,3 +1,4 @@
+local project = require("settings.lsp.project")
 local user = require("user.settings")
 
 local M = {}
@@ -6,16 +7,20 @@ M.namespace = vim.api.nvim_create_namespace("myconfig.spelling")
 
 local SERVER = "codebook"
 local SHADOW = ".spelling"
+local SIGN_HIGHLIGHT = "SpellingSign"
+
+M.sign_highlight = SIGN_HIGHLIGHT
 
 local state = {}
 local owners = {}
+local claimed = {}
+local waiters = {}
 
 local function client_for(bufnr)
   return vim.lsp.get_clients({ bufnr = bufnr, name = SERVER })[1]
 end
 
-local function shadow_uri(bufnr)
-  local name = vim.api.nvim_buf_get_name(bufnr)
+local function shadow_uri(name)
   if name == "" then
     return nil
   end
@@ -34,8 +39,7 @@ local function templated(node)
   return parent ~= nil and parent:type():find("template") ~= nil
 end
 
-local function string_ranges(bufnr)
-  local parser = vim.treesitter.get_parser(bufnr, nil, { error = false })
+local function string_ranges(parser)
   if not parser then
     return {}
   end
@@ -60,10 +64,10 @@ local function string_ranges(bufnr)
   return ranges
 end
 
-local function shadow_lines(bufnr)
-  local lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+local function shadow_lines(lines, parser)
+  lines = vim.list_extend({}, lines)
   local spans = {}
-  for _, range in ipairs(string_ranges(bufnr)) do
+  for _, range in ipairs(string_ranges(parser)) do
     for row = range[1], range[3] do
       local line = lines[row + 1]
       if line then
@@ -161,7 +165,10 @@ local function sync(bufnr)
   if not client or not vim.api.nvim_buf_is_loaded(bufnr) then
     return
   end
-  local lines, spans = shadow_lines(bufnr)
+  local lines, spans = shadow_lines(
+    vim.api.nvim_buf_get_lines(bufnr, 0, -1, false),
+    vim.treesitter.get_parser(bufnr, nil, { error = false })
+  )
   entry.spans = spans
   if not next(spans) then
     close(bufnr)
@@ -204,7 +211,7 @@ local function attach(bufnr)
   if state[bufnr] or vim.bo[bufnr].buftype ~= "" then
     return
   end
-  local uri = shadow_uri(bufnr)
+  local uri = shadow_uri(vim.api.nvim_buf_get_name(bufnr))
   if not uri then
     return
   end
@@ -245,6 +252,17 @@ function M.handler(err, result, ctx, config)
     publish(shadow, client, result.diagnostics)
     return
   end
+  local claim = client and claimed[result.uri]
+  if claim and not project.attached_buffer(client, vim.uri_to_fname(result.uri)) then
+    local waiter = waiters[result.uri]
+    if waiter then
+      waiters[result.uri] = nil
+      waiter(result.diagnostics or {})
+    elseif claim == "closing" then
+      claimed[result.uri] = nil
+    end
+    return
+  end
   local handled = vim.lsp.handlers["textDocument/publishDiagnostics"](err, result, ctx, config)
   local bufnr = client and vim.fn.bufnr(vim.uri_to_fname(result.uri))
   if bufnr and bufnr ~= -1 and state[bufnr] and state[bufnr].items then
@@ -253,11 +271,150 @@ function M.handler(err, result, ctx, config)
   return handled
 end
 
+local function line_col(lines, position, encoding)
+  local line = lines[position.line + 1] or ""
+  local ok, col = pcall(vim.str_byteindex, line, encoding, position.character, false)
+  return ok and col or position.character
+end
+
+local function quickfix_item(path, lnum, col, message)
+  return { filename = path, lnum = lnum + 1, col = col + 1, text = message, type = "N" }
+end
+
+local function sorted(items)
+  table.sort(items, function(a, b)
+    return a.lnum < b.lnum or (a.lnum == b.lnum and a.col < b.col)
+  end)
+  return items
+end
+
+local function buffer_items(bufnr, client, path)
+  local items = {}
+  for _, namespace in ipairs({ vim.lsp.diagnostic.get_namespace(client.id), M.namespace }) do
+    for _, diagnostic in ipairs(vim.diagnostic.get(bufnr, { namespace = namespace })) do
+      items[#items + 1] = quickfix_item(path, diagnostic.lnum, diagnostic.col, diagnostic.message)
+    end
+  end
+  return sorted(items)
+end
+
+local function file_parser(lines, filetype)
+  local lang = vim.treesitter.language.get_lang(filetype)
+  if not lang then
+    return nil
+  end
+  local ok, parser = pcall(vim.treesitter.get_string_parser, table.concat(lines, "\n"), lang)
+  return ok and parser or nil
+end
+
+local function scan_file(job, file, done)
+  local client = job.client
+  local bufnr = project.attached_buffer(client, file.path)
+  if bufnr then
+    done(buffer_items(bufnr, client, file.path))
+    return
+  end
+  local ok, lines = pcall(vim.fn.readfile, file.path)
+  if not ok then
+    done({})
+    return
+  end
+  local documents = { { uri = vim.uri_from_fname(file.path), lines = lines } }
+  if user.spelling.check_paths then
+    local shadow, spans = shadow_lines(lines, file_parser(lines, file.filetype))
+    if next(spans) then
+      documents[2] = { uri = shadow_uri(file.path), lines = shadow, spans = spans }
+    end
+  end
+
+  local waiting, finished, timer = #documents, false, nil
+  local function finish()
+    if finished then
+      return
+    end
+    finished = true
+    if timer and not timer:is_closing() then
+      timer:stop()
+      timer:close()
+    end
+    local items, seen = {}, {}
+    for _, document in ipairs(documents) do
+      waiters[document.uri] = nil
+      project.close(job, document.uri)
+      claimed[document.uri] = "closing"
+      for _, diagnostic in ipairs(document.diagnostics or {}) do
+        local lnum = diagnostic.range.start.line
+        local col = line_col(lines, diagnostic.range.start, client.offset_encoding)
+        local key = lnum .. ":" .. col
+        if not seen[key] and (not document.spans or inside(document.spans, lnum, col)) then
+          seen[key] = true
+          items[#items + 1] = quickfix_item(file.path, lnum, col, diagnostic.message)
+        end
+      end
+    end
+    done(sorted(items))
+  end
+
+  for _, document in ipairs(documents) do
+    claimed[document.uri] = "open"
+    waiters[document.uri] = function(diagnostics)
+      document.diagnostics = diagnostics
+      waiting = waiting - 1
+      if waiting == 0 then
+        finish()
+      end
+    end
+    project.open(job, document.uri, file.filetype, document.lines)
+  end
+  timer = vim.defer_fn(finish, user.spelling.scan_timeout)
+end
+
+local function scan_client(bufnr)
+  local client = client_for(bufnr)
+  if client then
+    return client
+  end
+  local cwd = vim.fs.normalize(vim.fn.getcwd())
+  for _, candidate in ipairs(vim.lsp.get_clients({ name = SERVER })) do
+    local root = candidate.root_dir and vim.fs.normalize(candidate.root_dir)
+    if root and (cwd == root or vim.startswith(cwd, root .. "/")) then
+      return candidate
+    end
+  end
+end
+
+local scanner = project.new({
+  title = "Spelling issues",
+  source = "myconfig.spelling",
+  no_client = "codebook is not running for this project",
+  client = scan_client,
+  scan_file = scan_file,
+  parallel = user.spelling.scan_parallel,
+  summary = function(found, paths)
+    return ("%d spelling issues in %d files"):format(found, paths)
+  end,
+})
+
+M.scan_project = scanner.scan
+M.cancel_project = scanner.cancel
+M.clear_project = scanner.clear
+M.project_count = scanner.count
+
 function M.setup()
+  vim.api.nvim_set_hl(0, SIGN_HIGHLIGHT, { link = "DiagnosticSignHint", default = true })
+  local group = vim.api.nvim_create_augroup("myconfig_spelling", { clear = true })
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    desc = "Recheck the spelling of a saved file in the project list",
+    callback = function(event)
+      scanner.rescan(event.buf)
+    end,
+  })
+  vim.keymap.set("n", "<leader>xs", M.scan_project, { desc = "Spelling issues (project)" })
+  vim.keymap.set("n", "<leader>xS", M.clear_project, { desc = "Clear spelling issues (project)" })
   if not user.spelling.check_paths then
     return
   end
-  local group = vim.api.nvim_create_augroup("myconfig_spelling", { clear = true })
   vim.api.nvim_create_autocmd("LspAttach", {
     group = group,
     desc = "Spell-check the path strings codebook skips",

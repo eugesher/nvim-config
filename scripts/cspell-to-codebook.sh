@@ -62,7 +62,7 @@ if [[ ! -f "$DEST" ]]; then
   {
     echo '# codebook — global dictionary and spell-check settings.'
     echo '# Project-level words go into .codebook/words.toml at the project root.'
-    echo 'dictionaries = ["en_us"]'
+    echo 'dictionaries = ["en_us", "ru"]'
     cat "$ARRAY"
     echo 'flag_words = []'
     echo 'ignore_paths = ["**/node_modules/**", "**/dist/**", "**/coverage/**", "**/*.lock", "**/*.min.js"]'

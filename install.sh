@@ -51,7 +51,7 @@ if [[ ! -e "$CODEBOOK_CONFIG" ]]; then
   cat >"$CODEBOOK_CONFIG" <<'TOML'
 # codebook — global dictionary and spell-check settings.
 # Project-level words go into .codebook/words.toml at the project root.
-dictionaries = ["en_us"]
+dictionaries = ["en_us", "ru"]
 words = []
 flag_words = []
 ignore_paths = ["**/node_modules/**", "**/dist/**", "**/coverage/**", "**/*.lock", "**/*.min.js"]

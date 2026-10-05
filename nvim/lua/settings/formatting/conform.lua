@@ -42,6 +42,7 @@ M.opts = {
     graphql = prettier(),
     lua = { "stylua" },
     sql = { "sql_formatter" },
+    mysql = { "sql_formatter" },
   },
   default_format_opts = {
     lsp_format = "fallback",

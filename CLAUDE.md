@@ -42,7 +42,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, the annotations drawn above a line, filetypes, the lazy.nvim bootstrap |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
 | `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
-| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `servers/<name>.lua` |
+| `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `spelling.lua` (codebook's path check and project scan), `project.lua` (the project scan both share), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
@@ -107,7 +107,9 @@ lsp/mason).
   in the `which_key` field of `settings/structure/origami.lua`, and KEYMAP.md
   lists them by hand under "Folds" — keep both in step. neogit's buffer keys
   get their descriptions from `settings/git/neogit.lua`, keyed by the action
-  names of its `opts.mappings`: a new action there needs one.
+  names of its `opts.mappings`: a new action there needs one. The keys of
+  `after/ftplugin/dbui.lua` are listed by hand under "Database drawer": the
+  scripts never open the drawer.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
   collision goes into its whitelist, with the reason under "Audit exceptions" in
   KEYMAP.md; then regenerate the tables there (`dump-keymaps.lua --write`).
@@ -205,8 +207,9 @@ Further decisions, explained in README.md ("Implementation notes"):
   source. A key is removed with `"none"`, never by dropping its line.
 - `safe_buffer_delete` in `settings/ui/bufferline.lua` deletes a buffer a
   session restored (listed, not loaded) with `nvim_buf_delete`: bufdelete.nvim
-  skips an unloaded buffer. `<leader>ba` deletes every listed buffer in one
-  bufdelete call, which leaves the empty buffer `<leader>q` leaves last.
+  skips an unloaded buffer. `<leader>ba` deletes every listed buffer but the
+  pinned ones in one bufdelete call; with no pins, that leaves the empty
+  buffer `<leader>q` leaves last.
 - deleting a path in an explorer closes the buffers under it: neither neo-tree
   nor oil does that for a directory, so `delete_buffers_under` in
   `settings/ui/bufferline.lua` is called from neo-tree's `file_deleted` event
@@ -246,6 +249,15 @@ Further decisions, explained in README.md ("Implementation notes"):
   reference code lens is off — Neovim
   re-requests a lens vtsls leaves unresolved, which it does for every symbol
   with no references.
+- `<leader>xu` (`scan_project` in `settings/lsp/unused.lua`) counts every file
+  of the server's `root_dir` (`rg --files`), opening a file without a buffer
+  for the server alone (`didOpen` / `didClose`: vtsls returns no symbols for a
+  closed document); the result is the quickfix list and the `unused` component
+  of neo-tree's filesystem, whose renderers repeat the defaults to hold it.
+  `<leader>xs` (`settings/lsp/spelling.lua`) is the same scan for codebook
+  through the shared `settings/lsp/project.lua`; it waits for the
+  `publishDiagnostics` of each opened URI, and the client handler swallows
+  those so Neovim creates no buffer per file.
 - codebook's project dictionary is `.codebook/words.toml`
   (`spelling.project_dictionary`), handed to the server as an absolute path in
   `params.initializationOptions.configPath` from `before_init` — a relative one

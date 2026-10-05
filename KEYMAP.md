@@ -25,7 +25,8 @@ Keys that exist only for a moment are not listed: the multicursor layer (`<Tab>`
 plugin panels (`?` or `g?` shows them there, and `<leader>?` in neogit's
 buffers).
 Neovim's fold commands are not keymaps either; they are listed by hand in
-[Folds](#folds).
+[Folds](#folds), and so are the keys this config adds to the database drawer, in
+[Database drawer](#database-drawer).
 
 <!-- keymaps:start -->
 
@@ -102,7 +103,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>9`  | n     | Go to buffer 9                     |        |
 | `<leader>b<` | n     | Move buffer left                   |        |
 | `<leader>b>` | n     | Move buffer right                  |        |
-| `<leader>ba` | n     | Delete all buffers                 |        |
+| `<leader>ba` | n     | Delete all buffers (keep pinned)   |        |
 | `<leader>bD` | n     | Delete buffer (force)              |        |
 | `<leader>bd` | n     | Delete buffer                      |        |
 | `<leader>bo` | n     | Delete other buffers (keep pinned) |        |
@@ -237,7 +238,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>Df`     | n    | Find buffer in drawer          |        |
 | `<leader>Dq`     | n    | Last query info                |        |
 | `<leader>Dr`     | n    | Rename buffer                  |        |
-| `<leader>Du`     | n    | Toggle drawer                  |        |
+| `<leader>Du`     | n    | Toggle database tab            |        |
 | `<LocalLeader>e` | n    | Edit bind parameters           | sql    |
 | `<LocalLeader>w` | n    | Save query                     | sql    |
 | `<LocalLeader>X` | n    | Execute buffer                 | sql    |
@@ -321,17 +322,21 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### Problems
 
-| Keys         | Mode | Description                   | Buffer |
-| ------------ | ---- | ----------------------------- | ------ |
-| `<leader>xc` | n    | Close all Trouble windows     |        |
-| `<leader>xl` | n    | Location list (Trouble)       |        |
-| `<leader>xq` | n    | Quickfix list (Trouble)       |        |
-| `<leader>xr` | n    | LSP references / definitions  |        |
-| `<leader>xt` | n    | Todo comments                 |        |
-| `<leader>xX` | n    | Project diagnostics (Trouble) |        |
-| `<leader>xx` | n    | Buffer diagnostics (Trouble)  |        |
-| `[td`        | n    | Previous todo comment         |        |
-| `]td`        | n    | Next todo comment             |        |
+| Keys         | Mode | Description                     | Buffer |
+| ------------ | ---- | ------------------------------- | ------ |
+| `<leader>xc` | n    | Close all Trouble windows       |        |
+| `<leader>xl` | n    | Location list (Trouble)         |        |
+| `<leader>xq` | n    | Quickfix list (Trouble)         |        |
+| `<leader>xr` | n    | LSP references / definitions    |        |
+| `<leader>xS` | n    | Clear spelling issues (project) |        |
+| `<leader>xs` | n    | Spelling issues (project)       |        |
+| `<leader>xt` | n    | Todo comments                   |        |
+| `<leader>xU` | n    | Clear unused symbols (project)  |        |
+| `<leader>xu` | n    | Unused symbols (project)        |        |
+| `<leader>xX` | n    | Project diagnostics (Trouble)   |        |
+| `<leader>xx` | n    | Buffer diagnostics (Trouble)    |        |
+| `[td`        | n    | Previous todo comment           |        |
+| `]td`        | n    | Next todo comment               |        |
 
 ### Refactor
 
@@ -484,6 +489,18 @@ next other key closes them again and leaves only the fold under the cursor open.
 Imports and comments close on their own when a file is opened — except the file
 Neovim starts with — and a closed fold shows its line count, diagnostics and git
 changes. nvim-origami's `h` / `l` / `^` / `$` fold keys are not used.
+
+## Database drawer
+
+The drawer of vim-dadbod-ui is a plugin panel, which the scripts never open, so
+this table is kept by hand. Both keys are buffer-local, set in
+`after/ftplugin/dbui.lua` over dadbod-ui's own; its other drawer keys are listed
+by `?` there.
+
+| Keys    | Mode | Description         | Buffer |
+| ------- | ---- | ------------------- | ------ |
+| `<C-j>` | n    | Go to query results | dbui   |
+| `q`     | n    | Close database tab  | dbui   |
 
 ## Audit exceptions
 

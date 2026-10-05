@@ -52,6 +52,8 @@ return {
   spelling = {
     project_dictionary = ".codebook/words.toml",
     check_paths = true,
+    scan_timeout = 5000,
+    scan_parallel = 8,
   },
 
   coverage = {

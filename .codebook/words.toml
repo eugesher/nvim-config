@@ -1,6 +1,4 @@
 words = [
-    "NVI",
-    "Wipeout",
     "abcdefghijklmopqrstuvwxyz",
     "aboveleft",
     "alphanum",
@@ -224,6 +222,7 @@ words = [
     "ntest",
     "nui",
     "numhl",
+    "nvi",
     "nvic",
     "nvim",
     "nvim's",
@@ -335,6 +334,7 @@ words = [
     "winsize",
     "wintypes",
     "winwidth",
+    "wipeout",
     "worktree",
     "worktrees",
     "xxd",

@@ -1,4 +1,5 @@
 local annotations = require("core.annotations")
+local project = require("settings.lsp.project")
 local user = require("user.settings")
 
 local kinds = vim.lsp.protocol.SymbolKind
@@ -43,16 +44,15 @@ local function matched(name, patterns)
   return false
 end
 
-local function ignored_file(bufnr, patterns)
-  return matched(vim.fs.basename(vim.api.nvim_buf_get_name(bufnr)), patterns)
+local function ignored_file(path, patterns)
+  return matched(vim.fs.basename(path), patterns)
 end
 
-local function ignored_path(bufnr)
-  local name = vim.api.nvim_buf_get_name(bufnr)
-  return name ~= "" and matched(vim.fs.normalize(name), user.lsp.unused_skip.paths)
+local function ignored_path(path)
+  return path ~= "" and matched(vim.fs.normalize(path), user.lsp.unused_skip.paths)
 end
 
-local function tracked(bufnr, symbol, parent_kind, script)
+local function tracked(path, symbol, parent_kind, script)
   local allowed = script and script_kinds or default_kinds
   if not allowed[symbol.kind] then
     return false
@@ -67,20 +67,20 @@ local function tracked(bufnr, symbol, parent_kind, script)
       and parent_kind ~= kinds.Enum
   end
   if symbol.kind == kinds.Property then
-    return parent_kind == kinds.Class and not ignored_file(bufnr, user.lsp.unused_skip.fields)
+    return parent_kind == kinds.Class and not ignored_file(path, user.lsp.unused_skip.fields)
   end
   if symbol.kind == kinds.Method then
-    return parent_kind == kinds.Class and not ignored_file(bufnr, user.lsp.unused_skip.methods)
+    return parent_kind == kinds.Class and not ignored_file(path, user.lsp.unused_skip.methods)
   end
   return true
 end
 
-local function collect(bufnr, result, script)
+local function collect(path, result, script)
   local symbols = {}
   local function walk(items, parent_kind)
     for _, item in ipairs(items or {}) do
       local range = item.selectionRange or (item.location and item.location.range)
-      if range and tracked(bufnr, item, parent_kind, script) then
+      if range and tracked(path, item, parent_kind, script) then
         symbols[#symbols + 1] = {
           id = ("%d:%s:%d"):format(item.kind, item.name, range.start.line),
           name = (item.name:gsub("^%(%a+%) ", "")),
@@ -116,8 +116,7 @@ local function client_for(bufnr)
   end
 end
 
-local function byte_col(bufnr, position, encoding)
-  local line = vim.api.nvim_buf_get_lines(bufnr, position.line, position.line + 1, false)[1] or ""
+local function byte_col(line, position, encoding)
   local ok, col = pcall(vim.str_byteindex, line, encoding, position.character, false)
   return ok and col or position.character
 end
@@ -135,7 +134,11 @@ local function publish(bufnr, buffer, symbols, encoding)
     if buffer.counts[symbol.id] == 0 then
       items[#items + 1] = {
         lnum = symbol.lnum,
-        col = byte_col(bufnr, symbol.position, encoding),
+        col = byte_col(
+          vim.api.nvim_buf_get_lines(bufnr, symbol.lnum, symbol.lnum + 1, false)[1] or "",
+          symbol.position,
+          encoding
+        ),
         marker = true,
         rank = annotations.ranks.unused,
         hl = annotations.unused_highlight,
@@ -223,7 +226,7 @@ local function refresh(bufnr)
     if err or not result or not buffer then
       return
     end
-    buffer.symbols = collect(bufnr, result, script)
+    buffer.symbols = collect(vim.api.nvim_buf_get_name(bufnr), result, script)
     count(bufnr, client, visible(buffer.symbols, top, bot), alive)
   end, bufnr)
 end
@@ -290,6 +293,101 @@ function M.toggle()
   end
 end
 
+local function scan_file(job, file, done)
+  local client = job.client
+  local uri = vim.uri_from_fname(file.path)
+  local bufnr = project.attached_buffer(client, file.path)
+  local lines
+  if bufnr then
+    lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  else
+    local ok, read = pcall(vim.fn.readfile, file.path)
+    if not ok then
+      done({})
+      return
+    end
+    lines = read
+    project.open(job, uri, file.filetype, lines)
+  end
+
+  local function finish(items)
+    project.close(job, uri)
+    done(items)
+  end
+
+  local function request(method, params, handler)
+    if not project.request(job, method, params, bufnr, handler) then
+      finish({})
+      return false
+    end
+    return true
+  end
+
+  request("textDocument/documentSymbol", { textDocument = { uri = uri } }, function(err, result)
+    if err or not result then
+      finish({})
+      return
+    end
+    local symbols = collect(file.path, result, script_filetypes[file.filetype] == true)
+    local waiting = #symbols
+    if waiting == 0 then
+      finish({})
+      return
+    end
+    local counts = {}
+    for index, symbol in ipairs(symbols) do
+      local sent = request("textDocument/references", {
+        textDocument = { uri = uri },
+        position = symbol.position,
+        context = { includeDeclaration = false },
+      }, function(ref_err, references)
+        counts[index] = ref_err and 1 or #(references or {})
+        waiting = waiting - 1
+        if waiting > 0 then
+          return
+        end
+        local items = {}
+        for i, unused in ipairs(symbols) do
+          if counts[i] == 0 then
+            items[#items + 1] = {
+              filename = file.path,
+              lnum = unused.lnum + 1,
+              col = byte_col(lines[unused.lnum + 1] or "", unused.position, client.offset_encoding)
+                + 1,
+              text = label(unused),
+              type = "W",
+            }
+          end
+        end
+        table.sort(items, function(a, b)
+          return a.lnum < b.lnum or (a.lnum == b.lnum and a.col < b.col)
+        end)
+        finish(items)
+      end)
+      if not sent then
+        return
+      end
+    end
+  end)
+end
+
+local scanner = project.new({
+  title = "Unused symbols",
+  source = "myconfig.unused",
+  no_client = "No language server with references in this buffer",
+  client = client_for,
+  ignored = ignored_path,
+  scan_file = scan_file,
+  summary = function(found, paths)
+    return ("%d unused in %d files"):format(found, paths)
+  end,
+})
+
+M.scan_project = scanner.scan
+M.cancel_project = scanner.cancel
+M.clear_project = scanner.clear
+M.project_count = scanner.count
+
 function M.setup()
   if not user.lsp.unused_symbols then
     return
@@ -299,7 +397,7 @@ function M.setup()
     group = group,
     desc = "Mark declarations nothing references",
     callback = function(event)
-      if client_for(event.buf) and not ignored_path(event.buf) then
+      if client_for(event.buf) and not ignored_path(vim.api.nvim_buf_get_name(event.buf)) then
         attach(event.buf)
       end
     end,
@@ -315,7 +413,16 @@ function M.setup()
       end)
     end,
   })
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    desc = "Recount the unused symbols of a saved file in the project list",
+    callback = function(event)
+      scanner.rescan(event.buf)
+    end,
+  })
   vim.keymap.set("n", "<leader>uu", M.toggle, { desc = "Toggle unused markers" })
+  vim.keymap.set("n", "<leader>xu", M.scan_project, { desc = "Unused symbols (project)" })
+  vim.keymap.set("n", "<leader>xU", M.clear_project, { desc = "Clear unused symbols (project)" })
 end
 
 return M

@@ -17,6 +17,20 @@ local function project_dictionary(root)
   return vim.fs.joinpath(root, path)
 end
 
+local function add_lowercase(command, ctx)
+  local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
+  local arguments = {}
+  for _, argument in ipairs(command.arguments or {}) do
+    arguments[#arguments + 1] = type(argument) == "string" and argument:lower() or argument
+  end
+  client:request(
+    "workspace/executeCommand",
+    { command = command.command, arguments = arguments },
+    nil,
+    ctx.bufnr
+  )
+end
+
 M.config = {
   cmd = { "codebook-lsp", "serve" },
   filetypes = {
@@ -44,6 +58,10 @@ M.config = {
   },
   handlers = {
     ["textDocument/publishDiagnostics"] = spelling.handler,
+  },
+  commands = {
+    ["codebook.addWord"] = add_lowercase,
+    ["codebook.addWordGlobal"] = add_lowercase,
   },
   before_init = function(params, config)
     local path = project_dictionary(config.root_dir)
@@ -76,7 +94,7 @@ local function unknown_words(bufnr, client)
         diagnostic.end_col,
         {}
       )
-      local word = ok and table.concat(lines) or ""
+      local word = ok and table.concat(lines):lower() or ""
       if word ~= "" and not seen[word] then
         seen[word] = true
         words[#words + 1] = word

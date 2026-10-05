@@ -184,9 +184,10 @@ local function delete_others()
 end
 
 local function delete_all()
+  local groups = require("bufferline.groups")
   local loaded = {}
   for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.bo[bufnr].buflisted then
+    if vim.bo[bufnr].buflisted and not groups._is_pinned({ id = bufnr }) then
       if vim.api.nvim_buf_is_loaded(bufnr) then
         loaded[#loaded + 1] = bufnr
       else
@@ -210,7 +211,7 @@ M.keys = {
     end,
     desc = "Delete buffer (force)",
   },
-  { "<leader>ba", delete_all, desc = "Delete all buffers" },
+  { "<leader>ba", delete_all, desc = "Delete all buffers (keep pinned)" },
   { "<leader>bo", delete_others, desc = "Delete other buffers (keep pinned)" },
   { "<leader>bp", "<cmd>BufferLinePick<CR>", desc = "Pick buffer" },
   { "<leader>bP", "<cmd>BufferLineTogglePin<CR>", desc = "Toggle pin" },

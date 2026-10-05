@@ -182,6 +182,97 @@ local function open_or_set_root(source)
   end
 end
 
+local function count_component(module, glyph)
+  return function(config, node)
+    if config.hide_when_expanded and node.type == "directory" and node:is_expanded() then
+      return {}
+    end
+    local count = require(module).project_count(node.path)
+    if not count then
+      return {}
+    end
+    return { text = ("%s %d "):format(glyph, count), highlight = config.highlight }
+  end
+end
+
+local function filesystem_renderers()
+  local unused = {
+    "unused",
+    zindex = 20,
+    align = "right",
+    hide_when_expanded = true,
+    highlight = require("core.annotations").sign_highlight,
+  }
+  local spelling = {
+    "spelling",
+    zindex = 20,
+    align = "right",
+    hide_when_expanded = true,
+    highlight = require("settings.lsp.spelling").sign_highlight,
+  }
+  return {
+    directory = {
+      { "indent" },
+      { "icon" },
+      { "current_filter" },
+      {
+        "container",
+        content = {
+          { "name", zindex = 10 },
+          { "symlink_target", zindex = 10, highlight = "NeoTreeSymbolicLinkTarget" },
+          { "clipboard", zindex = 10 },
+          unused,
+          spelling,
+          {
+            "diagnostics",
+            errors_only = true,
+            zindex = 20,
+            align = "right",
+            hide_when_expanded = true,
+          },
+          { "git_status", zindex = 10, align = "right", hide_when_expanded = true },
+          { "file_size", zindex = 10, align = "right" },
+          { "type", zindex = 10, align = "right" },
+          { "last_modified", zindex = 10, align = "right" },
+          { "created", zindex = 10, align = "right" },
+        },
+      },
+    },
+    file = {
+      { "indent" },
+      { "icon" },
+      {
+        "container",
+        content = {
+          { "name", zindex = 10 },
+          { "symlink_target", zindex = 10, highlight = "NeoTreeSymbolicLinkTarget" },
+          { "clipboard", zindex = 10 },
+          { "bufnr", zindex = 10 },
+          { "modified", zindex = 20, align = "right" },
+          unused,
+          spelling,
+          { "diagnostics", zindex = 20, align = "right" },
+          { "git_status", zindex = 10, align = "right" },
+          { "file_size", zindex = 10, align = "right" },
+          { "type", zindex = 10, align = "right" },
+          { "last_modified", zindex = 10, align = "right" },
+          { "created", zindex = 10, align = "right" },
+        },
+      },
+    },
+    message = {
+      { "indent", with_markers = false },
+      { "name", highlight = "NeoTreeMessage" },
+    },
+    terminal = {
+      { "indent" },
+      { "icon" },
+      { "name" },
+      { "bufnr" },
+    },
+  }
+end
+
 local function order_mappings(extra)
   local mappings = {
     ["o"] = { "show_help", nowait = false, config = { title = "Order by", prefix_key = "o" } },
@@ -319,6 +410,11 @@ function M.opts()
     },
 
     filesystem = {
+      components = {
+        unused = count_component("settings.lsp.unused", icons.ui.unused),
+        spelling = count_component("settings.lsp.spelling", icons.ui.spelling),
+      },
+      renderers = filesystem_renderers(),
       window = {
         mappings = order_mappings({
           ["."] = "toggle_hidden",

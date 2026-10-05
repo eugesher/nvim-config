@@ -178,12 +178,14 @@ plain data the rest of the config reads:
 | `folding.auto_fold_kinds`                                    | LSP fold kinds closed when a file is opened: `comment`, `imports`, `region`; `{}` turns auto-folding off                                                                                 |
 | `formatting.format_on_save`                                  | format on save; toggle with `<leader>uf` (buffer) / `<leader>uF` (global) or `:FormatDisable[!]` / `:FormatEnable[!]`                                                                    |
 | `formatting.timeout_ms`, `max_filesize`                      | milliseconds a formatter may block a save; files larger than `max_filesize` bytes are saved unformatted                                                                                  |
-| `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
+| `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers and MySQL queries in dadbod: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
 | `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
+| `spelling.scan_timeout`                                      | milliseconds `<leader>xs` waits for codebook to answer one file before it moves on without it                                                                                            |
+| `spelling.scan_parallel`                                     | files `<leader>xs` keeps open in codebook at once                                                                                                                                        |
 | `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
 | `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
@@ -208,7 +210,10 @@ with the scripts that keep the scheme consistent, is listed in
 **No credentials live in this repository.** Connections added with
 `:DBUIAddConnection` (`<leader>Da`) and saved queries are stored in
 `~/.local/share/nvim/db_ui/` — outside the repository and outside
-`~/.config/nvim`, so `install.sh` never touches them.
+`~/.config/nvim`, so `install.sh` never touches them. `<leader>Du` opens the
+drawer in a tab of its own, as neogit does; the key or `q` in the drawer closes
+that tab again, and `<leader>Df` finds the current buffer in its drawer.
+`<C-j>` in the drawer goes to the query results.
 
 - **MySQL passwords go to `~/.my.cnf`, not into the URL.** A password in the URL
   ends up in plain text in `connections.json`, and the MySQL 8+ client prints
@@ -275,7 +280,16 @@ comments. Mason installs it automatically.
 - **`<leader>cw` adds every unknown word of the buffer in one request.** The
   words come from codebook's own diagnostics and from the path check below,
   taken from the buffer text the diagnostic covers, so a sub-word of a
-  `camelCase` identifier is added exactly as the checker flagged it.
+  `camelCase` identifier is added as the checker flagged it.
+- **`<leader>xs` checks the whole project.** Every file codebook handles goes
+  into the quickfix list "Spelling issues", opened in Trouble with the cursor in
+  it, and neo-tree shows `󰓆 N` behind every file and every collapsed folder
+  holding some; the path check below applies too. Saving a file rechecks it,
+  pressing the key again during a scan cancels it, `<leader>xS` clears the list
+  and the tree.
+- **Words reach a dictionary in lower case**, whichever of the three adds them.
+  codebook compares words without regard to case, so `nestjs` also accepts
+  `NestJS` and `NESTJS`, and one word never sits in a dictionary twice.
 - **A string that holds a path is checked word by word**
   (`spelling.check_paths`). codebook skips such a string whole, so
   `'user/leagcy-auth'` is silently correct for it, and so is the path of an
@@ -294,6 +308,11 @@ comments. Mason installs it automatically.
   The word keeps its underline and its sign in the status column, so where it
   sits is still visible.
 - **`<leader>us`** turns the checker off and on for the session.
+- **English and Russian** (`dictionaries = ["en_us", "ru"]`): a word passes when
+  either dictionary knows it. codebook downloads a dictionary from GitHub the
+  first time it starts with it (`ru` is 3.4 MB) and keeps it in
+  `~/.local/share/codebook/cache`. A word mixing both scripts (`barrel'ы`) is
+  still flagged.
 - **Dictionaries live outside `~/.config/nvim`**, which `install.sh` replaces
   wholesale: the global one is `~/.config/codebook/codebook.toml`, the project
   one is `.codebook/words.toml` in the project root, written on the first word
@@ -476,11 +495,13 @@ when "cleaned up".
   buffer of the `pinned` group, and deletes the rest through
   `safe_buffer_delete`. Pressed where the current buffer has no tab of its
   own — in neo-tree, in a panel — it does nothing, the same as the command.
-- **`<leader>ba` ends on one empty buffer.** `delete_all()` in
-  `settings/ui/bufferline.lua` hands every listed buffer to bufdelete.nvim in
-  one call, so the plugin finds nothing left to switch to and opens a fresh
-  `[No Name]` buffer in each window that held one — the state `<leader>q`
-  leaves when it closes the last buffer. The window layout stays, panels keep
+- **`<leader>ba` keeps the pinned buffers and otherwise ends on one empty
+  buffer.** `delete_all()` in `settings/ui/bufferline.lua` hands every listed
+  buffer outside bufferline's `pinned` group to bufdelete.nvim in one call. A
+  window that held one of them switches to a pinned buffer; with no pins, the
+  plugin finds nothing left to switch to and opens a fresh `[No Name]` buffer
+  in each window that held one — the state `<leader>q` leaves when it closes
+  the last buffer. The window layout stays, panels keep
   their own buffers, and a modified buffer still asks whether to save it.
   Deleting the buffers one by one would instead walk the windows through the
   remaining files first.
@@ -628,6 +649,32 @@ when "cleaned up".
   there until `<leader>uu` asks for the markers by hand. A method reached only
   through a decorator somewhere else — a lifecycle hook, a queue handler — is
   marked as well: the count is honest, the framework is not part of it.
+- **`<leader>xu` runs the same count over the whole project.** The markers
+  count only what a window shows; the project scan takes every file under the
+  `root_dir` of the buffer's server whose filetype that server handles, listed
+  by `rg --files --no-require-git` (so `.gitignore` applies outside a git
+  repository too), minus `lsp.unused_skip.paths`, and applies the same rules to
+  each. vtsls answers `textDocument/documentSymbol` for an open document only —
+  an empty list otherwise — so a file without a buffer is opened for the server
+  alone with `textDocument/didOpen` and closed again with `didClose`, while a
+  file that has a buffer is read from it, unsaved edits included. Files go one
+  at a time, one `textDocument/references` per declaration: 1395 files took
+  about three and a half minutes, and the editor's own requests wait behind
+  that queue meanwhile. The progress is a `progress-message` (`nvim_echo` with
+  `kind = "progress"`); pressing the key again cancels the outstanding requests
+  and closes the open document. The result becomes the quickfix list
+  "Unused symbols", opened in Trouble with the cursor in it, as `grr` does —
+  unless the scan ends while you type in insert or command-line mode, where a
+  jump would take the keys — and neo-tree's filesystem shows `○ N` in
+  `UnusedSign` behind every file and every collapsed folder holding some. That
+  is the `unused` component of `settings/explorer/neotree.lua`; neo-tree takes a
+  custom component only through the renderers, so the filesystem source repeats
+  neo-tree's default `file` and `directory` renderers with it added, and the
+  tree is redrawn with `require("neo-tree.sources.manager").redraw`. Saving a
+  file recounts that file alone and updates the list and the tree; a usage
+  removed elsewhere shows up with the next scan. `<leader>xU` clears both.
+  The scan itself lives in `settings/lsp/project.lua`, which `<leader>xs`
+  shares.
 - **vtsls' reference code lens stays off.** It answers a `codeLens/resolve` with
   the unresolved lens whenever the symbol has no references, because the command
   VS Code puts behind "0 references" has an empty id. Neovim keeps such a lens
@@ -653,6 +700,12 @@ when "cleaned up".
   mark is its dictionary is still recognized. Without `configPath` a project
   without a `codebook.toml` loses every added word without a message: the server
   has no file to save to.
+- **Added words are lowered on the client.** codebook 0.3.42 stores a word in
+  the case the command hands it, so `NVI` and `nvi` could both end up in the
+  file. The client config maps `codebook.addWord` and `codebook.addWordGlobal`
+  to a local command (`commands`), which `Client:exec_cmd` prefers over the
+  server's: it lowers every argument and sends `workspace/executeCommand`
+  itself. The code actions and `<leader>cw` both go through it.
 - **The words inside a path string are checked through a second, invisible
   document.** codebook reports nothing inside a string literal that contains a
   `/` — a route, a URL, a path — while the same word in a comment or in a plain
@@ -672,6 +725,26 @@ when "cleaned up".
   document is dropped, whichever of the two publishes arrives first. The shadow
   document is re-sent, debounced, on `TextChanged` and `InsertLeave`, and closed
   when codebook leaves the buffer.
+- **`<leader>xs` is `<leader>xu`'s scan with codebook in place of vtsls.** Both
+  run through `settings/lsp/project.lua`: the file list, the progress message,
+  the quickfix list, Trouble, the neo-tree counter (the `spelling` component, in
+  `SpellingSign`, which links to `DiagnosticSignHint`), the recheck on save and
+  the cancel. codebook pushes its diagnostics rather than answering a request,
+  so a file without a buffer is opened with `didOpen`, and the scan waits for
+  the `textDocument/publishDiagnostics` of that URI; the server sends one for
+  every opened document, an empty list for a clean one, and another empty list
+  after `didClose`. The client handler takes both for the scan: Neovim's own
+  handler would create a buffer for every file of the project. A URI stays
+  claimed until that last empty list arrives, and a shadow URI an open buffer
+  owns is checked before any claim: a buffer opened after the scan sends its
+  shadow document under the same URI the scan used, and losing that answer would
+  drop the buffer's path hints. A file that has a buffer is read from its
+  diagnostics instead, the path check's included. For a file without one, the
+  shadow document is built from the file text with
+  `vim.treesitter.get_string_parser` and sent beside it. Eight files are in
+  flight at once (`spelling.scan_parallel`), and a file the server never answers
+  is given up after five seconds (`spelling.scan_timeout`): 1913 files took
+  about 19 seconds, none of them timed out.
 
 ### Plugins
 
@@ -841,6 +914,21 @@ when "cleaned up".
   does exactly that through vim-dadbod-completion, and without the command
   both `<localleader>x` and a one-off `:DB` fail with E464. Re-sourcing is
   idempotent: the file clears its own augroup and keeps existing globals.
+- **`<leader>Du` opens the database in a tab of its own**, like neogit:
+  `:tabnew`, then a plain `:DBUI`, not the documented `:tab DBUI`. With `<mods>`
+  the drawer fills the whole tab and shrinks to `database.width` only when the
+  tab held a single window as the first query opened, and dadbod-ui's
+  notification floats count as windows there. The empty buffer `:tabnew` leaves
+  is wiped once hidden. The key jumps to the tab from any other one and closes
+  it from inside, and so does `q` in the drawer (`after/ftplugin/dbui.lua`
+  maps it over dadbod-ui's own); in the last tab left both close the drawer
+  alone. `<C-j>` in the drawer jumps to the query results: the drawer spans
+  the whole tab, so `<C-w>j` has no window below it, and dadbod-ui's own
+  `<C-j>` (last sibling) is replaced; `J` / `K` still move between siblings.
+  `<leader>Df` follows the tab too: `:DBUIFindBuffer` opens the drawer in the
+  current tab, so the buffer is first shown in the database tab — in its query
+  window, or a split beside the drawer, which then gets `database.width` back —
+  and the command runs there.
 - **kulala**'s `pathresolver` keeps its documented default although 6.x never
   calls it: kulala-core resolves request variables itself.
 - **blink.cmp** uses the prebuilt Rust matcher of the pinned tag; without network

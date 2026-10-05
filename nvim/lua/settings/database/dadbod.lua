@@ -6,8 +6,20 @@ local M = {}
 M.cmd = { "DBUI", "DBUIToggle", "DBUIAddConnection", "DBUIFindBuffer", "DB" }
 
 M.keys = {
-  { "<leader>Du", "<cmd>DBUIToggle<cr>", desc = "Toggle drawer" },
-  { "<leader>Df", "<cmd>DBUIFindBuffer<cr>", desc = "Find buffer in drawer" },
+  {
+    "<leader>Du",
+    function()
+      M.toggle_tab()
+    end,
+    desc = "Toggle database tab",
+  },
+  {
+    "<leader>Df",
+    function()
+      M.find_buffer()
+    end,
+    desc = "Find buffer in drawer",
+  },
   { "<leader>Dr", "<cmd>DBUIRenameBuffer<cr>", desc = "Rename buffer" },
   { "<leader>Da", "<cmd>DBUIAddConnection<cr>", desc = "Add connection" },
   { "<leader>Dq", "<cmd>DBUILastQueryInfo<cr>", desc = "Last query info" },
@@ -126,6 +138,85 @@ function M.config()
     vim.g.loaded_dadbod = nil
     vim.cmd("runtime! plugin/dadbod.vim")
   end
+end
+
+local function drawer_window()
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "dbui" then
+        return tab, win
+      end
+    end
+  end
+end
+
+local function new_tab()
+  vim.cmd.tabnew()
+  vim.bo.bufhidden = "wipe"
+end
+
+local function query_window(tab)
+  local fallback
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+    local buf = vim.api.nvim_win_get_buf(win)
+    if vim.api.nvim_win_get_config(win).relative == "" and vim.bo[buf].filetype ~= "dbui" then
+      if vim.b[buf].dbui_db_key_name then
+        return win
+      end
+      if not fallback and vim.bo[buf].buftype == "" then
+        fallback = win
+      end
+    end
+  end
+  return fallback
+end
+
+function M.toggle_tab()
+  local tab, win = drawer_window()
+  if not tab then
+    new_tab()
+    return vim.cmd("DBUI")
+  end
+  if tab ~= vim.api.nvim_get_current_tabpage() then
+    return vim.api.nvim_set_current_win(win)
+  end
+  if #vim.api.nvim_list_tabpages() > 1 then
+    return vim.cmd.tabclose()
+  end
+  vim.cmd("DBUIToggle")
+end
+
+function M.goto_results()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.bo[vim.api.nvim_win_get_buf(win)].filetype == "dbout" then
+      return vim.api.nvim_set_current_win(win)
+    end
+  end
+  vim.cmd.wincmd("j")
+end
+
+function M.find_buffer()
+  local buf = vim.api.nvim_get_current_buf()
+  local tab, drawer = drawer_window()
+  if tab == vim.api.nvim_get_current_tabpage() then
+    return vim.cmd("DBUIFindBuffer")
+  end
+  if not tab then
+    new_tab()
+    vim.api.nvim_win_set_buf(0, buf)
+    return vim.cmd("DBUIFindBuffer")
+  end
+  vim.api.nvim_set_current_tabpage(tab)
+  local win = query_window(tab)
+  if win then
+    vim.api.nvim_set_current_win(win)
+    vim.api.nvim_win_set_buf(win, buf)
+  else
+    local side = user.database.position == "left" and "right" or "left"
+    vim.api.nvim_open_win(buf, true, { split = side, win = -1 })
+    vim.api.nvim_win_set_width(drawer, user.database.width)
+  end
+  vim.cmd("DBUIFindBuffer")
 end
 
 local EXECUTE = "<Plug>(DBUI_ExecuteQuery)"
