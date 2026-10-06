@@ -35,6 +35,8 @@ end
 map("n", "<leader>w", write_all, "Write all buffers")
 map("n", "<leader>Q", "<cmd>qa<CR>", "Quit all")
 map("n", "<leader>a", "<cmd>restart!<CR>", "Restart Neovim")
+map("n", "<leader>by", '<cmd>let @+ = expand("%")<CR>', "Yank buffer path")
+map("n", "<leader>bY", '<cmd>let @+ = expand("%:p:~")<CR>', "Yank buffer full path")
 
 map("n", "<Esc>", "<cmd>nohlsearch<CR>", "Clear search highlight")
 map("n", "n", "nzzzv", "Next match (centered)")
