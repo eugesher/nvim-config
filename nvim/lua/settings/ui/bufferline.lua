@@ -91,8 +91,48 @@ end
 
 M.event = "VeryLazy"
 
+local function close_if_gone(bufnr)
+  local name = vim.api.nvim_buf_get_name(bufnr)
+  if
+    not vim.b[bufnr].myconfig_on_disk
+    or vim.bo[bufnr].buftype ~= ""
+    or vim.bo[bufnr].modified
+    or vim.uv.fs_stat(name)
+  then
+    return
+  end
+  vim.notify(("%s no longer exists, buffer closed"):format(vim.fn.fnamemodify(name, ":~:.")))
+  M.safe_buffer_delete(bufnr, false)
+end
+
 function M.init()
   vim.o.mousemoveevent = true
+  local group = vim.api.nvim_create_augroup("settings_bufferline_gone", { clear = true })
+  vim.api.nvim_create_autocmd({ "BufReadPost", "BufWritePost" }, {
+    group = group,
+    desc = "Remember that the buffer's file exists on disk",
+    callback = function(event)
+      vim.b[event.buf].myconfig_on_disk = true
+    end,
+  })
+  vim.api.nvim_create_autocmd({ "BufEnter", "CursorHold" }, {
+    group = group,
+    desc = "Close the buffer of a file deleted outside Neovim",
+    callback = function(event)
+      close_if_gone(event.buf)
+    end,
+  })
+  vim.api.nvim_create_autocmd("FocusGained", {
+    group = group,
+    desc = "Close the buffers of files deleted outside Neovim",
+    callback = function()
+      for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
+        if vim.api.nvim_buf_is_loaded(bufnr) then
+          close_if_gone(bufnr)
+        end
+      end
+    end,
+  })
 end
 
 M.opts = {

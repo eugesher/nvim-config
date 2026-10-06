@@ -843,6 +843,15 @@ when "cleaned up".
   `settings/explorer/oil.lua` loads the listed buffers under the source of
   every `move` action first, through `load_buffers_under`, and oil renames them
   itself — loading them is what it does to them in the folder case anyway.
+- **A file deleted outside Neovim closes its buffer.** A file renamed or removed
+  by git or a shell left its buffer open, and the next `documentHighlight` made
+  tsserver answer with a stack trace (`Could not find source file`) and a
+  hit-enter prompt. `settings/ui/bufferline.lua` marks a buffer read from disk
+  or written to it, and on `BufEnter` and `CursorHold` (every loaded buffer on
+  `FocusGained`) closes a marked one whose file is gone. Its `CursorHold` is
+  defined at startup, before any `LspAttach` one, so it runs first and the
+  request is never sent. A buffer with unsaved changes stays, and so does a
+  new file not written yet: it was never on disk.
 - **fzf-lua's key tables replace the defaults** rather than extend them: the
   defaults bind Alt combinations. `vim.ui.select` is a stub that loads fzf-lua on
   the first call.
