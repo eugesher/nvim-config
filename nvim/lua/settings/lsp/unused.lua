@@ -1,0 +1,428 @@
+local annotations = require("core.annotations")
+local project = require("settings.lsp.project")
+local user = require("user.settings")
+
+local kinds = vim.lsp.protocol.SymbolKind
+
+local M = {}
+
+local SOURCE = "unused"
+
+local script_filetypes = {
+  javascript = true,
+  javascriptreact = true,
+  typescript = true,
+  typescriptreact = true,
+}
+
+local script_kinds = {
+  [kinds.Class] = true,
+  [kinds.Enum] = true,
+  [kinds.Function] = true,
+  [kinds.Interface] = true,
+  [kinds.Method] = true,
+  [kinds.Property] = true,
+  [kinds.Variable] = true,
+}
+
+local default_kinds = {
+  [kinds.Function] = true,
+  [kinds.Method] = true,
+}
+
+local globs = {}
+
+local function matched(name, patterns)
+  for _, pattern in ipairs(patterns) do
+    if not globs[pattern] then
+      globs[pattern] = vim.glob.to_lpeg(pattern)
+    end
+    if globs[pattern]:match(name) then
+      return true
+    end
+  end
+  return false
+end
+
+local function ignored_file(path, patterns)
+  return matched(vim.fs.basename(path), patterns)
+end
+
+local function ignored_path(path)
+  return path ~= "" and matched(vim.fs.normalize(path), user.lsp.unused_skip.paths)
+end
+
+local function tracked(path, symbol, parent_kind, script)
+  local allowed = script and script_kinds or default_kinds
+  if not allowed[symbol.kind] then
+    return false
+  end
+  if vim.endswith(symbol.name, ") callback") or symbol.name:match("^<.*>$") then
+    return false
+  end
+  if symbol.kind == kinds.Variable or symbol.kind == kinds.Constant then
+    return parent_kind ~= kinds.Function
+      and parent_kind ~= kinds.Method
+      and parent_kind ~= kinds.Constructor
+      and parent_kind ~= kinds.Enum
+  end
+  if symbol.kind == kinds.Property then
+    return parent_kind == kinds.Class and not ignored_file(path, user.lsp.unused_skip.fields)
+  end
+  if symbol.kind == kinds.Method then
+    return parent_kind == kinds.Class and not ignored_file(path, user.lsp.unused_skip.methods)
+  end
+  return true
+end
+
+local function collect(path, result, script)
+  local symbols = {}
+  local function walk(items, parent_kind)
+    for _, item in ipairs(items or {}) do
+      local range = item.selectionRange or (item.location and item.location.range)
+      if range and tracked(path, item, parent_kind, script) then
+        symbols[#symbols + 1] = {
+          id = ("%d:%s:%d"):format(item.kind, item.name, range.start.line),
+          name = (item.name:gsub("^%(%a+%) ", "")),
+          lnum = range.start.line,
+          position = range.start,
+        }
+      end
+      walk(item.children, item.kind)
+    end
+  end
+  walk(result, nil)
+  return symbols
+end
+
+local state = {}
+
+local function viewport(bufnr)
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_buf(win) == bufnr then
+      local info = vim.fn.getwininfo(win)[1]
+      return info.topline - 1, info.botline - 1
+    end
+  end
+end
+
+local function client_for(bufnr)
+  for _, client in
+    ipairs(vim.lsp.get_clients({ bufnr = bufnr, method = "textDocument/documentSymbol" }))
+  do
+    if client:supports_method("textDocument/references", bufnr) then
+      return client
+    end
+  end
+end
+
+local function byte_col(line, position, encoding)
+  local ok, col = pcall(vim.str_byteindex, line, encoding, position.character, false)
+  return ok and col or position.character
+end
+
+local function label(symbol)
+  if symbol.name == "" then
+    return "Unused symbol."
+  end
+  return ("Unused symbol '%s'."):format(symbol.name)
+end
+
+local function publish(bufnr, buffer, symbols, encoding)
+  local items = {}
+  for _, symbol in ipairs(symbols) do
+    if buffer.counts[symbol.id] == 0 then
+      items[#items + 1] = {
+        lnum = symbol.lnum,
+        col = byte_col(
+          vim.api.nvim_buf_get_lines(bufnr, symbol.lnum, symbol.lnum + 1, false)[1] or "",
+          symbol.position,
+          encoding
+        ),
+        marker = true,
+        rank = annotations.ranks.unused,
+        hl = annotations.unused_highlight,
+        text = label(symbol),
+      }
+    end
+  end
+  annotations.set(bufnr, SOURCE, items)
+end
+
+local function count(bufnr, client, symbols, alive)
+  local buffer = alive()
+  if not buffer then
+    return
+  end
+  local waiting = 0
+  for _, symbol in ipairs(symbols) do
+    if buffer.counts[symbol.id] == nil then
+      waiting = waiting + 1
+      client:request("textDocument/references", {
+        textDocument = vim.lsp.util.make_text_document_params(bufnr),
+        position = symbol.position,
+        context = { includeDeclaration = false },
+      }, function(err, references)
+        if not alive() then
+          return
+        end
+        buffer.counts[symbol.id] = err and 1 or #(references or {})
+        waiting = waiting - 1
+        if waiting == 0 then
+          publish(bufnr, buffer, symbols, client.offset_encoding)
+        end
+      end, bufnr)
+    end
+  end
+  if waiting == 0 then
+    publish(bufnr, buffer, symbols, client.offset_encoding)
+  end
+end
+
+local function visible(symbols, top, bot)
+  return vim.tbl_filter(function(symbol)
+    return symbol.lnum >= top and symbol.lnum <= bot
+  end, symbols)
+end
+
+local function refresh(bufnr)
+  local entry = state[bufnr]
+  if not entry or entry.disabled or not vim.api.nvim_buf_is_loaded(bufnr) then
+    return
+  end
+  local client = client_for(bufnr)
+  local top, bot = viewport(bufnr)
+  if not client or not top then
+    return
+  end
+  local changedtick = vim.b[bufnr].changedtick
+  if entry.changedtick ~= changedtick then
+    entry.changedtick, entry.counts, entry.symbols = changedtick, {}, nil
+  end
+  entry.generation = entry.generation + 1
+  local generation = entry.generation
+
+  local function alive()
+    local buffer = state[bufnr]
+    if
+      buffer
+      and buffer.generation == generation
+      and buffer.changedtick == vim.b[bufnr].changedtick
+    then
+      return buffer
+    end
+  end
+
+  if entry.symbols then
+    count(bufnr, client, visible(entry.symbols, top, bot), alive)
+    return
+  end
+
+  local script = script_filetypes[vim.bo[bufnr].filetype] == true
+  client:request("textDocument/documentSymbol", {
+    textDocument = vim.lsp.util.make_text_document_params(bufnr),
+  }, function(err, result)
+    local buffer = alive()
+    if err or not result or not buffer then
+      return
+    end
+    buffer.symbols = collect(vim.api.nvim_buf_get_name(bufnr), result, script)
+    count(bufnr, client, visible(buffer.symbols, top, bot), alive)
+  end, bufnr)
+end
+
+local function schedule(bufnr, delay)
+  local entry = state[bufnr]
+  if not entry then
+    return
+  end
+  if entry.timer then
+    entry.timer:stop()
+  end
+  entry.timer = vim.defer_fn(function()
+    entry.timer = nil
+    refresh(bufnr)
+  end, delay)
+end
+
+local function augroup(bufnr)
+  return "myconfig_unused_" .. bufnr
+end
+
+local function attach(bufnr)
+  if state[bufnr] then
+    schedule(bufnr, 100)
+    return
+  end
+  state[bufnr] = { generation = 0, counts = {} }
+  vim.api.nvim_create_autocmd({ "TextChanged", "InsertLeave", "WinScrolled", "BufEnter" }, {
+    group = vim.api.nvim_create_augroup(augroup(bufnr), { clear = true }),
+    buffer = bufnr,
+    desc = "Count references for the unused markers",
+    callback = function()
+      schedule(bufnr, 300)
+    end,
+  })
+  schedule(bufnr, 100)
+end
+
+local function detach(bufnr)
+  if not state[bufnr] then
+    return
+  end
+  if state[bufnr].timer then
+    state[bufnr].timer:stop()
+  end
+  state[bufnr] = nil
+  pcall(vim.api.nvim_del_augroup_by_name, augroup(bufnr))
+  annotations.clear(bufnr, SOURCE)
+end
+
+function M.toggle()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local entry = state[bufnr]
+  if not entry then
+    attach(bufnr)
+    return
+  end
+  entry.disabled = not entry.disabled
+  if entry.disabled then
+    annotations.clear(bufnr, SOURCE)
+  else
+    refresh(bufnr)
+  end
+end
+
+local function scan_file(job, file, done)
+  local client = job.client
+  local uri = vim.uri_from_fname(file.path)
+  local bufnr = project.attached_buffer(client, file.path)
+  local lines
+  if bufnr then
+    lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+  else
+    local ok, read = pcall(vim.fn.readfile, file.path)
+    if not ok then
+      done({})
+      return
+    end
+    lines = read
+    project.open(job, uri, file.filetype, lines)
+  end
+
+  local function finish(items)
+    project.close(job, uri)
+    done(items)
+  end
+
+  local function request(method, params, handler)
+    if not project.request(job, method, params, bufnr, handler) then
+      finish({})
+      return false
+    end
+    return true
+  end
+
+  request("textDocument/documentSymbol", { textDocument = { uri = uri } }, function(err, result)
+    if err or not result then
+      finish({})
+      return
+    end
+    local symbols = collect(file.path, result, script_filetypes[file.filetype] == true)
+    local waiting = #symbols
+    if waiting == 0 then
+      finish({})
+      return
+    end
+    local counts = {}
+    for index, symbol in ipairs(symbols) do
+      local sent = request("textDocument/references", {
+        textDocument = { uri = uri },
+        position = symbol.position,
+        context = { includeDeclaration = false },
+      }, function(ref_err, references)
+        counts[index] = ref_err and 1 or #(references or {})
+        waiting = waiting - 1
+        if waiting > 0 then
+          return
+        end
+        local items = {}
+        for i, unused in ipairs(symbols) do
+          if counts[i] == 0 then
+            items[#items + 1] = {
+              filename = file.path,
+              lnum = unused.lnum + 1,
+              col = byte_col(lines[unused.lnum + 1] or "", unused.position, client.offset_encoding)
+                + 1,
+              text = label(unused),
+              type = "W",
+            }
+          end
+        end
+        table.sort(items, function(a, b)
+          return a.lnum < b.lnum or (a.lnum == b.lnum and a.col < b.col)
+        end)
+        finish(items)
+      end)
+      if not sent then
+        return
+      end
+    end
+  end)
+end
+
+local scanner = project.new({
+  title = "Unused symbols",
+  source = "myconfig.unused",
+  no_client = "No language server with references in this buffer",
+  client = client_for,
+  ignored = ignored_path,
+  scan_file = scan_file,
+  summary = function(found, paths)
+    return ("%d unused in %d files"):format(found, paths)
+  end,
+})
+
+M.scan_project = scanner.scan
+M.cancel_project = scanner.cancel
+M.clear_project = scanner.clear
+M.project_count = scanner.count
+
+function M.setup()
+  if not user.lsp.unused_symbols then
+    return
+  end
+  local group = vim.api.nvim_create_augroup("myconfig_unused", { clear = true })
+  vim.api.nvim_create_autocmd("LspAttach", {
+    group = group,
+    desc = "Mark declarations nothing references",
+    callback = function(event)
+      if client_for(event.buf) and not ignored_path(vim.api.nvim_buf_get_name(event.buf)) then
+        attach(event.buf)
+      end
+    end,
+  })
+  vim.api.nvim_create_autocmd("LspDetach", {
+    group = group,
+    desc = "Stop marking declarations once the last client leaves",
+    callback = function(event)
+      vim.schedule(function()
+        if vim.api.nvim_buf_is_valid(event.buf) and not client_for(event.buf) then
+          detach(event.buf)
+        end
+      end)
+    end,
+  })
+  vim.api.nvim_create_autocmd("BufWritePost", {
+    group = group,
+    desc = "Recount the unused symbols of a saved file in the project list",
+    callback = function(event)
+      scanner.rescan(event.buf)
+    end,
+  })
+  vim.keymap.set("n", "<leader>uu", M.toggle, { desc = "Toggle unused markers" })
+  vim.keymap.set("n", "<leader>xu", M.scan_project, { desc = "Unused symbols (project)" })
+  vim.keymap.set("n", "<leader>xU", M.clear_project, { desc = "Clear unused symbols (project)" })
+end
+
+return M
