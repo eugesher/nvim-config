@@ -74,7 +74,7 @@ autocmd("VimResized", {
 
 autocmd("FileType", {
   group = augroup("close_with_q"),
-  pattern = { "help", "qf", "man", "checkhealth", "lspinfo" },
+  pattern = { "help", "qf", "man", "checkhealth", "lspinfo", "dbout" },
   desc = "Close auxiliary buffers with q",
   callback = function(event)
     vim.bo[event.buf].buflisted = false

@@ -495,14 +495,16 @@ changes. nvim-origami's `h` / `l` / `^` / `$` fold keys are not used.
 ## Database drawer
 
 The drawer of vim-dadbod-ui is a plugin panel, which the scripts never open, so
-this table is kept by hand. Both keys are buffer-local, set in
+this table is kept by hand. The drawer keys are buffer-local, set in
 `after/ftplugin/dbui.lua` over dadbod-ui's own; its other drawer keys are listed
-by `?` there.
+by `?` there. `q` in the query results comes from `core/autocmds.lua`, which
+closes help and quickfix windows the same way.
 
 | Keys    | Mode | Description         | Buffer |
 | ------- | ---- | ------------------- | ------ |
 | `<C-j>` | n    | Go to query results | dbui   |
 | `q`     | n    | Close database tab  | dbui   |
+| `q`     | n    | Close window        | dbout  |
 
 ## Audit exceptions
 
