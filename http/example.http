@@ -14,10 +14,6 @@ Content-Type: application/json
 }
 
 > {%
-  // Chaining goes through the script store: kulala-core runs this after the
-  // response and substitutes the value as {{TOKEN}} in later requests.
-  // `{{login.response.body.$.token}}` does NOT work in kulala 6.x — the
-  // request-variable store of kulala-core stays empty (verified in task 15).
   client.global.set("TOKEN", response.body.token);
 %}
 

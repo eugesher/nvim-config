@@ -1,27 +1,18 @@
--- :checkhealth myconfig — what this configuration needs from the machine.
---
--- `:checkhealth <name>` looks for `lua/<name>/health.lua`, hence `myconfig/`.
--- A `core/health.lua` would be a second report, `:checkhealth core`, and plain
--- `:checkhealth` would run both (task 28).
---
--- Lists are read from the settings that use them where such a list exists
--- (language servers, Mason tools, the debug adapter path, the sessions
--- directory), so the check cannot drift from the config.
-
 local M = {}
 
 local health = vim.health
 
--- External tools ----------------------------------------------------------------
-
--- `bin` may list alternatives: Debian ships fd and bat as `fdfind` / `batcat`,
--- and settings/fzf.lua accepts either name.
 local REQUIRED = {
   {
     bin = "git",
     min = "2.31.0",
-    why = "plugins, gitsigns and neogit; diffview.nvim needs 2.31+",
+    why = "plugins, gitsigns and lazygit; diffview.nvim needs 2.31+",
     install = "sudo apt install git",
+  },
+  {
+    bin = "lazygit",
+    why = "the git interface behind <leader>gg",
+    install = "sudo apt install lazygit",
   },
   { bin = "rg", why = "live grep in fzf-lua", install = "sudo apt install ripgrep" },
   {
@@ -90,8 +81,6 @@ local OPTIONAL = {
   },
 }
 
---- The first version number in `<bin> --version`, or nil when the command
---- fails, hangs or prints something unexpected.
 local function version_of(bin)
   local ok, result = pcall(function()
     return vim.system({ bin, "--version" }, { text = true }):wait(3000)
@@ -139,8 +128,6 @@ local function check_tool(tool, report)
     )
   end
 end
-
--- Sections ----------------------------------------------------------------------
 
 local function check_neovim()
   health.start("Neovim")
@@ -204,15 +191,11 @@ local function check_mason()
     return
   end
 
-  -- Language servers by their vim.lsp names, translated to Mason package names.
   local packages = {}
   local mapped, to_package = pcall(function()
     return require("mason-lspconfig").get_mappings().lspconfig_to_package
   end)
-  -- On a fresh machine the mapping stays empty until Mason has downloaded its
-  -- registry; guessing the package from the server name would report an
-  -- installed `lua-language-server` as a missing `lua_ls`.
-  for _, server in ipairs(require("settings.lsp").servers) do
+  for _, server in ipairs(require("settings.lsp.lspconfig").servers) do
     local name = mapped and to_package and to_package[server]
     if name then
       packages[#packages + 1] = { name = name, role = "language server " .. server }
@@ -271,7 +254,6 @@ local function check_parsers()
   end
 end
 
--- The nearest existing directory at or above `path` is writable.
 local function can_create(path)
   local dir = path
   while dir and vim.fn.isdirectory(dir) == 0 do
@@ -287,7 +269,6 @@ end
 local function check_files()
   health.start("Files kept across ./install.sh")
   local config = vim.fs.normalize(vim.fn.stdpath("config"))
-  -- install.sh replaces ~/.config/nvim wholesale: nothing below must live there.
   local function outside_config(label, path)
     path = vim.fs.normalize(path)
     if path == config or path:sub(1, #config + 1) == config .. "/" then
@@ -326,7 +307,7 @@ local function check_files()
     end
   end
 
-  local sessions = require("settings.autosession").opts.root_dir:gsub("/+$", "")
+  local sessions = require("settings.session.autosession").opts.root_dir:gsub("/+$", "")
   if outside_config("sessions", sessions) then
     if vim.fn.isdirectory(sessions) == 1 then
       if vim.fn.filewritable(sessions) == 2 then
@@ -358,7 +339,7 @@ end
 
 local function check_debug_adapter()
   health.start("Debug adapter")
-  local server = require("settings.dap").server_path()
+  local server = require("settings.dap.dap").server_path()
   if vim.uv.fs_stat(server) then
     health.ok("js-debug-adapter: " .. server)
   else

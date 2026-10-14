@@ -1,8 +1,3 @@
--- NestJS snippets for TypeScript, loaded by LuaSnip's from_lua loader
--- (settings/luasnip.lua). Placeholders with the same name are mirrored
--- (`repeat_duplicates`). Imports a snippet does not bring along come from
--- `<leader>cm` (add missing imports).
-
 local ls = require("luasnip")
 local s, i, c, t = ls.snippet, ls.insert_node, ls.choice_node, ls.text_node
 local fmt = require("luasnip.extras.fmt").fmt
@@ -151,10 +146,10 @@ describe('{subject}', () => {{
     "nit",
     "Jest: it block (async)",
     [[
-it('should {behaviour}', async () => {{
+it('should {behavior}', async () => {{
   {body}
 }});]],
-    { behaviour = i(1, "work"), body = i(0) }
+    { behavior = i(1, "work"), body = i(0) }
   ),
 
   nest(

@@ -1,32 +1,24 @@
--- defaults verified against mason.nvim v2.3.1 and mason-lspconfig.nvim v2.3.0-15-g0c5d026 (2026-09-11)
---
--- Mason v2: installer for language servers, debug adapters and formatters.
--- mason-lspconfig v2: `ensure_installed` + `automatic_enable`. The v1 `handlers`
--- / `setup_handlers` API no longer exists: `automatic_enable` calls
--- vim.lsp.enable() for every installed server by itself.
-
 local user = require("user.settings")
 local icons = require("settings.icons").packages
 
 local M = {}
 
--- `:Mason` and friends work without an open file.
 M.cmd =
   { "Mason", "MasonInstall", "MasonUninstall", "MasonUninstallAll", "MasonLog", "MasonUpdate" }
 
 M.opts = {
   install_root_dir = vim.fn.stdpath("data") .. "/mason",
-  PATH = "prepend", -- Mason's bin/ first in $PATH: servers and tools resolve to it
+  PATH = "prepend",
   log_level = vim.log.levels.INFO,
   max_concurrent_installers = 4,
   registries = { "github:mason-org/mason-registry" },
   system_registries = { "github:mason-org/mason-system-registry" },
   registry_cache = {
-    refresh = true, -- refresh the registry automatically when it goes stale
-    duration = 24 * 60 * 60, -- seconds
+    refresh = true,
+    duration = 24 * 60 * 60,
   },
   firewall = {
-    enabled = false, -- socket.dev firewall for package sources
+    enabled = false,
     auto_managed = true,
   },
   providers = {
@@ -46,7 +38,7 @@ M.opts = {
   ui = {
     check_outdated_packages_on_open = true,
     border = user.ui.border,
-    backdrop = 100, -- no dimming behind the window, same as the lazy.nvim UI
+    backdrop = 100,
     width = 0.8,
     height = 0.9,
     icons = {
@@ -70,12 +62,7 @@ M.opts = {
   },
 }
 
--- mason-lspconfig.nvim, set up in `config` right after mason itself.
 local lspconfig_opts = {
-  -- Language servers to install automatically, by their vim.lsp config names
-  -- (Mason packages: vtsls, eslint-lsp, lua-language-server, json-lsp,
-  -- yaml-language-server, bash-language-server, codebook,
-  -- docker-language-server, dockerfile-language-server).
   ensure_installed = {
     "vtsls",
     "eslint",
@@ -87,18 +74,10 @@ local lspconfig_opts = {
     "docker_language_server",
     "dockerls",
   },
-  -- The default, stated explicitly: every installed server gets vim.lsp.enable().
-  -- Harmless next to the explicit list in settings/lsp/init.lua: enable() is idempotent.
   automatic_enable = true,
 }
 
--- Non-LSP tools. mason-lspconfig only knows language servers, so these are
--- checked on startup and installed when missing — a few lines instead of
--- another plugin (mason-tool-installer).
--- prettier is the fallback when prettierd is missing and serves files outside
--- projects; inside a project conform and prettierd use the project's own Prettier.
--- js-debug-adapter is the debug adapter for Node and TypeScript (settings/dap.lua).
-M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter" }
+M.extra_tools = { "prettierd", "prettier", "stylua", "js-debug-adapter", "sql-formatter" }
 
 local function ensure_extra_tools()
   local registry = require("mason-registry")
@@ -106,7 +85,7 @@ local function ensure_extra_tools()
     return not registry.is_installed(name)
   end, M.extra_tools)
   if #missing == 0 then
-    return -- the usual case: no registry access at all
+    return
   end
   registry.refresh(function()
     vim.notify("Mason: installing " .. table.concat(missing, ", "), vim.log.levels.INFO)

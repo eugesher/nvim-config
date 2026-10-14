@@ -1,23 +1,14 @@
--- defaults verified against vtsls 0.3.0 and nvim-lspconfig v2.11.0-84-gac9d2f7c (2026-09-11)
---
--- TypeScript / JavaScript through vtsls: a wrapper around VSCode's TypeScript
--- extension. Gives what ts_ls lacks — Move to File, import fixes on file
--- rename, organize / remove unused / add missing imports, go to source
--- definition, the full set of inlay hints. Never enable ts_ls next to it.
+local user = require("user.settings")
 
 local M = {}
 
--- Project root, nearest marker first. nvim-lspconfig ships a `root_dir`
--- (lock files / .git), and `root_dir` always wins over `root_markers` — so the
--- root is resolved here, with these markers.
-local root_markers = { "tsconfig.json", "package.json", "jsconfig.json", ".git" }
+local root_markers = { "tsconfig.json", "package.json", "jsconfig.json" }
 
--- Settings shared by the typescript.* and javascript.* branches.
 local function language(extra)
   return vim.tbl_deep_extend("force", {
-    updateImportsOnFileMove = { enabled = "always" }, -- fix imports on file rename / move
+    updateImportsOnFileMove = { enabled = "always" },
     suggest = { completeFunctionCalls = true },
-    preferences = { importModuleSpecifier = "non-relative" }, -- tsconfig `paths` (NestJS)
+    preferences = { importModuleSpecifier = user.lsp.import_style },
     inlayHints = {
       parameterNames = { enabled = "literals", suppressWhenArgumentMatchesName = true },
       parameterTypes = { enabled = true },
@@ -28,10 +19,6 @@ local function language(extra)
   }, extra or {})
 end
 
---- Runs a vtsls command (workspace/executeCommand) on the current buffer's vtsls client.
----@param command string
----@param arguments any[]
----@param handler? lsp.Handler
 local function vtsls_exec(command, arguments, handler)
   local client = vim.lsp.get_clients({ bufnr = 0, name = "vtsls" })[1]
   if not client then
@@ -46,15 +33,12 @@ local function vtsls_exec(command, arguments, handler)
   )
 end
 
--- Applies the code action of one kind, without a menu when there is only one.
 local function code_action(kind, apply)
   return function()
     vim.lsp.buf.code_action({ context = { only = { kind }, diagnostics = {} }, apply = apply })
   end
 end
 
--- "Move to file" is a two-step dance: the server offers the action with this
--- client-side command; the client asks for the target and sends it back.
 local function move_to_file(command, ctx)
   local action, uri, range = unpack(command.arguments)
   local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
@@ -65,7 +49,6 @@ local function move_to_file(command, ctx)
       arguments = { action, uri, range, target },
     }, nil, ctx.bufnr)
   end
-  -- Suggested targets straight from tsserver.
   client:request("workspace/executeCommand", {
     command = "typescript.tsserverRequest",
     arguments = {
@@ -106,26 +89,24 @@ end
 
 M.config = {
   cmd = { "vtsls", "--stdio" },
-  -- .mts / .cts are `typescript` in Neovim, .mjs / .cjs `javascript`.
   filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
   root_dir = function(bufnr, on_dir)
-    on_dir(vim.fs.root(bufnr, root_markers) or vim.fn.getcwd())
+    on_dir(vim.fs.root(bufnr, ".git") or vim.fs.root(bufnr, root_markers) or vim.fn.getcwd())
   end,
   commands = {
     ["_typescript.moveToFileRefactoring"] = move_to_file,
   },
   settings = {
     vtsls = {
-      autoUseWorkspaceTsdk = true, -- the project's own TypeScript, when installed
-      enableMoveToFileCodeAction = true, -- needs the client command above
+      autoUseWorkspaceTsdk = true,
+      enableMoveToFileCodeAction = true,
       experimental = {
         completion = { enableServerSideFuzzyMatch = true },
         maxInlayHintLength = 30,
       },
     },
-    -- tsserver-wide settings exist only under typescript.* (they cover JS too).
     typescript = language({
-      preferences = { includePackageJsonAutoImports = "auto" }, -- "on" stalls tsserver in monorepos
+      preferences = { includePackageJsonAutoImports = "auto" },
       tsserver = {
         maxTsServerMemory = 8192,
         experimental = { enableProjectDiagnostics = true },
@@ -136,7 +117,6 @@ M.config = {
   },
 }
 
--- vtsls-only keymaps, created from the LspAttach in settings/lsp/keymaps.lua.
 function M.keymaps(client, _, map)
   local function lang()
     return vim.bo.filetype:find("javascript") and "javascript" or "typescript"
