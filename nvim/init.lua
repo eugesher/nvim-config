@@ -1,15 +1,18 @@
--- Entry point. Loads all configuration modules.
-
--- Set the leader key BEFORE loading any plugins.
--- Leader is a user-defined modifier for custom mappings.
--- Space is the most popular choice because both hands can reach it easily.
 vim.g.mapleader = " "
-vim.g.maplocalleader = " "
+vim.g.maplocalleader = "\\"
 
--- Load configuration modules
-require("config.options")
-require("config.keymaps")
-require("config.autocmds")
+if vim.fn.has("nvim-0.12") == 0 then
+  vim.notify(
+    ("This config requires Neovim 0.12+, found %s. Plugins were not loaded."):format(
+      tostring(vim.version())
+    ),
+    vim.log.levels.ERROR
+  )
+  return
+end
 
--- Bootstrap the plugin manager (installs lazy.nvim on first run)
-require("lazy-bootstrap")
+vim.loader.enable()
+
+require("core")
+
+require("core.bootstrap")

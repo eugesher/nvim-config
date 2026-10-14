@@ -1,11 +1,9 @@
-@baseUrl = {{baseUrl}}
-
 ### Health check
 # @name health
 GET {{baseUrl}}/health
 Accept: application/json
 
-### Login and capture token
+### Log in and remember the token
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: application/json
@@ -15,8 +13,12 @@ Content-Type: application/json
   "password": "{{password}}"
 }
 
-### Use token from login response
+> {%
+  client.global.set("TOKEN", response.body.token);
+%}
+
+### Reuse the token from the login response
 # @name profile
 GET {{baseUrl}}/profile
-Authorization: Bearer {{login.response.body.$.token}}
+Authorization: Bearer {{TOKEN}}
 Accept: application/json
