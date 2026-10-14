@@ -15,6 +15,7 @@ local PANELS = {
   "coverage",
   "trouble",
   "aerial",
+  "lazygit",
   "lazy",
   "mason",
   "checkhealth",

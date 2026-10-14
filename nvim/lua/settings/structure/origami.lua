@@ -34,17 +34,7 @@ M.opts = {
     },
     diagnosticsCount = true,
     gitsignsCount = true,
-    disableOnFt = {
-      "NeogitStatus",
-      "NeogitCommitView",
-      "NeogitCommitSelectView",
-      "NeogitDiffView",
-      "NeogitLogView",
-      "NeogitReflogView",
-      "NeogitRefsView",
-      "NeogitStashView",
-      "NeogitGitCommandHistory",
-    },
+    disableOnFt = {},
   },
   autoFold = {
     enabled = #user.folding.auto_fold_kinds > 0,

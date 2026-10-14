@@ -22,8 +22,7 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
 
 Keys that exist only for a moment are not listed: the multicursor layer (`<Tab>` / `<S-Tab>` between cursors, `<C-q>`,
 `<Esc>`) and the keys inside
-plugin panels (`?` or `g?` shows them there, and `<leader>?` in neogit's
-buffers).
+plugin panels (`?` or `g?` shows them there, and `?` inside lazygit).
 Neovim's fold commands are not keymaps either; they are listed by hand in
 [Folds](#folds), and so are the keys this config adds to the database drawer, in
 [Database drawer](#database-drawer).
@@ -198,13 +197,12 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>gB`  | n    | Blame (file)             | lua    |
 | `<leader>gb`  | n    | Git branches             |        |
 | `<leader>gC`  | n    | Git commits              |        |
-| `<leader>gc`  | n    | Commit                   |        |
 | `<leader>gD`  | n    | Close diff view          |        |
 | `<leader>gd`  | n    | Diff view (all changes)  |        |
 | `<leader>ge`  | n    | Git status (explorer)    |        |
 | `<leader>gF`  | n    | Repository history       |        |
 | `<leader>gf`  | n    | File history             |        |
-| `<leader>gg`  | n    | Neogit (status)          |        |
+| `<leader>gg`  | n    | Lazygit                  |        |
 | `<leader>ghb` | n    | Blame line               | lua    |
 | `<leader>ghD` | n    | Diff against last commit | lua    |
 | `<leader>ghd` | n    | Diff against index       | lua    |
@@ -218,10 +216,8 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>ghs` | n    | Stage / unstage hunk     | lua    |
 | `<leader>ghs` | x s  | Stage / unstage lines    | lua    |
 | `<leader>ghU` | n    | Unstage buffer           | lua    |
-| `<leader>gl`  | n    | Log                      |        |
+| `<leader>gl`  | n    | Log (lazygit)            |        |
 | `<leader>gm`  | n    | Merge tool (conflicts)   |        |
-| `<leader>gP`  | n    | Pull                     |        |
-| `<leader>gp`  | n    | Push                     |        |
 | `<leader>gS`  | n    | Git stash                |        |
 | `<leader>gs`  | n    | Git status               |        |
 | `<leader>gtb` | n    | Toggle line blame        | lua    |
@@ -411,6 +407,7 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>uf` | n    | Toggle format on save (buffer) |                                                        |
 | `<leader>ui` | n    | Toggle inlay hints             | dockerfile, http, lua, typescript, yaml.docker-compose |
 | `<leader>uk` | n    | Toggle sticky context          |                                                        |
+| `<leader>um` | n    | Toggle markdown rendering      |                                                        |
 | `<leader>us` | n    | Toggle spell checking          |                                                        |
 | `<leader>uu` | n    | Toggle unused markers          |                                                        |
 

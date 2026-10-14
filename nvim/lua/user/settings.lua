@@ -45,6 +45,10 @@ return {
     group_empty_dirs = false,
   },
 
+  git = {
+    lazygit_scale = 1,
+  },
+
   http = {
     default_env = "dev",
   },
@@ -72,7 +76,7 @@ return {
     unused_symbols = true,
     unused_skip = {
       paths = { "**/node_modules/**" },
-      fields = { "*.dto.ts", "*.entity.ts" },
+      fields = { "*" },
       methods = { "*.controller.ts" },
     },
     diagnostics_summary = {

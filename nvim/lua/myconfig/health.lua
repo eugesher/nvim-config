@@ -6,8 +6,13 @@ local REQUIRED = {
   {
     bin = "git",
     min = "2.31.0",
-    why = "plugins, gitsigns and neogit; diffview.nvim needs 2.31+",
+    why = "plugins, gitsigns and lazygit; diffview.nvim needs 2.31+",
     install = "sudo apt install git",
+  },
+  {
+    bin = "lazygit",
+    why = "the git interface behind <leader>gg",
+    install = "sudo apt install lazygit",
   },
   { bin = "rg", why = "live grep in fzf-lua", install = "sudo apt install ripgrep" },
   {

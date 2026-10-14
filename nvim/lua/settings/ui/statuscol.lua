@@ -31,6 +31,7 @@ function M.opts()
       "dap-repl",
       "aerial",
       "oil",
+      "lazygit",
     },
     bt_ignore = { "nofile", "terminal", "help", "prompt", "quickfix" },
     segments = {

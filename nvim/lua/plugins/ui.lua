@@ -12,4 +12,7 @@ return {
   spec("nvim-tree/nvim-web-devicons", "ui.devicons"),
   spec("lukas-reineke/indent-blankline.nvim", "ui.indent", { main = "ibl" }),
   spec("luukvbaal/statuscol.nvim", "ui.statuscol"),
+  spec("MeanderingProgrammer/render-markdown.nvim", "ui.render-markdown", {
+    dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-tree/nvim-web-devicons" },
+  }),
 }

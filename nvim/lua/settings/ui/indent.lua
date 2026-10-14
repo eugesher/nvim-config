@@ -54,6 +54,7 @@ M.opts = {
       "dap-view",
       "dap-view-term",
       "dap-repl",
+      "lazygit",
     },
     buftypes = { "terminal", "nofile", "quickfix", "prompt" },
   },

@@ -26,6 +26,7 @@ local EXCLUDED_FILETYPES = {
   "aerial",
   "aerial-nav",
   "oil",
+  "lazygit",
   "help",
   "qf",
   "lazy",

@@ -9,6 +9,7 @@ local excluded = {
   "dbui",
   "dap-view",
   "dap-repl",
+  "lazygit",
   "lazy",
   "mason",
   "help",

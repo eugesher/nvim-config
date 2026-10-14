@@ -11,7 +11,8 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 | Dependency                      | Why                                                                                                                                                                   | Install                                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Neovim 0.12+**                | Core editor; the config uses 0.12 APIs throughout                                                                                                                     | `sudo snap install nvim --classic`                                                                                               |
-| **Git 2.31+**                   | Plugin management, gitsigns, neogit; diffview.nvim needs 2.31+                                                                                                        | `sudo apt install git`                                                                                                           |
+| **Git 2.31+**                   | Plugin management, gitsigns, lazygit; diffview.nvim needs 2.31+                                                                                                       | `sudo apt install git`                                                                                                           |
+| **lazygit**                     | The git interface behind `<leader>gg` (lazygit.nvim)                                                                                                                  | `sudo apt install lazygit`                                                                                                       |
 | **Node.js 20+** and npm         | TS/JS language servers, prettierd, sql-formatter, js-debug-adapter, tree-sitter-cli                                                                                   | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
 | **tree-sitter-cli ≥ 0.26.1**    | The `main` branch of nvim-treesitter builds parsers with it                                                                                                           | `npm install -g tree-sitter-cli`                                                                                                 |
 | **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential`                                                                                               |
@@ -98,7 +99,7 @@ the `http/` collections in this repository.
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
 | Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
 | Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the status line), nvim-origami (fold line counts, auto-folded imports and comments)                                            |
-| Git                     | gitsigns, neogit, diffview.nvim, git-conflict.nvim                                                                                                                           |
+| Git                     | gitsigns, lazygit.nvim, diffview.nvim, git-conflict.nvim                                                                                                                     |
 | Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
 | HTTP client             | kulala.nvim                                                                                                                                                                  |
 | Debugging               | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter                                                                                                             |
@@ -107,6 +108,7 @@ the `http/` collections in this repository.
 | Refactoring             | inc-rename.nvim, refactoring.nvim, multicursor.nvim                                                                                                                          |
 | Sessions                | auto-session                                                                                                                                                                 |
 | Spelling                | codebook — a language server                                                                                                                                                 |
+| Markdown                | render-markdown.nvim (headings, tables, callouts drawn in the buffer)                                                                                                        |
 
 ## Configuration structure
 
@@ -115,6 +117,7 @@ nvim/
 ├── init.lua              # leaders, version guard, vim.loader, then core and lazy.nvim
 ├── lazy-lock.json        # exact plugin commits — part of the config
 ├── stylua.toml           # formatting of every Lua file (2 spaces, width 100)
+├── lazygit.yml           # lazygit settings added on top of your own
 ├── lua/
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
 │   │                     # autocmds, diagnostics, filetypes, lazy.nvim bootstrap
@@ -123,12 +126,12 @@ nvim/
 │   │   ├── init.lua      # settings.spec(): a lazy.nvim spec from a settings module
 │   │   ├── icons.lua     # every glyph of the config
 │   │   ├── <group>/      # one folder per plugins/<group>.lua, one file per plugin:
-│   │   │                 # completion/blink.lua, git/neogit.lua, ui/theme.lua, …
+│   │   │                 # completion/blink.lua, dap/dap.lua, ui/theme.lua, …
 │   │   └── lsp/          # lspconfig.lua (server list), mason.lua, capabilities,
 │   │                     # LspAttach keymaps, servers/<name>.lua per language server
 │   ├── user/settings.lua # the values meant to be changed (next section)
 │   └── myconfig/health.lua  # :checkhealth myconfig
-└── after/ftplugin/       # buffer-local keymaps of .http and .sql buffers
+└── after/ftplugin/       # buffer-local keymaps and options per filetype
 ```
 
 The layers never mix:
@@ -148,7 +151,7 @@ The layers never mix:
   belong to it (the fold `z` keys in `structure/origami.lua`); which-key groups
   are declared only in `settings/whichkey/whichkey.lua`.
 - **`lua/core/`** holds what Neovim does without any plugin.
-- **`after/ftplugin/`** holds keymaps that belong to one filetype.
+- **`after/ftplugin/`** holds keymaps and options that belong to one filetype.
 
 Code files carry no explanatory comments — only tool directives and
 commented-out code kept for later. What would otherwise be explained next to the
@@ -181,6 +184,7 @@ plain data the rest of the config reads:
 | `formatting.sql_dialect`                                     | `sql-formatter` dialect for `.sql` buffers and MySQL queries in dadbod: `mysql`, `mariadb`, `postgresql`, `sqlite`, `tsql`, `plsql` and more; a `.sql-formatter.json` in the project wins over it                    |
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
+| `git.lazygit_scale`                                          | size of the lazygit window, a fraction of the editor: `1` fills the screen without a border, `0.9` leaves a margin and keeps `ui.border`                                                 |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
 | `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
@@ -192,7 +196,7 @@ plain data the rest of the config reads:
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
 | `lsp.import_style`                                           | auto-import paths (`importModuleSpecifier`): `shortest` takes a `tsconfig.json` path alias only where it is shorter; `relative`, `non-relative`, `project-relative` force one form       |
 | `lsp.unused_symbols`                                         | write `Unused symbol '…'.` behind the line of a declaration nothing references in the project and `○` left of its number; `<leader>uu` hides the markers in the current buffer           |
-| `lsp.unused_skip`                                            | globs of the places where a declaration is never counted: `fields` for DTO and entity fields, `methods` for controller methods, `paths` for whole files (node_modules)                   |
+| `lsp.unused_skip`                                            | globs of the places where a declaration is never counted: `fields` for class fields (`*`, every file), `methods` for controller methods, `paths` for whole files (node_modules)          |
 | `lsp.diagnostics_summary`                                    | `sources` maps a diagnostic `source` to the `label` and `hint` of its block above the first line; `width` wraps the word list, `0` never wraps; `sources = {}` turns it off              |
 
 Edit the file in the repository and run `./install.sh` again — an edit made in
@@ -211,9 +215,9 @@ with the scripts that keep the scheme consistent, is listed in
 `:DBUIAddConnection` (`<leader>Da`) and saved queries are stored in
 `~/.local/share/nvim/db_ui/` — outside the repository and outside
 `~/.config/nvim`, so `install.sh` never touches them. `<leader>Du` opens the
-drawer in a tab of its own, as neogit does; the key or `q` in the drawer closes
-that tab again, and `<leader>Df` finds the current buffer in its drawer.
-`<C-j>` in the drawer goes to the query results.
+drawer in a tab of its own; the key or `q` in the drawer closes that tab again,
+and `<leader>Df` finds the current buffer in its drawer. `<C-j>` in the drawer
+goes to the query results.
 
 - **MySQL passwords go to `~/.my.cnf`, not into the URL.** A password in the URL
   ends up in plain text in `connections.json`, and the MySQL 8+ client prints
@@ -636,13 +640,15 @@ when "cleaned up".
   carries the count. tsserver reports a member as a variable whose parent is the
   enum, which is how they are told apart from the constants of a module.
 - **`lsp.unused_skip` lists where a count is meaningless.** The fields of a
-  `*.dto.ts` are filled by the framework through the validation decorators, the
-  fields of a `*.entity.ts` by the ORM through the column decorators, and the
-  methods of a `*.controller.ts` are routes nothing calls from the code, so all
-  three are skipped. `fields` and `methods` are globs (`vim.glob`, the LSP
-  syntax with `*`, `?` and `{}`) matched against the name of the file, not its
-  path; they reach the members of a class, the only ones counted at all, and
-  everything else in those files is still counted. `paths` matches the whole
+  class are skipped in every file (`fields = { "*" }`): a DTO is filled by the
+  framework through the validation decorators, an entity by the ORM through the
+  column decorators, a provider's fields by injection, and a count of zero says
+  nothing about any of them. The methods of a `*.controller.ts` are routes
+  nothing calls from the code, so they are skipped too. `fields` and `methods`
+  are globs (`vim.glob`, the LSP syntax with `*`, `?` and `{}`) matched against
+  the name of the file, not its path; they reach the members of a class, the
+  only ones counted at all, and everything else in those files is still counted
+  — the class itself among them. `paths` matches the whole
   path instead and takes the file out entirely — `**/node_modules/**`, where
   every declaration belongs to a dependency, most of them are meant for other
   projects and each open file would cost a request per symbol. Nothing counts
@@ -773,19 +779,31 @@ when "cleaned up".
 - **diffview** turns diagnostics off in every view (conflict markers and old file
   versions flood with errors) and moves keys that would shadow global groups:
   `<leader>e` / `<leader>b` → `<localleader>e` / `<localleader>b`, conflict
-  choices → `<leader>gx…`, `<C-A-d>` → `<localleader>d`. neogit's GUI and Alt
-  keys likewise move to the localleader layer, and its `]c` / `[c` to `]o` / `[o`.
-- **neogit creates its buffer keys without descriptions**, so which-key showed
-  them blank or with Vim's own meaning (`l` as "Right"). A `FileType` autocmd in
-  `settings/git/neogit.lua` waits until neogit has mapped a buffer and describes
-  every key that `mappings` binds to an action, through `maparg()` / `mapset()`
-  with the mapping itself unchanged. The status buffer gets all status actions;
-  the commit, log, reflog, refs and stash views only those they take from it
-  (close, open, peek, scroll, yank, fold, refresh), because keys such as `o` and
-  `x` mean something else there. Popup buffers are left alone: they print their
-  keys themselves. Keys neogit maps outside the documented `mappings` (`R`, `V`,
-  `+`, `<Esc>`, `o` in the log and commit views) stay without a description, and
-  `zc` / `zC` / `zO` keep which-key's fold descriptions.
+  choices → `<leader>gx…`, `<C-A-d>` → `<localleader>d`.
+- **render-markdown.nvim draws `.md` buffers** and wraps a table wider than
+  the window inside its cells (`pipe_table.wrap`): it hides the table's lines
+  and draws the wrapped table in virtual lines, so it works with `'wrap'` off.
+  The raw text comes back on the line under the cursor. Every documented option
+  is written out at its default except `latex.enabled`, which is off: neither
+  the latex parser nor `utftex` / `latex2text` is installed, and the health
+  check would warn about them. Its glyphs sit in `icons.markdown`; the border
+  characters of tables, headings and code blocks stay in the settings file.
+  `<leader>um` switches the rendering off and on. Markdown text wraps at word
+  boundaries: `after/ftplugin/markdown.lua` turns `'wrap'` and `'linebreak'` on
+  for the window showing the buffer, while every other filetype keeps the
+  global `wrap = false`.
+- **lazygit runs in lazygit.nvim's floating terminal** with two config files:
+  your own `~/.config/lazygit/config.yml` when it exists, then `lazygit.yml`
+  from this config on top of it, which sets the editor commands only. `e` on a
+  file, or on a line of the staging view, calls `edit()` of
+  `settings/git/lazygit.lua` through `nvim --server "$NVIM" --remote-expr`: it
+  remembers the path, sends `q` to lazygit and opens the file in the window
+  lazygit was started from once the float has closed
+  (`lazygit_on_exit_callback`). Opened at once, the file would land in the
+  float, which lazygit.nvim closes as lazygit exits. `editInTerminal` is off,
+  or lazygit waits for Enter after every such call; the one command that has to
+  wait for the editor (`editAtLineAndWait`) runs a nested Neovim in the float
+  instead. neovim-remote (`nvr`) is not needed.
 - **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
   would otherwise open an empty buffer), sends `workspace/didRenameFiles` so
   vtsls fixes imports after a rename, and takes its width from a function:
@@ -893,9 +911,9 @@ when "cleaned up".
   and whenever a server attaches or detaches. nvim-origami's own switch to LSP
   folds is off, because it ignores that limit, and `vim.lsp.foldexpr()` freezes
   Neovim on such a file for minutes. origami keeps the rest: line counts with
-  diagnostics and git changes on a closed fold (hidden in neogit buffers),
-  auto-folded comments and imports, and folds paused while searching — it removes
-  `search` from `'foldopen'` and keeps only the fold under the cursor open once
+  diagnostics and git changes on a closed fold, auto-folded comments and
+  imports, and folds paused while searching — it removes `search` from
+  `'foldopen'` and keeps only the fold under the cursor open once
   the search is over. Its `h` / `l` / `^` / `$` keymaps stay off. Auto-folding
   works through LSP folds only and does not reach the file Neovim starts with;
   files opened later are folded.
@@ -923,7 +941,7 @@ when "cleaned up".
   does exactly that through vim-dadbod-completion, and without the command
   both `<localleader>x` and a one-off `:DB` fail with E464. Re-sourcing is
   idempotent: the file clears its own augroup and keeps existing globals.
-- **`<leader>Du` opens the database in a tab of its own**, like neogit:
+- **`<leader>Du` opens the database in a tab of its own**:
   `:tabnew`, then a plain `:DBUI`, not the documented `:tab DBUI`. With `<mods>`
   the drawer fills the whole tab and shrinks to `database.width` only when the
   tab held a single window as the first query opened, and dadbod-ui's

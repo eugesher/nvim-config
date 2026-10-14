@@ -5,7 +5,8 @@ local M = {}
 
 M.event = "VeryLazy"
 
-local panels = { "neo-tree", "trouble", "dbui", "dap-view", "dap-view-term", "dap-repl", "aerial" }
+local panels =
+  { "neo-tree", "trouble", "dbui", "dap-view", "dap-view-term", "dap-repl", "aerial", "lazygit" }
 
 local function macro_recording()
   local reg = vim.fn.reg_recording()

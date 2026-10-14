@@ -45,7 +45,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `spelling.lua` (codebook's path check and project scan), `project.lua` (the project scan both share), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
-| `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql) |
+| `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql, markdown wrapping) |
 
 A spec is built with `require("settings").spec(repo, name, extra)`, where `name`
 is `"<group>.<name>"` (`"ui.theme"`). The settings module
@@ -105,9 +105,7 @@ lsp/mason).
   `which_key` field). `settings/whichkey/whichkey.lua` declares groups only.
   Neovim's fold commands are no keymaps: their extra which-key descriptions sit
   in the `which_key` field of `settings/structure/origami.lua`, and KEYMAP.md
-  lists them by hand under "Folds" — keep both in step. neogit's buffer keys
-  get their descriptions from `settings/git/neogit.lua`, keyed by the action
-  names of its `opts.mappings`: a new action there needs one. The keys of
+  lists them by hand under "Folds" — keep both in step. The keys of
   `after/ftplugin/dbui.lua` are listed by hand under "Database drawer": the
   scripts never open the drawer.
 - After changing keys run `scripts/audit-keymaps.lua`. A deliberate duplicate or
@@ -159,12 +157,15 @@ These look like mistakes or omissions and are not. Change them only on request.
 - **neotest `discovery = { enabled = false }`.** Automatic discovery walks the
   whole workspace and freezes the editor in a NestJS monorepo; the test tree is
   built from the files opened and the tests run.
-- **No telescope, lazygit, AI plugins or cspell.**
+- **No telescope, neogit, AI plugins or cspell.**
   - fzf-lua is the only picker and also serves `vim.ui.select`.
     `telescope-fzf-native.nvim` is installed solely as the C fzf library dropbar's
     menu filter needs; telescope itself is not.
-  - Git works inside the editor through neogit, diffview.nvim and gitsigns
-    (lazygit, vim-fugitive and snacks.nvim were rejected; `<leader>gL` stays free).
+  - Git is lazygit in lazygit.nvim's float (`<leader>gg`), diffview.nvim and
+    gitsigns (neogit replaced by lazygit; vim-fugitive and snacks.nvim were
+    rejected; `<leader>gL` stays free). `nvim/lazygit.yml` is passed to lazygit
+    after the user's own config and points its editor commands back at this
+    Neovim; `install.sh` copies it with the rest of `nvim/`.
   - AI integration is left out by design, so nothing else draws ghost text.
   - Spelling is codebook, a language server; cspell.nvim is archived and
     cspell-lsp deprecated. `scripts/cspell-to-codebook.sh` migrates an old word
@@ -235,8 +236,8 @@ Further decisions, explained in README.md ("Implementation notes"):
   server name.
 - unused code carries two different marks: `DiagnosticUnnecessary` for what the
   compiler proves unused, `settings/lsp/unused.lua`'s `Unused symbol '…'.` for a
-  declaration no code references (`lsp.unused_skip`: `fields` keeps DTO and
-  entity fields out, `methods` controller methods, `paths` whole files —
+  declaration no code references (`lsp.unused_skip`: `fields` keeps the fields
+  of every class out, `methods` controller methods, `paths` whole files —
   node_modules). Both are warnings: `core/diagnostics.lua` wraps the two
   diagnostic handlers and raises a hint tagged `Unnecessary` to a warning
   before Neovim stores it, `core/annotations.lua` draws it in `UnusedSymbol`,

@@ -147,7 +147,7 @@ M.opts = {
   show_help = true,
   show_keys = true,
   disable = {
-    ft = { "neo-tree", "dbui", "dap-view", "trouble", "aerial" },
+    ft = { "neo-tree", "dbui", "dap-view", "trouble", "aerial", "lazygit" },
     bt = { "terminal" },
   },
   debug = false,
