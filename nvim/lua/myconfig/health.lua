@@ -1,3 +1,5 @@
+local user = require("user.settings")
+
 local M = {}
 
 local health = vim.health
@@ -5,8 +7,8 @@ local health = vim.health
 local REQUIRED = {
   {
     bin = "git",
-    min = "2.31.0",
-    why = "plugins, gitsigns and lazygit; diffview.nvim needs 2.31+",
+    min = "2.36.0",
+    why = "plugins, gitsigns and lazygit; the lazygit config check needs 2.36+",
     install = "sudo apt install git",
   },
   {
@@ -198,7 +200,8 @@ local function check_mason()
   for _, server in ipairs(require("settings.lsp.lspconfig").servers) do
     local name = mapped and to_package and to_package[server]
     if name then
-      packages[#packages + 1] = { name = name, role = "language server " .. server }
+      packages[#packages + 1] =
+        { name = name, role = "language server " .. server, pin = user.mason.servers[server] }
     else
       health.warn(
         ("%s: no Mason package is known for it yet — the registry has not been downloaded"):format(
@@ -209,13 +212,29 @@ local function check_mason()
     end
   end
   for _, tool in ipairs(require("settings.lsp.mason").extra_tools) do
-    packages[#packages + 1] = { name = tool, role = "tool" }
+    packages[#packages + 1] = { name = tool, role = "tool", pin = user.mason.tools[tool] }
   end
 
   for _, package in ipairs(packages) do
     local installed_ok, installed = pcall(registry.is_installed, package.name)
     if installed_ok and installed then
-      health.ok(("%s (%s)"):format(package.name, package.role))
+      local version = registry.get_package(package.name):get_installed_version()
+      if package.pin and version ~= package.pin then
+        health.warn(
+          ("%s %s (%s) differs from the pinned %s"):format(
+            package.name,
+            tostring(version),
+            package.role,
+            package.pin
+          ),
+          {
+            ":MasonInstall " .. package.name .. "@" .. package.pin,
+            "or change the pin in lua/user/settings.lua (mason)",
+          }
+        )
+      else
+        health.ok(("%s %s (%s)"):format(package.name, tostring(version), package.role))
+      end
     elseif installed_ok then
       health.error(("%s is not installed (%s)"):format(package.name, package.role), {
         "Restart nvim and wait: missing packages are installed on startup",
@@ -325,7 +344,7 @@ end
 
 local function check_font()
   health.start("Font")
-  if require("user.settings").ui.nerd_font then
+  if user.ui.nerd_font then
     health.ok(
       "ui.nerd_font = true — the terminal is marked as using a Nerd Font v3 (Neovim cannot see the font itself)"
     )

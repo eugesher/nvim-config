@@ -82,10 +82,12 @@ local function on_attach(event)
   end
   if supports("textDocument/rename") then
     local function rename()
-      return ":IncRename " .. vim.fn.expand("<cword>")
+      local word = vim.fn.expand("<cword>")
+      return ":IncRename " .. (word:match("^[%w_$]+$") and word or "")
     end
-    bmap("n", "grn", rename, "Rename symbol (live preview)", { expr = true })
-    bmap("n", "<leader>cr", rename, "Rename symbol (live preview)", { expr = true })
+    local opts = { expr = true, replace_keycodes = false }
+    bmap("n", "grn", rename, "Rename symbol (live preview)", opts)
+    bmap("n", "<leader>cr", rename, "Rename symbol (live preview)", opts)
   end
   bmap("n", "<leader>cd", vim.diagnostic.open_float, "Line diagnostics")
   bmap("n", "<leader>cD", vim.diagnostic.setloclist, "Buffer diagnostics to loclist")

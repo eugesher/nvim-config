@@ -42,6 +42,43 @@ local function restore_latest()
   auto_session.restore_session_file(newest)
 end
 
+local function git_branch(path)
+  local cmd = { "git", "-C", path or vim.fn.getcwd(), "rev-parse", "--abbrev-ref", "HEAD" }
+  local ok, job = pcall(vim.system, cmd, { text = true })
+  if not ok then
+    return nil
+  end
+  local result = job:wait(2000)
+  if result.code ~= 0 then
+    return nil
+  end
+  return vim.trim(result.stdout)
+end
+
+local function plain_session_paths()
+  local paths = { vim.fn.getcwd(-1, -1) }
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    paths[#paths + 1] = vim.api.nvim_buf_get_name(buf)
+  end
+  for _, tab in ipairs(vim.api.nvim_list_tabpages()) do
+    local tabnr = vim.api.nvim_tabpage_get_number(tab)
+    paths[#paths + 1] = vim.fn.getcwd(-1, tabnr)
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(tab)) do
+      paths[#paths + 1] = vim.fn.getcwd(vim.api.nvim_win_get_number(win), tabnr)
+    end
+  end
+  for _, path in ipairs(paths) do
+    if path:find("%c") then
+      vim.notify(
+        "Session not saved: a buffer name or working directory holds a control character",
+        vim.log.levels.WARN
+      )
+      return false
+    end
+  end
+  return true
+end
+
 M.keys = {
   { "<leader>ss", "<cmd>AutoSession restore<cr>", desc = "Restore session" },
   { "<leader>sl", restore_latest, desc = "Restore last session" },
@@ -67,7 +104,7 @@ M.opts = {
   close_unsupported_windows = true,
   preserve_buffer_on_restore = nil,
 
-  git_use_branch_name = true,
+  git_use_branch_name = git_branch,
   git_auto_restore_on_branch_change = false,
   custom_session_tag = nil,
   resolve_symlinks = false,
@@ -145,7 +182,7 @@ M.opts = {
     },
   },
 
-  pre_save_cmds = {},
+  pre_save_cmds = { plain_session_paths },
   post_save_cmds = {},
   pre_restore_cmds = {},
   post_restore_cmds = {},

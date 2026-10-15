@@ -1,3 +1,4 @@
+local trust = require("core.trust")
 local user = require("user.settings")
 
 local M = {}
@@ -7,6 +8,29 @@ M.cmd = { "ConformInfo" }
 
 local function prettier()
   return { "prettierd", "prettier", stop_after_first = true }
+end
+
+local function project_bin(name)
+  return function(_, ctx)
+    local stop = trust.root(ctx.buf)
+    for dir in vim.fs.parents(ctx.filename) do
+      local bin = vim.fs.joinpath(dir, "node_modules", ".bin", name)
+      if vim.fn.executable(bin) == 1 then
+        return bin
+      end
+      if dir == stop then
+        break
+      end
+    end
+    return name
+  end
+end
+
+local function prettier_allowed(bufnr)
+  local runs_prettier = vim.iter(require("conform").list_formatters(bufnr)):any(function(info)
+    return info.name == "prettierd" or info.name == "prettier"
+  end)
+  return not runs_prettier or trust.allowed(trust.root(bufnr))
 end
 
 function M.init()
@@ -64,10 +88,14 @@ M.opts = {
     if size > user.formatting.max_filesize then
       return
     end
+    if not prettier_allowed(bufnr) then
+      return
+    end
     return {}
   end,
   formatters = {
-    prettierd = { inherit = true },
+    prettierd = { inherit = true, command = project_bin("prettierd") },
+    prettier = { inherit = true, command = project_bin("prettier") },
     stylua = { inherit = true },
     sql_formatter = {
       inherit = true,
@@ -87,6 +115,13 @@ M.keys = {
   {
     "<leader>cf",
     function()
+      if not prettier_allowed(0) then
+        vim.notify(
+          "Format skipped: prettier would run code of an untrusted project",
+          vim.log.levels.WARN
+        )
+        return
+      end
       require("conform").format()
     end,
     mode = { "n", "x" },

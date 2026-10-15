@@ -93,10 +93,12 @@ function M.init()
   local g = vim.g
 
   g.db_ui_save_location = vim.fn.stdpath("data") .. "/db_ui"
+  vim.fn.mkdir(g.db_ui_save_location, "p", tonumber("700", 8))
+  vim.uv.fs_chmod(g.db_ui_save_location, tonumber("700", 8))
   g.db_ui_tmp_query_location = ""
   g.db_ui_execute_on_save = 0
   g.db_ui_table_helpers = { mysql = MYSQL_HELPERS }
-  g.db_ui_auto_execute_table_helpers = 1
+  g.db_ui_auto_execute_table_helpers = 0
   g.db_ui_bind_param_pattern = [[:\w\+]]
 
   g.db_ui_env_variable_url = "DBUI_URL"

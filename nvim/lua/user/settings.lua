@@ -51,6 +51,33 @@ return {
 
   http = {
     default_env = "dev",
+    kulala_core_sha256 = "750a79cf888b30801225b3b9af644447be9e9fe3a55bfa8c0b1daabe54474502",
+  },
+
+  trust = {
+    git_timeout_ms = 2000,
+  },
+
+  mason = {
+    registry = "2026-10-14-frank-knight",
+    servers = {
+      vtsls = "0.3.0",
+      eslint = "4.10.0",
+      lua_ls = "3.19.1",
+      jsonls = "4.10.0",
+      yamlls = "1.24.0",
+      bashls = "5.6.0",
+      codebook = "v0.3.42",
+      docker_language_server = "v0.20.1",
+      dockerls = "0.15.0",
+    },
+    tools = {
+      prettierd = "0.29.0",
+      prettier = "3.9.6",
+      stylua = "v2.5.2",
+      ["js-debug-adapter"] = "v1.117.0",
+      ["sql-formatter"] = "15.8.2",
+    },
   },
 
   spelling = {

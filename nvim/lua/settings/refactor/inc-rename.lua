@@ -3,11 +3,18 @@ local M = {}
 M.cmd = { "IncRename" }
 
 local function rename()
-  return ":IncRename " .. vim.fn.expand("<cword>")
+  local word = vim.fn.expand("<cword>")
+  return ":IncRename " .. (word:match("^[%w_$]+$") and word or "")
 end
 
 M.keys = {
-  { "<leader>rn", rename, expr = true, desc = "Rename symbol (live preview)" },
+  {
+    "<leader>rn",
+    rename,
+    expr = true,
+    replace_keycodes = false,
+    desc = "Rename symbol (live preview)",
+  },
 }
 
 M.opts = {

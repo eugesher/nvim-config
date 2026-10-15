@@ -1,8 +1,7 @@
+local trust = require("core.trust")
 local user = require("user.settings")
 
 local M = {}
-
-local root_markers = { "tsconfig.json", "package.json", "jsconfig.json" }
 
 local function language(extra)
   return vim.tbl_deep_extend("force", {
@@ -87,18 +86,25 @@ local function move_to_file(command, ctx)
   end, ctx.bufnr)
 end
 
+local function workspace_tsdk(root)
+  if not root or not vim.uv.fs_stat(root .. "/node_modules/typescript/lib/tsserver.js") then
+    return false
+  end
+  return trust.allowed(root)
+end
+
 M.config = {
   cmd = { "vtsls", "--stdio" },
   filetypes = { "typescript", "typescriptreact", "javascript", "javascriptreact" },
   root_dir = function(bufnr, on_dir)
-    on_dir(vim.fs.root(bufnr, ".git") or vim.fs.root(bufnr, root_markers) or vim.fn.getcwd())
+    on_dir(trust.root(bufnr) or vim.fn.getcwd())
   end,
   commands = {
     ["_typescript.moveToFileRefactoring"] = move_to_file,
   },
   settings = {
     vtsls = {
-      autoUseWorkspaceTsdk = true,
+      autoUseWorkspaceTsdk = false,
       enableMoveToFileCodeAction = true,
       experimental = {
         completion = { enableServerSideFuzzyMatch = true },
@@ -115,6 +121,9 @@ M.config = {
     }),
     javascript = language(),
   },
+  before_init = function(_, config)
+    config.settings.vtsls.autoUseWorkspaceTsdk = workspace_tsdk(config.root_dir)
+  end,
 }
 
 function M.keymaps(client, _, map)

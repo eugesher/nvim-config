@@ -11,7 +11,10 @@ M.opts = {
   PATH = "prepend",
   log_level = vim.log.levels.INFO,
   max_concurrent_installers = 4,
-  registries = { "github:mason-org/mason-registry" },
+  registries = {
+    "github:mason-org/mason-registry"
+      .. (user.mason.registry and ("@" .. user.mason.registry) or ""),
+  },
   system_registries = { "github:mason-org/mason-system-registry" },
   registry_cache = {
     refresh = true,
@@ -62,8 +65,15 @@ M.opts = {
   },
 }
 
+local function pinned(name, versions)
+  local version = versions[name]
+  return version and (name .. "@" .. version) or name
+end
+
 local lspconfig_opts = {
-  ensure_installed = {
+  ensure_installed = vim.tbl_map(function(server)
+    return pinned(server, user.mason.servers)
+  end, {
     "vtsls",
     "eslint",
     "lua_ls",
@@ -73,7 +83,7 @@ local lspconfig_opts = {
     "codebook",
     "docker_language_server",
     "dockerls",
-  },
+  }),
   automatic_enable = true,
 }
 
@@ -92,7 +102,7 @@ local function ensure_extra_tools()
     for _, name in ipairs(missing) do
       local ok, pkg = pcall(registry.get_package, name)
       if ok then
-        pcall(pkg.install, pkg)
+        pcall(pkg.install, pkg, { version = user.mason.tools[name] })
       else
         vim.notify(("Mason: unknown package %q"):format(name), vim.log.levels.WARN)
       end

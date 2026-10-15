@@ -1,3 +1,5 @@
+require("core.env")
+require("core.trust")
 require("core.options")
 require("core.keymaps")
 require("core.autocmds")
