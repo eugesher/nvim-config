@@ -1,3 +1,5 @@
+local user = require("user.settings")
+
 local M = {}
 
 function M.attached_buffer(client, path)
@@ -48,7 +50,14 @@ local function new_job(client)
 end
 
 local function files_in(root, filetypes, ignored, callback)
-  vim.system({ "rg", "--files", "--no-require-git" }, { cwd = root, text = true }, function(out)
+  local cmd = {
+    "rg",
+    "--files",
+    "--no-require-git",
+    "--max-filesize",
+    tostring(user.treesitter.max_filesize),
+  }
+  vim.system(cmd, { cwd = root, text = true }, function(out)
     vim.schedule(function()
       local files = {}
       for name in vim.gsplit(out.stdout or "", "\n", { trimempty = true }) do

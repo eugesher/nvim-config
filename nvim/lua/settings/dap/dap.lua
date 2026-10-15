@@ -150,7 +150,7 @@ local function node_configurations()
       request = "launch",
       name = "Launch: ts-node current file",
       runtimeExecutable = "npx",
-      runtimeArgs = { "ts-node", "-r", "tsconfig-paths/register" },
+      runtimeArgs = { "--no", "ts-node", "-r", "tsconfig-paths/register" },
       program = "${file}",
       cwd = "${workspaceFolder}",
     }),

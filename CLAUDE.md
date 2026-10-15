@@ -39,7 +39,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 
 | Path | Holds |
 | --- | --- |
-| `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, the annotations drawn above a line, filetypes, the lazy.nvim bootstrap |
+| `lua/core/` | Neovim itself without plugins: options, keymaps, autocmds, diagnostics, the annotations drawn above a line, filetypes, the lazy.nvim bootstrap, the lazygit float (`lazygit.lua`), the project trust check (`trust.lua`), the git environment (`env.lua`, loaded first) |
 | `lua/plugins/*.lua` | **Thin** lazy.nvim specs: repository, `dependencies`, `build`, `version` / `branch` / `commit`. Never `opts` or `keys` |
 | `lua/settings/<group>/<name>.lua` | **Everything** a plugin is configured with, one file per plugin; `<group>` is the `lua/plugins/<group>.lua` file that declares it. Only `init.lua` (the spec glue) and `icons.lua` (glyphs) sit at the top of `lua/settings/` |
 | `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `spelling.lua` (codebook's path check and project scan), `project.lua` (the project scan both share), `servers/<name>.lua` |
@@ -161,11 +161,37 @@ These look like mistakes or omissions and are not. Change them only on request.
   - fzf-lua is the only picker and also serves `vim.ui.select`.
     `telescope-fzf-native.nvim` is installed solely as the C fzf library dropbar's
     menu filter needs; telescope itself is not.
-  - Git is lazygit in lazygit.nvim's float (`<leader>gg`), diffview.nvim and
-    gitsigns (neogit replaced by lazygit; vim-fugitive and snacks.nvim were
-    rejected; `<leader>gL` stays free). `nvim/lazygit.yml` is passed to lazygit
-    after the user's own config and points its editor commands back at this
-    Neovim; `install.sh` copies it with the rest of `nvim/`.
+  - Git is lazygit in a float of `core/lazygit.lua` (`<leader>gg`),
+    diffview.nvim and gitsigns (neogit replaced by lazygit; vim-fugitive and
+    snacks.nvim were rejected; lazygit.nvim was dropped because it builds a
+    shell command from the current file's path; `<leader>gL` stays free).
+    `nvim/lazygit.yml` is passed to lazygit after the user's own config and
+    points its editor commands back at this Neovim; `install.sh` copies it
+    with the rest of `nvim/`.
+  - vtsls' workspace TypeScript, eslint and prettier's format on save run
+    only when `core/trust.lua` trusts the directory whose code they would
+    load; outside a trusted project vtsls keeps its bundled TypeScript,
+    eslint does not start and prettier runs neither on save nor on
+    `<leader>cf`. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps
+    the answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's
+    `:trust` database: Deny is permanent, Allow lasts while the fingerprint
+    holds (the root's configs, `tsconfig.json`, lockfiles and `node_modules`
+    entry points, and the index entries of every tracked config,
+    `tsconfig*.json` and `node_modules` file; code a config imports is not in
+    it). `:ProjectTrust` lists, forgets and denies roots. lazygit starts
+    only after the same prompt (`lazygit:<main worktree>`) has allowed the
+    repository's lazygit configs, the origin files of command-running git
+    settings and its executable hooks; `git.autoFetch` is off.
+  - `core/env.lua` sets `core.fsmonitor=false` for every git Neovim starts,
+    so a repository's `core.fsmonitor` never runs, and auto-session's
+    `git_use_branch_name` is a function around `vim.system`, so a directory
+    name never reaches a shell. Other commands a `.git/config` can name
+    (`filter.<driver>.clean` among them) are not covered.
+  - Mason packages and the Mason registry release are pinned in `user.mason`
+    (the registry's `@<tag>` form comes from Mason's source, not its docs — a
+    deliberate exception to the documented-options rule), kulala-core by
+    SHA-256 in `user.http.kulala_core_sha256` (checked when kulala loads,
+    cached by stat), and dadbod-ui's table helpers never run on their own.
   - AI integration is left out by design, so nothing else draws ghost text.
   - Spelling is codebook, a language server; cspell.nvim is archived and
     cspell-lsp deprecated. `scripts/cspell-to-codebook.sh` migrates an old word

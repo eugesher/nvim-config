@@ -44,7 +44,69 @@ local function formatter(cmd)
   return vim.fn.executable(cmd[1]) == 1 and cmd or nil
 end
 
-M.opts = {
+local function private_dirs()
+  local data = vim.env.XDG_DATA_HOME or vim.fs.normalize("~/.local/share")
+  for _, dir in ipairs({ vim.fn.stdpath("cache") .. "/kulala", data .. "/kulala-core" }) do
+    if vim.uv.fs_stat(dir) then
+      vim.uv.fs_chmod(dir, tonumber("700", 8))
+    end
+  end
+end
+
+local verified_path = vim.fs.joinpath(vim.fn.stdpath("state"), "myconfig", "kulala-core.json")
+
+local function verified(key, pin)
+  local file = io.open(verified_path, "r")
+  if not file then
+    return false
+  end
+  local ok, data = pcall(vim.json.decode, file:read("*a") or "")
+  file:close()
+  return ok and type(data) == "table" and data.key == key and data.sha256 == pin
+end
+
+local function remember(key, pin)
+  vim.fn.mkdir(vim.fs.dirname(verified_path), "p", tonumber("700", 8))
+  local fd = vim.uv.fs_open(verified_path, "w", tonumber("600", 8))
+  if fd then
+    vim.uv.fs_write(fd, vim.json.encode({ key = key, sha256 = pin }))
+    vim.uv.fs_close(fd)
+  end
+end
+
+local function core_path()
+  local pin = user.http.kulala_core_sha256
+  if not pin then
+    return nil
+  end
+  local path = vim.fs.joinpath(vim.fn.stdpath("data"), "kulala.nvim", "bin", "kulala-core")
+  local stat = vim.uv.fs_stat(path)
+  local key = stat
+    and table.concat({ stat.ino, stat.size, stat.mtime.sec, stat.mtime.nsec, stat.ctime.sec }, ":")
+  if key and verified(key, pin) then
+    return path
+  end
+  if key and stat.type == "file" then
+    local ok, job = pcall(vim.system, { "sha256sum", "--", path }, { text = true })
+    local result = ok and job:wait(10000) or nil
+    if result and result.code == 0 and result.stdout:match("^%x+") == pin then
+      remember(key, pin)
+      return path
+    end
+  end
+  if vim.v.exiting == vim.NIL then
+    vim.notify(
+      ("kulala-core is missing or does not match http.kulala_core_sha256, requests fail: %s"):format(
+        path
+      ),
+      vim.log.levels.ERROR
+    )
+  end
+  local refuse = vim.fn.exepath("false")
+  return refuse ~= "" and refuse or "/bin/false"
+end
+
+local opts = {
   kulala_core = {
     path = nil,
     timeout = 60000,
@@ -125,5 +187,11 @@ M.opts = {
     signs = { folded = ">", expanded = "v" },
   },
 }
+
+function M.opts()
+  private_dirs()
+  opts.kulala_core.path = core_path()
+  return opts
+end
 
 return M

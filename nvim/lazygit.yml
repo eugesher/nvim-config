@@ -1,9 +1,11 @@
 os:
   edit: >-
-    nvim --server "$NVIM" --remote-expr "v:lua.require'settings.git.lazygit'.edit(\""{{filename}}"\")"
+    nvim --server "$NVIM" --remote-expr "v:lua.require'core.lazygit'.edit_hex('$(printf '%s\0' {{filename}} | od -An -v -tx1 | tr -d ' \n')')"
   editAtLine: >-
-    nvim --server "$NVIM" --remote-expr "v:lua.require'settings.git.lazygit'.edit(\""{{filename}}"\", {{line}})"
+    nvim --server "$NVIM" --remote-expr "v:lua.require'core.lazygit'.edit_hex('$(printf '%s\0' {{filename}} | od -An -v -tx1 | tr -d ' \n')', {{line}})"
   editInTerminal: false
   editAtLineAndWait: nvim +{{line}} -- {{filename}}
   openDirInEditor: >-
-    nvim --server "$NVIM" --remote-expr "v:lua.require'settings.git.lazygit'.edit(\""{{dir}}"\")"
+    nvim --server "$NVIM" --remote-expr "v:lua.require'core.lazygit'.edit_hex('$(printf '%s\0' {{dir}} | od -An -v -tx1 | tr -d ' \n')')"
+git:
+  autoFetch: false

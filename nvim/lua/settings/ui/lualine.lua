@@ -52,7 +52,7 @@ local function dap_active()
   return package.loaded["dap"] ~= nil and require("dap").session() ~= nil
 end
 local function dap_status()
-  return icons.dap.stopped .. " " .. require("dap").status()
+  return icons.dap.stopped .. " " .. require("dap").status():gsub("%%", "%%%%")
 end
 
 local function neotest_status()

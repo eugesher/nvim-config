@@ -11,8 +11,8 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 | Dependency                      | Why                                                                                                                                                                   | Install                                                                                                                          |
 | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | **Neovim 0.12+**                | Core editor; the config uses 0.12 APIs throughout                                                                                                                     | `sudo snap install nvim --classic`                                                                                               |
-| **Git 2.31+**                   | Plugin management, gitsigns, lazygit; diffview.nvim needs 2.31+                                                                                                       | `sudo apt install git`                                                                                                           |
-| **lazygit**                     | The git interface behind `<leader>gg` (lazygit.nvim)                                                                                                                  | `sudo apt install lazygit`                                                                                                       |
+| **Git 2.36+**                   | Plugin management, gitsigns, lazygit; `git worktree list -z` (lazygit's config check) needs 2.36+                                                                     | `sudo apt install git`                                                                                                           |
+| **lazygit**                     | The git interface behind `<leader>gg`, in a float of this config                                                                                                      | `sudo apt install lazygit`                                                                                                       |
 | **Node.js 20+** and npm         | TS/JS language servers, prettierd, sql-formatter, js-debug-adapter, tree-sitter-cli                                                                                   | [nodejs.org](https://nodejs.org), or via `fnm` / `nvm`                                                                           |
 | **tree-sitter-cli ≥ 0.26.1**    | The `main` branch of nvim-treesitter builds parsers with it                                                                                                           | `npm install -g tree-sitter-cli`                                                                                                 |
 | **build-essential** (gcc, make) | Builds LuaSnip's `jsregexp`, treesitter parsers and telescope-fzf-native.nvim — the C fzf library behind the filter in dropbar's menus (telescope itself is not used) | `sudo apt install build-essential`                                                                                               |
@@ -30,7 +30,7 @@ tests, database and HTTP clients into a single keyboard-driven workflow.
 | **inotify-tools** (`inotifywait`) | Fast file watching for language servers (vtsls, ESLint). Without it Neovim on Linux falls back to a slower per-directory watcher                                                                                                                                                                                                                                  |
 | **mysql-client**                  | MySQL database client for vim-dadbod                                                                                                                                                                                                                                                                                                                              |
 | **redis-tools** (`redis-cli`)     | One-off `:DB redis://…` commands and interactive Redis work in a separate terminal window                                                                                                                                                                                                                                                                         |
-| **kulala-core**                   | The engine behind the HTTP client: kulala 6.x runs every request through it. Downloaded automatically from GitHub releases on the first request into `~/.local/share/nvim/kulala.nvim/bin` (~100 MB), so a new machine needs network access once. That first request fails while the download runs — repeat it after the "Backend installed successfully" message |
+| **kulala-core**                   | The engine behind the HTTP client: kulala 6.x runs every request through it. kulala downloads it into `~/.local/share/nvim/kulala.nvim/bin` (~100 MB) only while `http.kulala_core_sha256` is `nil`; with the pin set, only a binary with that SHA-256 runs                                                                                                       |
 | **jq**                            | Pretty-printing JSON responses in kulala                                                                                                                                                                                                                                                                                                                          |
 | **libxml2-utils** (`xmllint`)     | Pretty-printing XML responses in kulala                                                                                                                                                                                                                                                                                                                           |
 | **bat**                           | Syntax highlighting in picker previews (ships as `batcat`, needs a `bat` symlink)                                                                                                                                                                                                                                                                                 |
@@ -99,7 +99,7 @@ the `http/` collections in this repository.
 | Picker                  | fzf-lua, also behind `vim.ui.select`                                                                                                                                         |
 | Files                   | neo-tree (project tree), oil.nvim (directory as an editable buffer)                                                                                                          |
 | Code structure          | aerial (symbol tree), dropbar (breadcrumbs in the status line), nvim-origami (fold line counts, auto-folded imports and comments)                                            |
-| Git                     | gitsigns, lazygit.nvim, diffview.nvim, git-conflict.nvim                                                                                                                     |
+| Git                     | gitsigns, lazygit (in a float of its own), diffview.nvim, git-conflict.nvim                                                                                                  |
 | Database                | vim-dadbod, vim-dadbod-ui, vim-dadbod-completion                                                                                                                             |
 | HTTP client             | kulala.nvim                                                                                                                                                                  |
 | Debugging               | nvim-dap, nvim-dap-view, nvim-dap-virtual-text, js-debug-adapter                                                                                                             |
@@ -120,7 +120,8 @@ nvim/
 ├── lazygit.yml           # lazygit settings added on top of your own
 ├── lua/
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
-│   │                     # autocmds, diagnostics, filetypes, lazy.nvim bootstrap
+│   │                     # autocmds, diagnostics, filetypes, lazy.nvim
+│   │                     # bootstrap, the lazygit float, project trust
 │   ├── plugins/          # thin lazy.nvim specs, one file per area
 │   ├── settings/         # the configuration of every plugin
 │   │   ├── init.lua      # settings.spec(): a lazy.nvim spec from a settings module
@@ -186,6 +187,10 @@ plain data the rest of the config reads:
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `git.lazygit_scale`                                          | size of the lazygit window, a fraction of the editor: `1` fills the screen without a border, `0.9` leaves a margin and keeps `ui.border`                                                 |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
+| `http.kulala_core_sha256`                                    | SHA-256 of the kulala-core binary allowed to run; `nil` lets kulala download a new one (then `sha256sum` it and pin again)                                                               |
+| `trust.git_timeout_ms`                                       | milliseconds the project trust check gives git; when git is slower, project code stays off and a notice names this setting                                                               |
+| `mason.registry`                                             | release tag of the Mason registry the packages are resolved from (`github:mason-org/mason-registry@<tag>`); `nil` follows the latest                                                     |
+| `mason.servers`, `tools`                                     | the Mason version of every language server and tool, installed as `name@version`; `:checkhealth myconfig` warns on a different one                                                       |
 | `spelling.project_dictionary`                                | path of the project dictionary, relative to the project root; `<leader>cw` and `Add to dictionary` write it, `""` leaves codebook to find `codebook.toml` itself                         |
 | `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
 | `spelling.scan_timeout`                                      | milliseconds `<leader>xs` waits for codebook to answer one file before it moves on without it                                                                                            |
@@ -792,16 +797,57 @@ when "cleaned up".
   boundaries: `after/ftplugin/markdown.lua` turns `'wrap'` and `'linebreak'` on
   for the window showing the buffer, while every other filetype keeps the
   global `wrap = false`.
-- **lazygit runs in lazygit.nvim's floating terminal** with two config files:
-  your own `~/.config/lazygit/config.yml` when it exists, then `lazygit.yml`
-  from this config on top of it, which sets the editor commands only. `e` on a
-  file, or on a line of the staging view, calls `edit()` of
-  `settings/git/lazygit.lua` through `nvim --server "$NVIM" --remote-expr`: it
-  remembers the path, sends `q` to lazygit and opens the file in the window
-  lazygit was started from once the float has closed
-  (`lazygit_on_exit_callback`). Opened at once, the file would land in the
-  float, which lazygit.nvim closes as lazygit exits. `editInTerminal` is off,
-  or lazygit waits for Enter after every such call; the one command that has to
+- **lazygit runs in a floating terminal of `core/lazygit.lua`**, not in
+  lazygit.nvim: that plugin builds a shell command from the path of the
+  current file on every start, so a file reached through a symlink whose
+  target holds `$(…)` ran that command; its `:LazyGit*` commands went with it.
+  `open()` starts lazygit with `jobstart()` and an argument list, in the
+  working directory, with two config files when they exist: your own
+  `~/.config/lazygit/config.yml`, then `lazygit.yml` from this config on top of
+  it, which sets the editor commands only; `git.autoFetch` is off there, so
+  lazygit fetches only when asked. A repository can make lazygit's git run
+  commands in several ways, and `open()` collects every file that does so
+  before lazygit starts:
+  - `lazygit.yml` in the common git directory (the main `.git`, even in a
+    linked worktree) and `.lazygit.yml` in every parent directory of the main
+    worktree, which lazygit merges over the config above;
+  - when any repository-scope setting runs commands (`filter.*`, `diff.*`,
+    `difftool.*`, `mergetool.*`, `gpg.*`, `include*`, `trailer.*`,
+    `submodule.*.update`, `core.pager`, `core.sshCommand`,
+    `core.alternateRefsCommand`, `core.hooksPath`, `remote.*.vcs` and the
+    like), every file those settings come from: git lists them with
+    `config --includes --show-scope --show-origin -z`, run in the work tree's
+    top directory because it prints the origins relative to it, so
+    `.git/config`, `.git/config.worktree` and included files at any depth all
+    count, whatever their names hold, from any directory Neovim was started
+    in; an origin that does not exist keeps lazygit from starting;
+  - every executable hook in the hooks directory git uses
+    (`rev-parse --git-path hooks`, which follows `core.hooksPath`), `.sample`
+    files aside.
+
+  Each must be a regular file of at most 64 MB, and the whole set goes through
+  the same Allow / Deny / Ignore prompt as a project root, keyed
+  `lazygit:<main worktree>` in `trust.json`: one question per repository, asked
+  again when any of those files changes, and `:ProjectTrust` lists, forgets
+  and denies it. When git cannot describe the repository, lazygit does not
+  start. A repository opened from lazygit's own repository menu skips the
+  check, and so do the scripts a hook manager's stubs call (husky, lefthook):
+  the stubs are in the set, the tracked scripts behind them are not. A second
+  `<leader>gg` while the
+  float is open goes back to it instead of starting another lazygit. The float
+  takes its size from `git.lazygit_scale`, and its filetype is `lazygit`, the
+  name the panel lists use; closing it by hand ends lazygit with it. `e` on a
+  file, or on a line of the
+  staging view, calls `edit_hex()` of `core/lazygit.lua` through
+  `nvim --server "$NVIM" --remote-expr`. The path travels as hex digits
+  (`od -tx1`), never as text inside the expression: a file name holding `"`
+  would otherwise close the string and run the rest as a Vimscript expression.
+  `edit_hex()` decodes it, keeps the first name when several files are
+  selected, and hands it to `edit()`, which remembers the path, sends `q` to
+  lazygit and opens the file in the window lazygit was started from once the
+  float has closed. Opened at once, the file would land in the float, which
+  closes as lazygit exits. `editInTerminal` is off, or lazygit waits for Enter
+  after every such call; the one command that has to
   wait for the editor (`editAtLineAndWait`) runs a nested Neovim in the float
   instead. neovim-remote (`nvr`) is not needed.
 - **neo-tree** loads on the first directory buffer (with netrw off, `nvim .`
@@ -933,7 +979,10 @@ when "cleaned up".
 - **vim-dadbod-ui** notifications use its own floats, not `vim.notify`: with
   Neovim's handler an error becomes a Vimscript trace inside the plugin. MySQL
   table helpers use `{dbname}`, because `{schema}` is empty when the URL names
-  a database, and the hidden system schemas are anchored regexes. Its `config`
+  a database, and the hidden system schemas are anchored regexes. A helper
+  opens its query without running it (`db_ui_auto_execute_table_helpers = 0`):
+  a table name is pasted into the SQL as it is, and a hostile name in a shared
+  database would otherwise run as the developer. Its `config`
   re-sources `plugin/dadbod.vim` when `:DB` has gone missing: the command
   belongs to vim-dadbod, but it is listed among this plugin's lazy triggers,
   and lazy deletes a trigger by name once the plugin loads — which removes the
@@ -976,13 +1025,167 @@ when "cleaned up".
   unfinished `import x ` or `export * ` the only word that may follow is
   `from`, but a tsserver older than 5.0 answers that position with every
   identifier it knows, auto-imports included, and no `from` among them —
-  `autoUseWorkspaceTsdk` hands vtsls the TypeScript of the project, so the
-  version that answers is the project's. `settings/completion/imports.lua` is a
-  blink.cmp source that offers the keyword there itself, with a score offset
-  above every other source, and the `transform_items` of the `lsp` provider
-  drops the `from` a newer TypeScript sends for the same position, so the word
-  is never offered twice. The clause is read from the line in front of the
-  cursor, which keeps `export const x = ` and `export default ` out of it.
+  `autoUseWorkspaceTsdk` hands vtsls the TypeScript of a trusted project, so
+  the version that answers is the project's.
+  `settings/completion/imports.lua` is a blink.cmp source that offers the
+  keyword there itself, with a score offset above every other source, and the
+  `transform_items` of the `lsp` provider drops the `from` a newer TypeScript
+  sends for the same position, so the word is never offered twice. The clause
+  is read from the line in front of the cursor, which keeps
+  `export const x = ` and `export default ` out of it.
+- **Code from a project runs only in a trusted root.** Three tools would run
+  JavaScript the repository ships: vtsls the `tsserver.js` under
+  `node_modules/typescript`, eslint its `eslint.config.*` and the eslint under
+  `node_modules`, prettier its config files and plugins. `core/trust.lua`
+  holds the check, `allowed()` on the directory whose code would run, and
+  `root()`, the `.git` directory above a buffer or else a `package.json` /
+  `tsconfig.json` / `jsconfig.json` one. A buffer in neither has no root and
+  is never trusted, so a stray directory such as `$HOME` is never asked about
+  on its behalf.
+  - vtsls: `before_init` turns `autoUseWorkspaceTsdk` on only when
+    `<root>/node_modules/typescript/lib/tsserver.js` exists and its root, the
+    one vtsls runs in, is trusted; otherwise vtsls uses the TypeScript it
+    bundles.
+  - eslint: `root_dir` runs nvim-lspconfig's own and calls `on_dir` only when
+    the root that function found holds the buffer and is trusted. That root
+    is where lspconfig looks for
+    `node_modules/.bin/vscode-eslint-language-server`, so the directory asked
+    about is the one whose code runs; lspconfig's fallback to the working
+    directory never reaches a file outside it.
+  - prettier: format on save and `<leader>cf` skip a buffer in an untrusted
+    root (or none) when conform would run prettierd or prettier for it,
+    Compose files included; the key says so in a notification. Buffers
+    formatted by stylua or sql-formatter are not affected.
+
+  The first time one of these tools needs a root, `trust.lua` asks: the
+  prompt names the directory, says whether it is new or changed since it was
+  allowed, and offers Allow, Deny and Ignore (the default). The answer is kept
+  in `stdpath("state")/myconfig/trust.json` (directory 700, file 600):
+  - Allow holds while the root's fingerprint (below) stays the same; any
+    change asks again.
+  - Deny holds whatever changes, until it is removed.
+  - Ignore is not written down; the same root is not asked again in that
+    session while the fingerprint stays the same.
+
+  `:ProjectTrust` lists the decisions, `:ProjectTrust forget [dir]` removes
+  one, and `:ProjectTrust deny [dir]` denies a directory without waiting for a
+  prompt; `[dir]` defaults to the `.git` root of the current buffer (eslint
+  may use a nested lockfile root instead: `list` shows the exact keys), else
+  the working directory. The store is written to a temporary file and
+  renamed over the old one, so two instances never leave it half-written. An
+  answer
+  reaches a server that is already running at its next start or
+  `:lsp restart`. A headless run never asks and trusts nothing. Neovim's own
+  `:trust` database is not used for project roots.
+
+  The fingerprint covers what decides the code that runs:
+  - the files at the root: `package.json`, `tsconfig.json`, `jsconfig.json`,
+    the lockfiles, every eslint and prettier config file name, and the entry
+    points started from `node_modules` (`typescript/lib/tsserver.js`,
+    `_tsserver.js` and `typescript.js`, `.bin/vscode-eslint-language-server`,
+    `.bin/prettier`, `.bin/prettierd`, the `package.json` of `eslint` and
+    `prettier`), each by real path and SHA-256. Only a regular file inside the
+    root, up to 64 MB, is read; a symlink out of the root, a FIFO or a device
+    counts by its type and target alone, so a repository cannot make the
+    check hang;
+  - in a git repository, the index entries (`git ls-files --stage`) of every
+    tracked `package.json`, `tsconfig*.json`, `jsconfig*.json`, eslint and
+    prettier config and every tracked file under a `node_modules` directory,
+    at any depth. A pull request that adds a nested config, a TypeScript
+    plugin in `compilerOptions.plugins` of one of those files, or a commit
+    into `node_modules` changes them, while an ordinary commit does not. A
+    file a `tsconfig.json` reaches through `extends` under another name is
+    not covered.
+
+  So such a pull request, `npm install` replacing one of the entry points, or
+  another repository cloned to an allowed path all ask again, while a fresh
+  clone of the same content does not. File hashes are cached by size and
+  times and the index listing by the index file, so a check after nothing
+  changed costs a few dozen `stat` calls. Not covered: code a config imports
+  (a local eslint rule, a prettier plugin kept in the repository), anything
+  deeper in an installed `node_modules`, and a server that is already
+  running, which re-reads its config without asking until its next start.
+- **Git never runs a repository's `core.fsmonitor`.** That setting in
+  `.git/config` names a program git runs on `git status`, `git diff` and
+  `git ls-files`, which gitsigns calls as soon as a file opens. `core/env.lua`,
+  loaded before anything else, adds `core.fsmonitor=false` to the environment
+  (`GIT_CONFIG_COUNT` / `GIT_CONFIG_KEY_<n>` / `GIT_CONFIG_VALUE_<n>`), after
+  any pairs already there, so every git started from Neovim, lazygit and
+  terminal shells included, ignores it, unless a plugin replaces the whole
+  environment of its process. Your own fsmonitor (watchman, git's built-in
+  daemon) is off there too, so `git status` in a very large repository is
+  slower. A restart finds the pair and does not add it twice. Other commands a
+  `.git/config` can name, such as a `filter.<driver>.clean` that a committed
+  `.gitattributes` assigns, still run: the fix covers `core.fsmonitor` only.
+- **auto-session asks git for the branch through `vim.system`.** Its own lookup
+  builds `git -C <directory>` as a shell string, so a directory named
+  `x;cmd;y` ran `cmd` at startup. `git_use_branch_name` is a function that
+  passes the directory as an argument instead and gives git two seconds, so a
+  `.git/HEAD` that never answers cannot hang Neovim at start or exit; the
+  session name keeps the branch, and a directory outside a repository gets
+  none. auto-session's automatic save is skipped while a buffer name or a
+  global, tab or window working directory holds a control character:
+  `:mksession` writes a newline in a name as is, so a file named
+  `a<newline>so.x` would turn into a `:source` of `.x` on the next restore. A
+  save by hand (`:AutoSession save`, `:mksession`) is not checked.
+- **Smaller hardening, one line each.**
+  - Mason installs every server and tool at the version in `mason.servers` /
+    `mason.tools` (`name@version`); `:checkhealth myconfig` shows the installed
+    versions and warns on a different one. Updating is editing the pin and
+    `:MasonInstall name@version`. The registry those versions are resolved
+    from is pinned too: `registries` names
+    `github:mason-org/mason-registry@<mason.registry>`, a release tag, so a new
+    registry release changes nothing until the tag is bumped (edit the tag,
+    then `:MasonUpdate`). The tag decides which registry is used; nothing
+    verifies its content beyond the HTTPS download. The `@<tag>` form
+    is read from Mason's source (`mason-registry/sources/init.lua`), not from
+    its documentation: the one exception to the rule of documented options.
+    npm packages still resolve their own dependencies without a lockfile.
+  - kulala gets an explicit `kulala_core.path` that always exists: the binary
+    when its SHA-256 matches `http.kulala_core_sha256`, else the `false`
+    command, so requests fail with an error and kulala never downloads by
+    itself (it downloads only when the configured path is missing). kulala loads
+    on every `VimLeavePre` for its session hooks, so the check is cached in
+    `stdpath("state")/myconfig/kulala-core.json` by the file's inode, size and
+    times and hashes again only after the binary changed; it stays silent on
+    exit. The kulala cache and kulala-core data directories, and `db_ui`, are
+    made mode 700.
+  - The lazy.nvim bootstrap checks out the commit `lazy-lock.json` names right
+    after cloning `stable`. `npx --no` runs jest, vitest and ts-node, so a
+    missing package is refused instead of fetched.
+  - The DAP status in lualine escapes `%`: a launch configuration's name is
+    project text, and lualine would evaluate a `%{…}` in it.
+  - The rename keys (`grn`, `<leader>cr`, `<leader>rn`) put `<cword>` on the
+    `:IncRename` line only when it is an identifier, with
+    `replace_keycodes = false`: a word made of `<CR>` and `:!` cannot become
+    keys.
+  - The project scans skip files above `treesitter.max_filesize`
+    (`rg --max-filesize`).
+  - conform looks for `node_modules/.bin/prettierd` and `prettier` no higher
+    than the trusted root, then falls back to the Mason binary.
+  - `trust.lua` sets Neovim's own `trust` file (still used for the lazygit
+    configs) to mode 600 when it finds it readable by others, writes its store
+    through a temporary file only when the write succeeded, and treats a
+    directory inside a repository as a root of its own, asked about
+    separately, when it holds a `package.json`, `tsconfig.json`,
+    `jsconfig.json` or eslint or prettier config that git does not track (an
+    archive unpacked into `tmp/`, or a `prettier.config.cjs` dropped next to a
+    tracked `package.json`). Every directory from the file's up to the
+    repository root is checked, and the deepest such directory becomes the
+    root, so a config dropped a few levels above the file counts too; each
+    check is cached by the directory's modification time, so a file added
+    later is noticed. A buffer whose name is not an absolute path (`oil://`,
+    `diffview://`, `term://`) keeps the repository root. eslint then needs
+    both its root and that one. A directory under `node_modules` stays part of
+    the repository's root, so following a definition into a dependency starts
+    no new server and asks nothing. A git command slower than
+    `trust.git_timeout_ms` keeps project code off without a prompt and says so
+    once per session.
+  - gitsigns and diffview run git without lazygit's check, so a hostile
+    `.git` directory (from an archive, not a clone) can still run a
+    `filter.*` or `diff.*` command when a file opens.
+  - `edit_hex()` turns the path into an absolute one and refuses a name that
+    starts like a URL scheme (`term:`, `zipfile:`).
 - **nvim-autopairs** writes the closing bracket or quote to the right of the
   cursor, and `<BS>` on the opening one takes both away while the pair is still
   empty. It holds back where a closing character would be in the way: none is
@@ -1011,8 +1214,10 @@ when "cleaned up".
 - **Trouble, the debugger panel and the test output share one bottom split.**
   Starting a debug session closes Trouble, the panels take each other's place
   instead of stacking, and all of them use `ui.panel_height`.
-- **The first HTTP request needs the network**: kulala downloads its backend (kulala-core, ~100 MB) and that request
-  fails while the download runs.
+- **kulala-core is pinned**: with `http.kulala_core_sha256` set, a missing or
+  different binary turns HTTP requests off with an error; set the pin to `nil`
+  for one start to let kulala download its backend (~100 MB, the first request
+  fails while that runs), then pin the new hash.
 - **The keymap scripts read the installed copy** in `~/.config/nvim`, not the
   checkout — run `./install.sh` before them.
 

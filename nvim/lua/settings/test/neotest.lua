@@ -18,7 +18,7 @@ end
 
 local function jest_adapter()
   return require("neotest-jest")({
-    jestCommand = "npx jest",
+    jestCommand = "npx --no jest",
     jestConfigFile = function(file)
       return nearest(JEST_CONFIGS, file) or "jest.config.js"
     end,
@@ -33,7 +33,7 @@ end
 
 local function vitest_adapter()
   return require("neotest-vitest")({
-    vitestCommand = "npx vitest",
+    vitestCommand = "npx --no vitest",
     vitestConfigFile = function(file)
       return nearest(VITEST_CONFIGS, file)
     end,

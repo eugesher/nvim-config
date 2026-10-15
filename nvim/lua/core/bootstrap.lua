@@ -19,6 +19,18 @@ if not vim.uv.fs_stat(lazypath) then
     end
     os.exit(1)
   end
+  local lock = vim.fn.stdpath("config") .. "/lazy-lock.json"
+  local ok, locked = pcall(function()
+    return vim.json.decode(table.concat(vim.fn.readfile(lock), "\n"))["lazy.nvim"].commit
+  end)
+  if ok and locked then
+    vim.fn.system({ "git", "-C", lazypath, "checkout", "--quiet", locked })
+    if vim.v.shell_error ~= 0 then
+      vim.api.nvim_echo({
+        { ("lazy.nvim stays on stable: checking out %s failed"):format(locked), "WarningMsg" },
+      }, true, {})
+    end
+  end
 end
 vim.opt.rtp:prepend(lazypath)
 
