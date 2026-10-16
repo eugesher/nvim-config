@@ -314,8 +314,8 @@ local function scan_file(job, file, done)
     done(buffer_items(bufnr, client, file.path))
     return
   end
-  local ok, lines = pcall(vim.fn.readfile, file.path)
-  if not ok then
+  local lines = project.read_lines(file.path)
+  if not lines then
     done({})
     return
   end

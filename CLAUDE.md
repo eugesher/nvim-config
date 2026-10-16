@@ -45,6 +45,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `spelling.lua` (codebook's path check and project scan), `project.lua` (the project scan both share), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
+| `lua/blink_cmp_fuzzy.lua` | Loads blink.cmp's fuzzy library by absolute path for blink's worker threads, which would otherwise find `./blink_cmp_fuzzy.lua` in the working directory first |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql, markdown wrapping) |
 
 A spec is built with `require("settings").spec(repo, name, extra)`, where `name`
@@ -59,6 +60,13 @@ lsp/mason).
 `:checkhealth myconfig` lives under `lua/myconfig/` because checkhealth finds
 `lua/<name>/health.lua`; a `core/health.lua` would add a second, duplicate
 `:checkhealth core` report.
+
+File names are kebab-case except where another program fixes the module name.
+`lua/blink_cmp_fuzzy.lua` is the module blink.cmp requires
+(`require("blink_cmp_fuzzy")`, entry point `luaopen_blink_cmp_fuzzy`), so the
+runtimepath finds it only under that exact name; renamed, the threads fall back
+to `./?.lua` again. `settings/lsp/servers/<name>.lua` follows nvim-lspconfig's
+server names (`docker_language_server.lua`) for the same reason.
 
 ### Writing settings
 
@@ -168,18 +176,36 @@ These look like mistakes or omissions and are not. Change them only on request.
     `nvim/lazygit.yml` is passed to lazygit after the user's own config and
     points its editor commands back at this Neovim; `install.sh` copies it
     with the rest of `nvim/`.
-  - vtsls' workspace TypeScript, eslint and prettier's format on save run
-    only when `core/trust.lua` trusts the directory whose code they would
-    load; outside a trusted project vtsls keeps its bundled TypeScript,
-    eslint does not start and prettier runs neither on save nor on
-    `<leader>cf`. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps
-    the answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's
-    `:trust` database: Deny is permanent, Allow lasts while the fingerprint
-    holds (the root's configs, `tsconfig.json`, lockfiles and `node_modules`
+  - vtsls' workspace TypeScript, eslint, prettier's format on save,
+    `:CoverageRun`, neotest runs, nvim-dap sessions (`dap.run`) and kulala
+    requests run only when `core/trust.lua` trusts the directory whose code they
+    would load; outside a trusted project vtsls keeps its bundled TypeScript,
+    eslint does not start (it also needs
+    `<root>/node_modules/eslint/package.json` and every parent below `$HOME`
+    that holds an eslint config, `package.json` or `node_modules` trusted,
+    outside git a nested config dir is a root of its own, and a message that
+    makes it lint or load its config is sent only while those directories keep
+    their allowed fingerprints, else it is dropped and eslint restarted, which
+    asks again), prettier runs neither on save nor on `<leader>cf` (and only
+    from `<root>/node_modules/.bin`, else Mason's; prettierd runs only when the
+    root has its own `node_modules/prettier` and no nested one; prettier also
+    needs every parent below `$HOME` that holds a prettier config,
+    `package.json`, `package.yaml` or `node_modules` trusted), and
+    `:CoverageRun`, tests and the debugger refuse (they also need every parent
+    below `$HOME` that holds npm files trusted; the debugger checks the buffer's
+    root, the working directory's root, and the working directory when it holds
+    a `.vscode/launch.json`, which is in the fingerprint). kulala's
+    `kulala.ui.open`/`open_all`/`replay` (keys, commands and code actions) ask
+    about the `.http` file's directory (`kulala:<dir>`, fingerprint over its
+    `.http`/`.rest` files and `http-client.env.json`). `trust.lua` asks itself
+    (Allow / Deny / Ignore) and keeps the answers in
+    `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust` database:
+    Deny is permanent, Allow lasts while the fingerprint holds (the root's
+    configs and `package.yaml`, `tsconfig.json`, lockfiles and `node_modules`
     entry points, and the index entries of every tracked config,
     `tsconfig*.json` and `node_modules` file; code a config imports is not in
-    it). `:ProjectTrust` lists, forgets and denies roots. lazygit starts
-    only after the same prompt (`lazygit:<main worktree>`) has allowed the
+    it). `:ProjectTrust` lists, forgets and denies roots. lazygit starts only
+    after the same prompt (`lazygit:<main worktree>`) has allowed the
     repository's lazygit configs, the origin files of command-running git
     settings and its executable hooks; `git.autoFetch` is off.
   - `core/env.lua` sets `core.fsmonitor=false` for every git Neovim starts,
@@ -187,11 +213,34 @@ These look like mistakes or omissions and are not. Change them only on request.
     `git_use_branch_name` is a function around `vim.system`, so a directory
     name never reaches a shell. Other commands a `.git/config` can name
     (`filter.<driver>.clean` among them) are not covered.
+  - lua_ls starts with `--configpath` at
+    `stdpath("state")/myconfig/lua_ls.json`, rewritten at every start, which
+    empties `runtime.plugin` and `workspace.userThirdParty`, turns
+    `workspace.checkThirdParty` off and keeps `runtime.meta` at its default
+    above any project `.luarc.json`: LuaLS 3.19.1 loads a plugin even on
+    "Don't load this plugin", runs a third-party `config.lua` without asking,
+    and empties whatever directory `runtime.meta` names.
+  - jsonls and yamlls hand http(s) schemas to `settings/lsp/schemas.lua`, which
+    fetches only SchemaStore catalog URLs; docker-language-server runs behind a
+    dead proxy (telemetry ignores its setting); nvim-coverage loads
+    `coverage/lcov.info` through its Lua lcov parser only (`:Coverage`,
+    `:CoverageLoad` and `coverage.load` replaced); codebook refuses every
+    project-dictionary command through a symlink; `init.lua` drops the relative
+    `./?.lua` and `./?.so` entries of `package.path` and `package.cpath`, so
+    `require` in the main Lua state never loads from the working directory,
+    `lua/blink_cmp_fuzzy.lua` answers blink.cmp's worker threads (fresh Lua
+    states with `./?.lua` first; blink's `M.config` refreshes the runtime file
+    list they read) before that entry, fzf-lua's `nvim -u NONE -l spawn.lua`
+    helper gets the absolute path entries through `LUA_PATH`/`LUA_CPATH` on its
+    command line, and neotest's helper Neovim (and its TCP RPC listener) is
+    never started; `install.sh` runs under `umask 077`.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by
-    SHA-256 in `user.http.kulala_core_sha256` (checked when kulala loads,
-    cached by stat), and dadbod-ui's table helpers never run on their own.
+    SHA-256 in `user.http.kulala_core_sha256` and blink.cmp's fuzzy library in
+    `user.completion.fuzzy_sha256` (both through `core/pin.lua`, checked on
+    load and cached by stat), and dadbod-ui's table helpers never run on their
+    own.
   - AI integration is left out by design, so nothing else draws ghost text.
   - Spelling is codebook, a language server; cspell.nvim is archived and
     cspell-lsp deprecated. `scripts/cspell-to-codebook.sh` migrates an old word

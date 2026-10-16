@@ -1,3 +1,4 @@
+local pin = require("core.pin")
 local user = require("user.settings")
 local icons = require("settings.icons")
 local sql_filetypes = require("settings.database.dadbod-completion").ft
@@ -14,6 +15,36 @@ local function per_filetype()
 end
 
 M.event = { "InsertEnter", "CmdlineEnter" }
+
+local FUZZY_LIBRARY = vim.fs.joinpath(
+  vim.fn.stdpath("data"),
+  "lazy",
+  "blink.cmp",
+  "target",
+  "release",
+  "libblink_cmp_fuzzy.so"
+)
+
+function M.config(_, opts)
+  local sha256 = user.completion.fuzzy_sha256
+  if sha256 then
+    local loader = pin.matches(FUZZY_LIBRARY, sha256, "blink-fuzzy")
+      and package.loadlib(FUZZY_LIBRARY, "luaopen_blink_cmp_fuzzy")
+    if loader then
+      package.preload["blink_cmp_fuzzy"] = loader
+    else
+      opts.fuzzy.implementation = "lua"
+      vim.notify(
+        ("blink.cmp: %s is missing or does not match completion.fuzzy_sha256, using the Lua matcher"):format(
+          FUZZY_LIBRARY
+        ),
+        vim.log.levels.WARN
+      )
+    end
+  end
+  vim.api.nvim_get_runtime_file("", true)
+  require("blink.cmp").setup(opts)
+end
 
 M.opts = {
   enabled = function()

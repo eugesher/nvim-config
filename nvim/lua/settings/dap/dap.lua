@@ -1,6 +1,11 @@
+local trust = require("core.trust")
 local icons = require("settings.icons").dap
 
 local M = {}
+
+local NPM_PARENTS = { "package.json", ".npmrc", "node_modules" }
+
+local CWD_FILES = { ".vscode/launch.json", ".env", "node_modules" }
 
 local function server_path()
   return vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
@@ -187,6 +192,30 @@ function M.config()
   local dap = require("dap")
 
   dap.set_log_level("WARN")
+
+  local run = dap.run
+  dap.run = function(config, opts)
+    local cwd = vim.fn.getcwd()
+    local own = vim.iter(CWD_FILES):any(function(name)
+      return vim.uv.fs_lstat(vim.fs.joinpath(cwd, name)) ~= nil
+    end) and cwd
+    local dirs = {}
+    for _, dir in ipairs({ trust.root(0) or false, trust.root(cwd) or false, own or false }) do
+      if dir and not vim.list_contains(dirs, dir) then
+        table.insert(dirs, dir)
+      end
+    end
+    for _, dir in ipairs(dirs) do
+      if not trust.allowed_with_parents(dir, NPM_PARENTS) then
+        vim.notify(
+          ("dap: not started, %s is not trusted (:ProjectTrust)"):format(dir),
+          vim.log.levels.WARN
+        )
+        return
+      end
+    end
+    return run(config, opts)
+  end
 
   for name, sign in pairs(SIGNS) do
     vim.fn.sign_define(name, sign)

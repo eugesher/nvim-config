@@ -1,3 +1,5 @@
+local pin = require("core.pin")
+local trust = require("core.trust")
 local user = require("user.settings")
 
 local M = {}
@@ -47,52 +49,19 @@ end
 local function private_dirs()
   local data = vim.env.XDG_DATA_HOME or vim.fs.normalize("~/.local/share")
   for _, dir in ipairs({ vim.fn.stdpath("cache") .. "/kulala", data .. "/kulala-core" }) do
-    if vim.uv.fs_stat(dir) then
-      vim.uv.fs_chmod(dir, tonumber("700", 8))
-    end
-  end
-end
-
-local verified_path = vim.fs.joinpath(vim.fn.stdpath("state"), "myconfig", "kulala-core.json")
-
-local function verified(key, pin)
-  local file = io.open(verified_path, "r")
-  if not file then
-    return false
-  end
-  local ok, data = pcall(vim.json.decode, file:read("*a") or "")
-  file:close()
-  return ok and type(data) == "table" and data.key == key and data.sha256 == pin
-end
-
-local function remember(key, pin)
-  vim.fn.mkdir(vim.fs.dirname(verified_path), "p", tonumber("700", 8))
-  local fd = vim.uv.fs_open(verified_path, "w", tonumber("600", 8))
-  if fd then
-    vim.uv.fs_write(fd, vim.json.encode({ key = key, sha256 = pin }))
-    vim.uv.fs_close(fd)
+    vim.fn.mkdir(dir, "p", tonumber("700", 8))
+    vim.uv.fs_chmod(dir, tonumber("700", 8))
   end
 end
 
 local function core_path()
-  local pin = user.http.kulala_core_sha256
-  if not pin then
+  local sha256 = user.http.kulala_core_sha256
+  if not sha256 then
     return nil
   end
   local path = vim.fs.joinpath(vim.fn.stdpath("data"), "kulala.nvim", "bin", "kulala-core")
-  local stat = vim.uv.fs_stat(path)
-  local key = stat
-    and table.concat({ stat.ino, stat.size, stat.mtime.sec, stat.mtime.nsec, stat.ctime.sec }, ":")
-  if key and verified(key, pin) then
+  if pin.matches(path, sha256, "kulala-core") then
     return path
-  end
-  if key and stat.type == "file" then
-    local ok, job = pcall(vim.system, { "sha256sum", "--", path }, { text = true })
-    local result = ok and job:wait(10000) or nil
-    if result and result.code == 0 and result.stdout:match("^%x+") == pin then
-      remember(key, pin)
-      return path
-    end
   end
   if vim.v.exiting == vim.NIL then
     vim.notify(
@@ -135,11 +104,7 @@ local opts = {
       pathresolver = formatter({ "xmllint", "--xpath", "{{path}}", "-" }),
     },
     ["text/xml"] = "application/xml",
-    ["text/html"] = {
-      ft = "html",
-      formatter = formatter({ "prettier", "--stdin-filepath", "file.html" }),
-      pathresolver = nil,
-    },
+    ["text/html"] = { ft = "html", formatter = nil, pathresolver = nil },
     ["application/graphql-response+json"] = "application/json",
   },
 
@@ -187,6 +152,46 @@ local opts = {
     signs = { folded = ">", expanded = "v" },
   },
 }
+
+local function allowed()
+  local file = vim.api.nvim_buf_get_name(0)
+  local dir = vim.uv.fs_realpath(file:find("^/") and vim.fs.dirname(file) or vim.fn.getcwd())
+  if not dir then
+    return false
+  end
+  local files = {}
+  for name, type in vim.fs.dir(dir) do
+    if
+      (type == "file" or type == "link")
+      and (name:match("%.http$") or name:match("%.rest$") or name == "http-client.env.json")
+    then
+      files[#files + 1] = vim.fs.joinpath(dir, name)
+    end
+  end
+  return trust.approve(
+    "kulala:" .. dir,
+    files,
+    "HTTP requests in " .. dir,
+    "may run the pre- and post-request scripts its .http files hold."
+  )
+end
+
+function M.config(_, options)
+  local ui = require("kulala.ui")
+  for _, method in ipairs({ "open", "open_all", "replay" }) do
+    local run = ui[method]
+    ui[method] = function(...)
+      if allowed() then
+        return run(...)
+      end
+      vim.notify(
+        "kulala: not run, this directory is not trusted (:ProjectTrust)",
+        vim.log.levels.WARN
+      )
+    end
+  end
+  require("kulala").setup(options)
+end
 
 function M.opts()
   private_dirs()
