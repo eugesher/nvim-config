@@ -168,20 +168,24 @@ These look like mistakes or omissions and are not. Change them only on request.
     `nvim/lazygit.yml` is passed to lazygit after the user's own config and
     points its editor commands back at this Neovim; `install.sh` copies it
     with the rest of `nvim/`.
-  - vtsls' workspace TypeScript, eslint and prettier's format on save run
-    only when `core/trust.lua` trusts the directory whose code they would
-    load; outside a trusted project vtsls keeps its bundled TypeScript,
-    eslint does not start and prettier runs neither on save nor on
-    `<leader>cf`. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps
-    the answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's
-    `:trust` database: Deny is permanent, Allow lasts while the fingerprint
-    holds (the root's configs, `tsconfig.json`, lockfiles and `node_modules`
-    entry points, and the index entries of every tracked config,
-    `tsconfig*.json` and `node_modules` file; code a config imports is not in
-    it). `:ProjectTrust` lists, forgets and denies roots. lazygit starts
-    only after the same prompt (`lazygit:<main worktree>`) has allowed the
-    repository's lazygit configs, the origin files of command-running git
-    settings and its executable hooks; `git.autoFetch` is off.
+  - vtsls' workspace TypeScript, eslint, prettier's format on save and
+    `:CoverageRun` run only when `core/trust.lua` trusts the directory whose
+    code they would load; outside a trusted project vtsls keeps its bundled
+    TypeScript, eslint does not start, prettier runs neither on save nor on
+    `<leader>cf` (and only from `<root>/node_modules/.bin`, else Mason's;
+    prettierd is skipped where it would load a nested `node_modules/prettier`),
+    and `:CoverageRun` refuses (it also needs every parent below `$HOME` that
+    holds npm files trusted). neotest, nvim-dap and kulala's request scripts are
+    not gated. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps the
+    answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust`
+    database: Deny is permanent, Allow lasts while the fingerprint holds (the
+    root's configs, `tsconfig.json`, lockfiles and `node_modules` entry points,
+    and the index entries of every tracked config, `tsconfig*.json` and
+    `node_modules` file; code a config imports is not in it). `:ProjectTrust`
+    lists, forgets and denies roots. lazygit starts only after the same prompt
+    (`lazygit:<main worktree>`) has allowed the repository's lazygit configs,
+    the origin files of command-running git settings and its executable hooks;
+    `git.autoFetch` is off.
   - `core/env.lua` sets `core.fsmonitor=false` for every git Neovim starts,
     so a repository's `core.fsmonitor` never runs, and auto-session's
     `git_use_branch_name` is a function around `vim.system`, so a directory

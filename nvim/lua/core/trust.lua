@@ -319,7 +319,7 @@ function M.allowed(root)
     dir,
     current,
     "Project " .. dir,
-    "ships code that the workspace TypeScript, eslint or prettier would run."
+    "ships code that the workspace TypeScript, eslint, prettier or :CoverageRun would run."
   )
 end
 

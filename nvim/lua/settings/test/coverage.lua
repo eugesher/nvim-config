@@ -1,3 +1,4 @@
+local trust = require("core.trust")
 local user = require("user.settings")
 local icons = require("settings.icons")
 
@@ -57,21 +58,91 @@ M.keys = {
   { "<leader>tcr", "<cmd>CoverageRun<cr>", desc = "Run tests with coverage" },
 }
 
+local function mtime(path)
+  local stat = vim.uv.fs_stat(path)
+  return stat and ("%d:%d"):format(stat.mtime.sec, stat.mtime.nsec)
+end
+
+local function npm_dirs(cwd)
+  local dirs = { cwd }
+  local home = vim.uv.os_homedir()
+  for dir in vim.fs.parents(cwd) do
+    if dir == home or dir == "/" then
+      break
+    end
+    for _, name in ipairs({ "package.json", ".npmrc", "node_modules" }) do
+      if vim.uv.fs_stat(vim.fs.joinpath(dir, name)) then
+        table.insert(dirs, 1, dir)
+        break
+      end
+    end
+  end
+  return dirs
+end
+
 function M.init()
   vim.api.nvim_create_user_command("CoverageRun", function()
     local command = user.coverage.command
+    local cwd = vim.fn.getcwd()
+    if not vim.uv.fs_stat(vim.fs.joinpath(cwd, "package.json")) then
+      vim.notify(
+        ("coverage: no package.json in %s — run :CoverageRun from the project root"):format(cwd),
+        vim.log.levels.WARN
+      )
+      return
+    end
+    for _, dir in ipairs(npm_dirs(cwd)) do
+      if not trust.allowed(dir) then
+        vim.notify(
+          ("coverage: not run, %s is not trusted (:ProjectTrust)"):format(dir),
+          vim.log.levels.WARN
+        )
+        return
+      end
+    end
+    local report = vim.fs.joinpath(cwd, LCOV)
+    local before = mtime(report)
     vim.notify("coverage: running " .. table.concat(command, " "))
-    vim.system(command, { cwd = vim.fn.getcwd(), text = true }, function(result)
+    vim.system(command, { cwd = cwd, text = true }, function(result)
       vim.schedule(function()
-        if not vim.uv.fs_stat(report_path()) then
+        if result.signal ~= 0 then
           vim.notify(
-            ("coverage: %s produced no %s (exit %d)\n%s"):format(
+            ("coverage: %s was killed by signal %d; report not loaded"):format(
+              table.concat(command, " "),
+              result.signal
+            ),
+            vim.log.levels.ERROR
+          )
+          return
+        end
+        local after = mtime(report)
+        if not after or after == before then
+          vim.notify(
+            ("coverage: %s wrote no new %s (exit %d)\n%s"):format(
               table.concat(command, " "),
               LCOV,
               result.code,
               vim.trim((result.stderr or ""):sub(-400))
             ),
             vim.log.levels.ERROR
+          )
+          return
+        end
+        if result.code ~= 0 then
+          vim.notify(
+            ("coverage: %s exited %d; showing the report it wrote"):format(
+              table.concat(command, " "),
+              result.code
+            ),
+            vim.log.levels.WARN
+          )
+        end
+        if vim.fn.getcwd() ~= cwd then
+          vim.notify(
+            ("coverage: the working directory changed; :Coverage in %s shows the report"):format(
+              cwd
+            ),
+            vim.log.levels.WARN
           )
           return
         end

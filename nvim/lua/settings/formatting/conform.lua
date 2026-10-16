@@ -12,18 +12,26 @@ end
 
 local function project_bin(name)
   return function(_, ctx)
-    local stop = trust.root(ctx.buf)
-    for dir in vim.fs.parents(ctx.filename) do
-      local bin = vim.fs.joinpath(dir, "node_modules", ".bin", name)
-      if vim.fn.executable(bin) == 1 then
-        return bin
-      end
-      if dir == stop then
-        break
-      end
+    local root = trust.root(ctx.buf)
+    local bin = root and vim.fs.joinpath(root, "node_modules", ".bin", name)
+    if bin and vim.fn.executable(bin) == 1 then
+      return bin
     end
     return name
   end
+end
+
+local function nested_prettier(ctx)
+  local root = trust.root(ctx.buf)
+  for dir in vim.fs.parents(ctx.filename) do
+    if dir == root then
+      return false
+    end
+    if vim.uv.fs_stat(vim.fs.joinpath(dir, "node_modules", "prettier")) then
+      return true
+    end
+  end
+  return false
 end
 
 local function prettier_allowed(bufnr)
@@ -94,7 +102,13 @@ M.opts = {
     return {}
   end,
   formatters = {
-    prettierd = { inherit = true, command = project_bin("prettierd") },
+    prettierd = {
+      inherit = true,
+      command = project_bin("prettierd"),
+      condition = function(_, ctx)
+        return not nested_prettier(ctx)
+      end,
+    },
     prettier = { inherit = true, command = project_bin("prettier") },
     stylua = { inherit = true },
     sql_formatter = {

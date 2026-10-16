@@ -195,7 +195,7 @@ plain data the rest of the config reads:
 | `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
 | `spelling.scan_timeout`                                      | milliseconds `<leader>xs` waits for codebook to answer one file before it moves on without it                                                                                            |
 | `spelling.scan_parallel`                                     | files `<leader>xs` keeps open in codebook at once                                                                                                                                        |
-| `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
+| `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun` from a trusted directory holding a `package.json` (see the trust section); shows only a rewritten report                 |
 | `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
@@ -1033,15 +1033,15 @@ when "cleaned up".
   sends for the same position, so the word is never offered twice. The clause
   is read from the line in front of the cursor, which keeps
   `export const x = ` and `export default ` out of it.
-- **Code from a project runs only in a trusted root.** Three tools would run
+- **Four tools run a project's code only in a trusted root.** They would run
   JavaScript the repository ships: vtsls the `tsserver.js` under
   `node_modules/typescript`, eslint its `eslint.config.*` and the eslint under
-  `node_modules`, prettier its config files and plugins. `core/trust.lua`
-  holds the check, `allowed()` on the directory whose code would run, and
-  `root()`, the `.git` directory above a buffer or else a `package.json` /
-  `tsconfig.json` / `jsconfig.json` one. A buffer in neither has no root and
-  is never trusted, so a stray directory such as `$HOME` is never asked about
-  on its behalf.
+  `node_modules`, prettier its config files and plugins, `:CoverageRun` the
+  project's `test:cov` script. `core/trust.lua` holds the check, `allowed()` on
+  the directory whose code would run, and `root()`, the `.git` directory above a
+  buffer or else a `package.json` / `tsconfig.json` / `jsconfig.json` one. A
+  buffer in neither has no root and is never trusted, so a stray directory such
+  as `$HOME` is never asked about on its behalf.
   - vtsls: `before_init` turns `autoUseWorkspaceTsdk` on only when
     `<root>/node_modules/typescript/lib/tsserver.js` exists and its root, the
     one vtsls runs in, is trusted; otherwise vtsls uses the TypeScript it
@@ -1056,6 +1056,16 @@ when "cleaned up".
     root (or none) when conform would run prettierd or prettier for it,
     Compose files included; the key says so in a notification. Buffers
     formatted by stylua or sql-formatter are not affected.
+  - `:CoverageRun`: runs only from a working directory that holds a
+    `package.json`. npm also reads the `.npmrc` and `node_modules/.bin` of
+    parent directories, so every parent below the home directory (or below `/`
+    outside it) that holds a `package.json`, `.npmrc` or `node_modules` must be
+    trusted too, outermost first. The report loads only when the run rewrote it,
+    no signal killed it and the working directory is unchanged; a failed run
+    that wrote one loads it with a warning.
+  - Not covered: neotest, nvim-dap (including a project's `.vscode/launch.json`)
+    and kulala's request scripts run project code when their keys are pressed,
+    without this check.
 
   The first time one of these tools needs a root, `trust.lua` asks: the
   prompt names the directory, says whether it is new or changed since it was
@@ -1161,8 +1171,10 @@ when "cleaned up".
     keys.
   - The project scans skip files above `treesitter.max_filesize`
     (`rg --max-filesize`).
-  - conform looks for `node_modules/.bin/prettierd` and `prettier` no higher
-    than the trusted root, then falls back to the Mason binary.
+  - conform runs `node_modules/.bin/prettierd` or `prettier` only from the
+    trusted root itself, whose fingerprint covers both, else the Mason binary;
+    prettierd is skipped for a file with a `node_modules/prettier` between it
+    and the root, because it would load that copy.
   - `trust.lua` sets Neovim's own `trust` file (still used for the lazygit
     configs) to mode 600 when it finds it readable by others, writes its store
     through a temporary file only when the write succeeded, and treats a
