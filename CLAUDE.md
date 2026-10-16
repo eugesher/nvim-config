@@ -175,19 +175,19 @@ These look like mistakes or omissions and are not. Change them only on request.
     `<leader>cf` (and only from `<root>/node_modules/.bin`, else Mason's;
     prettierd runs only when the root has its own `node_modules/prettier` and no
     nested one; prettier also needs every parent below `$HOME` that holds a
-    prettier config, `package.json` or `node_modules` trusted), and
-    `:CoverageRun` refuses (it also needs every parent below `$HOME` that holds
-    npm files trusted). neotest, nvim-dap and kulala's request scripts are not
-    gated. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps the answers
-    in `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust`
+    prettier config, `package.json`, `package.yaml` or `node_modules` trusted),
+    and `:CoverageRun` refuses (it also needs every parent below `$HOME` that
+    holds npm files trusted). neotest, nvim-dap and kulala's request scripts are
+    not gated. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps the
+    answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust`
     database: Deny is permanent, Allow lasts while the fingerprint holds (the
-    root's configs, `tsconfig.json`, lockfiles and `node_modules` entry points,
-    and the index entries of every tracked config, `tsconfig*.json` and
-    `node_modules` file; code a config imports is not in it). `:ProjectTrust`
-    lists, forgets and denies roots. lazygit starts only after the same prompt
-    (`lazygit:<main worktree>`) has allowed the repository's lazygit configs,
-    the origin files of command-running git settings and its executable hooks;
-    `git.autoFetch` is off.
+    root's configs and `package.yaml`, `tsconfig.json`, lockfiles and
+    `node_modules` entry points, and the index entries of every tracked config,
+    `tsconfig*.json` and `node_modules` file; code a config imports is not in
+    it). `:ProjectTrust` lists, forgets and denies roots. lazygit starts only
+    after the same prompt (`lazygit:<main worktree>`) has allowed the
+    repository's lazygit configs, the origin files of command-running git
+    settings and its executable hooks; `git.autoFetch` is off.
   - `core/env.lua` sets `core.fsmonitor=false` for every git Neovim starts,
     so a repository's `core.fsmonitor` never runs, and auto-session's
     `git_use_branch_name` is a function around `vim.system`, so a directory

@@ -35,6 +35,7 @@ local tool_configs = {
   "prettier.config.ts",
   "prettier.config.cts",
   "prettier.config.mts",
+  "package.yaml",
 }
 
 local nested_markers = vim.list_extend(vim.deepcopy(root_markers), tool_configs)
@@ -76,6 +77,7 @@ local tracked_pathspecs = {
   ":(glob)**/eslint.config.*",
   ":(glob)**/.prettierrc*",
   ":(glob)**/prettier.config.*",
+  ":(glob)**/package.yaml",
   ":(glob)**/node_modules/**",
 }
 

@@ -1092,23 +1092,23 @@ when "cleaned up".
   `:trust` database is not used for project roots.
 
   The fingerprint covers what decides the code that runs:
-  - the files at the root: `package.json`, `tsconfig.json`, `jsconfig.json`,
-    the lockfiles, every eslint and prettier config file name, and the entry
-    points started from `node_modules` (`typescript/lib/tsserver.js`,
-    `_tsserver.js` and `typescript.js`, `.bin/vscode-eslint-language-server`,
-    `.bin/prettier`, `.bin/prettierd`, the `package.json` of `eslint` and
-    `prettier`), each by real path and SHA-256. Only a regular file inside the
-    root, up to 64 MB, is read; a symlink out of the root, a FIFO or a device
-    counts by its type and target alone, so a repository cannot make the
-    check hang;
+  - the files at the root: `package.json`, `tsconfig.json`, `jsconfig.json`, the
+    lockfiles, every eslint and prettier config file name (prettier also reads
+    `package.yaml`), and the entry points started from `node_modules`
+    (`typescript/lib/tsserver.js`, `_tsserver.js` and `typescript.js`,
+    `.bin/vscode-eslint-language-server`, `.bin/prettier`, `.bin/prettierd`, the
+    `package.json` of `eslint` and `prettier`), each by real path and SHA-256.
+    Only a regular file inside the root, up to 64 MB, is read; a symlink out of
+    the root, a FIFO or a device counts by its type and target alone, so a
+    repository cannot make the check hang;
   - in a git repository, the index entries (`git ls-files --stage`) of every
-    tracked `package.json`, `tsconfig*.json`, `jsconfig*.json`, eslint and
-    prettier config and every tracked file under a `node_modules` directory,
-    at any depth. A pull request that adds a nested config, a TypeScript
-    plugin in `compilerOptions.plugins` of one of those files, or a commit
-    into `node_modules` changes them, while an ordinary commit does not. A
-    file a `tsconfig.json` reaches through `extends` under another name is
-    not covered.
+    tracked `package.json`, `package.yaml`, `tsconfig*.json`, `jsconfig*.json`,
+    eslint and prettier config and every tracked file under a `node_modules`
+    directory, at any depth. A pull request that adds a nested config, a
+    TypeScript plugin in `compilerOptions.plugins` of one of those files, or a
+    commit into `node_modules` changes them, while an ordinary commit does not.
+    A file a `tsconfig.json` reaches through `extends` under another name is not
+    covered.
 
   So such a pull request, `npm install` replacing one of the entry points, or
   another repository cloned to an allowed path all ask again, while a fresh
@@ -1184,21 +1184,20 @@ when "cleaned up".
   - `trust.lua` sets Neovim's own `trust` file (still used for the lazygit
     configs) to mode 600 when it finds it readable by others, writes its store
     through a temporary file only when the write succeeded, and treats a
-    directory inside a repository as a root of its own, asked about
-    separately, when it holds a `package.json`, `tsconfig.json`,
+    directory inside a repository as a root of its own, asked about separately,
+    when it holds a `package.json`, `package.yaml`, `tsconfig.json`,
     `jsconfig.json` or eslint or prettier config that git does not track (an
     archive unpacked into `tmp/`, or a `prettier.config.cjs` dropped next to a
     tracked `package.json`). Every directory from the file's up to the
-    repository root is checked, and the deepest such directory becomes the
-    root, so a config dropped a few levels above the file counts too; each
-    check is cached by the directory's modification time, so a file added
-    later is noticed. A buffer whose name is not an absolute path (`oil://`,
-    `diffview://`, `term://`) keeps the repository root. eslint then needs
-    both its root and that one. A directory under `node_modules` stays part of
-    the repository's root, so following a definition into a dependency starts
-    no new server and asks nothing. A git command slower than
-    `trust.git_timeout_ms` keeps project code off without a prompt and says so
-    once per session.
+    repository root is checked, and the deepest such directory becomes the root,
+    so a config dropped a few levels above the file counts too; each check is
+    cached by the directory's modification time, so a file added later is
+    noticed. A buffer whose name is not an absolute path (`oil://`,
+    `diffview://`, `term://`) keeps the repository root. eslint then needs both
+    its root and that one. A directory under `node_modules` stays part of the
+    repository's root, so following a definition into a dependency starts no new
+    server and asks nothing. A git command slower than `trust.git_timeout_ms`
+    keeps project code off without a prompt and says so once per session.
   - gitsigns and diffview run git without lazygit's check, so a hostile
     `.git` directory (from an archive, not a clone) can still run a
     `filter.*` or `diff.*` command when a file opens.
