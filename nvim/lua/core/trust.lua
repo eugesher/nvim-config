@@ -39,6 +39,10 @@ local tool_configs = {
 
 local nested_markers = vim.list_extend(vim.deepcopy(root_markers), tool_configs)
 
+M.prettier_configs = vim.tbl_filter(function(name)
+  return name:find("prettier", 1, true) ~= nil
+end, tool_configs)
+
 local fingerprint_files = {
   "package.json",
   "tsconfig.json",
@@ -288,6 +292,23 @@ function M.root(bufnr)
     dir = parent
   end
   return git_root
+end
+
+function M.parents(dir, names)
+  local found = {}
+  local home = vim.uv.os_homedir()
+  for parent in vim.fs.parents(dir) do
+    if parent == home or parent == "/" then
+      break
+    end
+    for _, name in ipairs(names) do
+      if vim.uv.fs_lstat(vim.fs.joinpath(parent, name)) then
+        table.insert(found, 1, parent)
+        break
+      end
+    end
+  end
+  return found
 end
 
 function M.allowed(root)

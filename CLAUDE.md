@@ -173,11 +173,13 @@ These look like mistakes or omissions and are not. Change them only on request.
     code they would load; outside a trusted project vtsls keeps its bundled
     TypeScript, eslint does not start, prettier runs neither on save nor on
     `<leader>cf` (and only from `<root>/node_modules/.bin`, else Mason's;
-    prettierd is skipped where it would load a nested `node_modules/prettier`),
-    and `:CoverageRun` refuses (it also needs every parent below `$HOME` that
-    holds npm files trusted). neotest, nvim-dap and kulala's request scripts are
-    not gated. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps the
-    answers in `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust`
+    prettierd runs only when the root has its own `node_modules/prettier` and no
+    nested one; prettier also needs every parent below `$HOME` that holds a
+    prettier config, `package.json` or `node_modules` trusted), and
+    `:CoverageRun` refuses (it also needs every parent below `$HOME` that holds
+    npm files trusted). neotest, nvim-dap and kulala's request scripts are not
+    gated. `trust.lua` asks itself (Allow / Deny / Ignore) and keeps the answers
+    in `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust`
     database: Deny is permanent, Allow lasts while the fingerprint holds (the
     root's configs, `tsconfig.json`, lockfiles and `node_modules` entry points,
     and the index entries of every tracked config, `tsconfig*.json` and

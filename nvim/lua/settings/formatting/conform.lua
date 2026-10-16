@@ -21,14 +21,30 @@ local function project_bin(name)
   end
 end
 
-local function nested_prettier(ctx)
+local PRETTIER_FILES = { "prettier.js", "prettier.json", "prettier.node" }
+
+local PRETTIER_PARENTS =
+  vim.list_extend({ "package.json", "package.yaml", "node_modules" }, trust.prettier_configs)
+
+local function root_prettier(ctx)
   local root = trust.root(ctx.buf)
+  if
+    not root
+    or not vim.uv.fs_stat(vim.fs.joinpath(root, "node_modules", "prettier", "package.json"))
+  then
+    return false
+  end
   for dir in vim.fs.parents(ctx.filename) do
-    if dir == root then
-      return false
+    for _, name in ipairs(PRETTIER_FILES) do
+      if vim.uv.fs_lstat(vim.fs.joinpath(dir, "node_modules", name)) then
+        return false
+      end
     end
-    if vim.uv.fs_stat(vim.fs.joinpath(dir, "node_modules", "prettier")) then
+    if dir == root then
       return true
+    end
+    if vim.uv.fs_lstat(vim.fs.joinpath(dir, "node_modules", "prettier")) then
+      return false
     end
   end
   return false
@@ -38,7 +54,16 @@ local function prettier_allowed(bufnr)
   local runs_prettier = vim.iter(require("conform").list_formatters(bufnr)):any(function(info)
     return info.name == "prettierd" or info.name == "prettier"
   end)
-  return not runs_prettier or trust.allowed(trust.root(bufnr))
+  if not runs_prettier then
+    return true
+  end
+  local root = trust.root(bufnr)
+  if not root then
+    return false
+  end
+  local dirs = trust.parents(root, PRETTIER_PARENTS)
+  dirs[#dirs + 1] = root
+  return vim.iter(dirs):all(trust.allowed)
 end
 
 function M.init()
@@ -106,7 +131,7 @@ M.opts = {
       inherit = true,
       command = project_bin("prettierd"),
       condition = function(_, ctx)
-        return not nested_prettier(ctx)
+        return root_prettier(ctx)
       end,
     },
     prettier = { inherit = true, command = project_bin("prettier") },

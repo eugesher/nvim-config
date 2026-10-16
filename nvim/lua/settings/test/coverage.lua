@@ -63,23 +63,6 @@ local function mtime(path)
   return stat and ("%d:%d"):format(stat.mtime.sec, stat.mtime.nsec)
 end
 
-local function npm_dirs(cwd)
-  local dirs = { cwd }
-  local home = vim.uv.os_homedir()
-  for dir in vim.fs.parents(cwd) do
-    if dir == home or dir == "/" then
-      break
-    end
-    for _, name in ipairs({ "package.json", ".npmrc", "node_modules" }) do
-      if vim.uv.fs_stat(vim.fs.joinpath(dir, name)) then
-        table.insert(dirs, 1, dir)
-        break
-      end
-    end
-  end
-  return dirs
-end
-
 function M.init()
   vim.api.nvim_create_user_command("CoverageRun", function()
     local command = user.coverage.command
@@ -91,7 +74,9 @@ function M.init()
       )
       return
     end
-    for _, dir in ipairs(npm_dirs(cwd)) do
+    local dirs = trust.parents(cwd, { "package.json", ".npmrc", "node_modules" })
+    dirs[#dirs + 1] = cwd
+    for _, dir in ipairs(dirs) do
       if not trust.allowed(dir) then
         vim.notify(
           ("coverage: not run, %s is not trusted (:ProjectTrust)"):format(dir),

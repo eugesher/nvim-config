@@ -1052,10 +1052,13 @@ when "cleaned up".
     `node_modules/.bin/vscode-eslint-language-server`, so the directory asked
     about is the one whose code runs; lspconfig's fallback to the working
     directory never reaches a file outside it.
-  - prettier: format on save and `<leader>cf` skip a buffer in an untrusted
-    root (or none) when conform would run prettierd or prettier for it,
-    Compose files included; the key says so in a notification. Buffers
-    formatted by stylua or sql-formatter are not affected.
+  - prettier: format on save and `<leader>cf` skip a buffer in an untrusted root
+    (or none) when conform would run prettierd or prettier for it, Compose files
+    included; the key says so in a notification. prettier looks for its config
+    and plugins above the root as well, so every parent below the home directory
+    (or below `/` outside it) that holds a prettier config, `package.json`,
+    `package.yaml` or `node_modules` must be trusted too, outermost first.
+    Buffers formatted by stylua or sql-formatter are not affected.
   - `:CoverageRun`: runs only from a working directory that holds a
     `package.json`. npm also reads the `.npmrc` and `node_modules/.bin` of
     parent directories, so every parent below the home directory (or below `/`
@@ -1172,9 +1175,12 @@ when "cleaned up".
   - The project scans skip files above `treesitter.max_filesize`
     (`rg --max-filesize`).
   - conform runs `node_modules/.bin/prettierd` or `prettier` only from the
-    trusted root itself, whose fingerprint covers both, else the Mason binary;
-    prettierd is skipped for a file with a `node_modules/prettier` between it
-    and the root, because it would load that copy.
+    trusted root itself, whose fingerprint covers both, else the Mason binary.
+    prettierd loads the `prettier` that Node resolves from the file, so it runs
+    only when the root has its own `node_modules/prettier` and no
+    `node_modules/prettier` (or `prettier.js`, `.json`, `.node`) lies between
+    the file and the root; otherwise the `prettier` CLI, which uses its own
+    copy, formats the file.
   - `trust.lua` sets Neovim's own `trust` file (still used for the lazygit
     configs) to mode 600 when it finds it readable by others, writes its store
     through a temporary file only when the write succeeded, and treats a
