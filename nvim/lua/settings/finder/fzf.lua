@@ -33,7 +33,7 @@ function M.opts()
       border = user.ui.border,
       zindex = 50,
       backdrop = 100,
-      fullscreen = false,
+      fullscreen = user.finder.fullscreen,
       title_pos = "center",
       treesitter = {
         enabled = true,

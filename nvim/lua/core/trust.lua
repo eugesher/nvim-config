@@ -44,6 +44,10 @@ M.prettier_configs = vim.tbl_filter(function(name)
   return name:find("prettier", 1, true) ~= nil
 end, tool_configs)
 
+M.eslint_configs = vim.tbl_filter(function(name)
+  return name:find("eslint", 1, true) ~= nil
+end, tool_configs)
+
 local fingerprint_files = {
   "package.json",
   "tsconfig.json",
@@ -272,19 +276,29 @@ local function untracked(dir)
   return result
 end
 
+local function holds_marker(dir)
+  return vim.iter(nested_markers):any(function(name)
+    return vim.uv.fs_lstat(vim.fs.joinpath(dir, name)) ~= nil
+  end)
+end
+
 function M.root(bufnr)
   local git_root = vim.fs.root(bufnr, ".git")
-  if not git_root then
-    return vim.fs.root(bufnr, root_markers)
+  local top = git_root or vim.fs.root(bufnr, root_markers)
+  if not top then
+    return nil
   end
   local name = vim.api.nvim_buf_get_name(bufnr)
-  if not name:find("^/") then
-    return git_root
+  if
+    not name:find("^/") or not git_root and ("/" .. top .. "/"):find("/node_modules/", 1, true)
+  then
+    return top
   end
+  local nested = git_root and untracked or holds_marker
   local dir = vim.fs.dirname(vim.fs.normalize(name))
-  while dir ~= git_root and vim.fs.relpath(git_root, dir) do
-    local inside = vim.fs.relpath(git_root, dir)
-    if not ("/" .. inside .. "/"):find("/node_modules/", 1, true) and untracked(dir) then
+  while dir ~= top and vim.fs.relpath(top, dir) do
+    local inside = vim.fs.relpath(top, dir)
+    if not ("/" .. inside .. "/"):find("/node_modules/", 1, true) and nested(dir) then
       return dir
     end
     local parent = vim.fs.dirname(dir)
@@ -293,7 +307,7 @@ function M.root(bufnr)
     end
     dir = parent
   end
-  return git_root
+  return top
 end
 
 function M.parents(dir, names)

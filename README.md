@@ -186,6 +186,7 @@ plain data the rest of the config reads:
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `git.lazygit_scale`                                          | size of the lazygit window, a fraction of the editor: `1` fills the screen without a border, `0.9` leaves a margin and keeps `ui.border`                                                 |
+| `finder.fullscreen`                                          | fzf-lua pickers (`<leader>f…`, `<leader>g…`, `vim.ui.select`) fill the whole editor; `false` gives them a centered float of 80 % × 85 %; `<F2>` toggles it inside a picker               |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `http.kulala_core_sha256`                                    | SHA-256 of the kulala-core binary allowed to run; `nil` lets kulala download a new one (then `sha256sum` it and pin again)                                                               |
 | `trust.git_timeout_ms`                                       | milliseconds the project trust check gives git; when git is slower, project code stays off and a notice names this setting                                                               |
@@ -1039,19 +1040,23 @@ when "cleaned up".
   `node_modules`, prettier its config files and plugins, `:CoverageRun` the
   project's `test:cov` script. `core/trust.lua` holds the check, `allowed()` on
   the directory whose code would run, and `root()`, the `.git` directory above a
-  buffer or else a `package.json` / `tsconfig.json` / `jsconfig.json` one. A
-  buffer in neither has no root and is never trusted, so a stray directory such
-  as `$HOME` is never asked about on its behalf.
+  buffer or else a `package.json` / `tsconfig.json` / `jsconfig.json` one, or a
+  nested directory inside it that holds a config of its own (below). A buffer in
+  neither has no root and is never trusted, so a stray directory such as `$HOME`
+  is never asked about on its behalf.
   - vtsls: `before_init` turns `autoUseWorkspaceTsdk` on only when
     `<root>/node_modules/typescript/lib/tsserver.js` exists and its root, the
     one vtsls runs in, is trusted; otherwise vtsls uses the TypeScript it
     bundles.
   - eslint: `root_dir` runs nvim-lspconfig's own and calls `on_dir` only when
-    the root that function found holds the buffer and is trusted. That root
-    is where lspconfig looks for
-    `node_modules/.bin/vscode-eslint-language-server`, so the directory asked
-    about is the one whose code runs; lspconfig's fallback to the working
-    directory never reaches a file outside it.
+    the root that function found holds the buffer and is trusted. That root is
+    where lspconfig looks for `node_modules/.bin/vscode-eslint-language-server`,
+    so the directory asked about is the one whose code runs; lspconfig's
+    fallback to the working directory never reaches a file outside it. The
+    server also loads `eslint` and a flat config from parent directories, so
+    every parent of the deeper of that root and the buffer's own root, below the
+    home directory (or below `/` outside it), that holds an eslint config,
+    `package.json` or `node_modules` must be trusted too, outermost first.
   - prettier: format on save and `<leader>cf` skip a buffer in an untrusted root
     (or none) when conform would run prettierd or prettier for it, Compose files
     included; the key says so in a notification. prettier looks for its config
@@ -1193,11 +1198,15 @@ when "cleaned up".
     so a config dropped a few levels above the file counts too; each check is
     cached by the directory's modification time, so a file added later is
     noticed. A buffer whose name is not an absolute path (`oil://`,
-    `diffview://`, `term://`) keeps the repository root. eslint then needs both
-    its root and that one. A directory under `node_modules` stays part of the
-    repository's root, so following a definition into a dependency starts no new
-    server and asks nothing. A git command slower than `trust.git_timeout_ms`
-    keeps project code off without a prompt and says so once per session.
+    `diffview://`, `term://`) keeps the repository root. Outside a repository
+    nothing is tracked, so the deepest directory between the file and its
+    `package.json` / `tsconfig.json` / `jsconfig.json` root that holds any of
+    the files above becomes the root: a config added to an allowed tree later is
+    asked about. eslint then needs both its root and that one. vtsls starts in
+    it as well. A directory under `node_modules` stays part of the root above
+    it, so following a definition into a dependency starts no new server and
+    asks nothing. A git command slower than `trust.git_timeout_ms` keeps project
+    code off without a prompt and says so once per session.
   - gitsigns and diffview run git without lazygit's check, so a hostile
     `.git` directory (from an archive, not a clone) can still run a
     `filter.*` or `diff.*` command when a file opens.
