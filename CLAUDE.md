@@ -196,6 +196,13 @@ These look like mistakes or omissions and are not. Change them only on request.
     `git_use_branch_name` is a function around `vim.system`, so a directory
     name never reaches a shell. Other commands a `.git/config` can name
     (`filter.<driver>.clean` among them) are not covered.
+  - lua_ls starts with `--configpath` at
+    `stdpath("state")/myconfig/lua_ls.json`, rewritten at every start, which
+    empties `runtime.plugin` and `workspace.userThirdParty`, turns
+    `workspace.checkThirdParty` off and keeps `runtime.meta` at its default
+    above any project `.luarc.json`: LuaLS 3.19.1 loads a plugin even on
+    "Don't load this plugin", runs a third-party `config.lua` without asking,
+    and empties whatever directory `runtime.meta` names.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by

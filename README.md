@@ -1146,6 +1146,25 @@ when "cleaned up".
   `:mksession` writes a newline in a name as is, so a file named
   `a<newline>so.x` would turn into a `:source` of `.x` on the next restore. A
   save by hand (`:AutoSession save`, `:mksession`) is not checked.
+- **lua_ls runs no Lua from a project and writes only its own files.** LuaLS
+  executes Lua in two places a project's `.luarc.json` or `.luarc.jsonc`
+  controls: the plugin named in `runtime.plugin`, and the `config.lua` of
+  every third-party library under `workspace.userThirdParty` once
+  `workspace.checkThirdParty` is on. LuaLS 3.19.1 asks before a plugin, but
+  loads it on "Don't load this plugin" as well; it never asks before a
+  `config.lua`. `runtime.meta` names the directory LuaLS fills with its
+  generated stubs, deleting whatever else is there, and a `..` or absolute
+  value points it anywhere. Each time lua_ls starts,
+  `settings/lsp/servers/lua_ls.lua` writes
+  `stdpath("state")/myconfig/lua_ls.json` (through a temporary file, mode
+  600) with `runtime.plugin` and `workspace.userThirdParty` empty,
+  `workspace.checkThirdParty` off and `runtime.meta` at its default, and passes
+  it with `--configpath`. That file takes priority over the project's, key by
+  key, so none of these applies and no prompt appears, while the rest of a
+  `.luarc.json` still does. When the file cannot be written, lua_ls does not
+  start. The server may write settings a code action changes (a diagnostic
+  turned off for the workspace) into that file; the next start replaces it.
+  LuaLS reads client settings only at start while `--configpath` is set.
 - **Smaller hardening, one line each.**
   - Mason installs every server and tool at the version in `mason.servers` /
     `mason.tools` (`name@version`); `:checkhealth myconfig` shows the installed
