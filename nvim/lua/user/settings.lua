@@ -58,6 +58,10 @@ return {
     kulala_core_sha256 = "750a79cf888b30801225b3b9af644447be9e9fe3a55bfa8c0b1daabe54474502",
   },
 
+  completion = {
+    fuzzy_sha256 = "1b09e702955be4e2565206d8649db674ccb77477495ed787868f451bf33cea2f",
+  },
+
   trust = {
     git_timeout_ms = 2000,
   },

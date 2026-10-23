@@ -4,6 +4,38 @@ local M = {}
 
 local lspconfig_root_dir
 
+local trusted_dirs = {}
+
+local VALIDATING = {
+  ["textDocument/didOpen"] = true,
+  ["textDocument/didChange"] = true,
+  ["textDocument/didSave"] = true,
+  ["workspace/didChangeWatchedFiles"] = true,
+  ["textDocument/diagnostic"] = true,
+  ["textDocument/codeAction"] = true,
+  ["textDocument/formatting"] = true,
+  ["workspace/executeCommand"] = true,
+}
+
+local restarting = false
+
+local function changed(client)
+  return not vim.iter(trusted_dirs[client.root_dir] or {}):all(trust.trusted)
+end
+
+local function restart()
+  if restarting then
+    return
+  end
+  restarting = true
+  vim.schedule(function()
+    restarting = false
+    trusted_dirs = {}
+    vim.lsp.enable("eslint", false)
+    vim.lsp.enable("eslint")
+  end)
+end
+
 local ESLINT_PARENTS = vim.list_extend({ "package.json", "node_modules" }, trust.eslint_configs)
 
 local function default_root_dir()
@@ -27,7 +59,8 @@ M.config = {
           return
         end
         local inside = vim.fs.relpath(root, vim.api.nvim_buf_get_name(bufnr)) ~= nil
-        if not inside then
+        local library = vim.fs.joinpath(root, "node_modules", "eslint", "package.json")
+        if not inside or not vim.uv.fs_stat(library) then
           return
         end
         local own = trust.root(bufnr)
@@ -39,10 +72,28 @@ M.config = {
           end
         end
         if vim.iter(dirs):all(trust.allowed) then
+          trusted_dirs[root] = trusted_dirs[root] or {}
+          for _, dir in ipairs(dirs) do
+            if not vim.list_contains(trusted_dirs[root], dir) then
+              table.insert(trusted_dirs[root], dir)
+            end
+          end
           on_dir(root)
         end
       end)
     end)
+  end,
+  on_init = function(client)
+    for _, name in ipairs({ "notify", "request" }) do
+      local send = client[name]
+      client[name] = function(self, method, ...)
+        if VALIDATING[method] and changed(client) then
+          restart()
+          return false
+        end
+        return send(self, method, ...)
+      end
+    end
   end,
   settings = {
     workingDirectory = { mode = "auto" },

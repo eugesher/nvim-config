@@ -39,7 +39,7 @@ local function report_path()
   return vim.fs.joinpath(vim.fn.getcwd(), LCOV)
 end
 
-local function load_report()
+local function load_report(place)
   if not vim.uv.fs_stat(report_path()) then
     vim.notify(
       ("coverage: %s not found — run :CoverageRun first"):format(LCOV),
@@ -47,12 +47,18 @@ local function load_report()
     )
     return
   end
-  vim.cmd("Coverage")
+  require("coverage").load_lcov(report_path(), place)
 end
 
 M.keys = {
   { "<leader>tcc", "<cmd>CoverageToggle<cr>", desc = "Toggle coverage signs" },
-  { "<leader>tcl", load_report, desc = "Load and show coverage" },
+  {
+    "<leader>tcl",
+    function()
+      load_report(true)
+    end,
+    desc = "Load and show coverage",
+  },
   { "<leader>tcs", "<cmd>CoverageSummary<cr>", desc = "Coverage summary" },
   { "<leader>tcx", "<cmd>CoverageClear<cr>", desc = "Clear coverage" },
   { "<leader>tcr", "<cmd>CoverageRun<cr>", desc = "Run tests with coverage" },
@@ -131,10 +137,22 @@ function M.init()
           )
           return
         end
-        load_report()
+        load_report(true)
       end)
     end)
   end, { desc = "Run the project's coverage command, then show the report" })
+end
+
+function M.config(_, opts)
+  local coverage = require("coverage")
+  coverage.setup(opts)
+  coverage.load = load_report
+  vim.api.nvim_create_user_command("Coverage", function()
+    load_report(true)
+  end, { desc = "Load the lcov report and show it" })
+  vim.api.nvim_create_user_command("CoverageLoad", function()
+    load_report(false)
+  end, { desc = "Load the lcov report" })
 end
 
 local DEFAULT_SIGN_COLORS = { covered = "#B7F071", uncovered = "#F07178", partial = "#AA71F0" }

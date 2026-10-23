@@ -168,20 +168,29 @@ These look like mistakes or omissions and are not. Change them only on request.
     `nvim/lazygit.yml` is passed to lazygit after the user's own config and
     points its editor commands back at this Neovim; `install.sh` copies it
     with the rest of `nvim/`.
-  - vtsls' workspace TypeScript, eslint, prettier's format on save and
-    `:CoverageRun` run only when `core/trust.lua` trusts the directory whose
-    code they would load; outside a trusted project vtsls keeps its bundled
-    TypeScript, eslint does not start (it also needs every parent below `$HOME`
-    that holds an eslint config, `package.json` or `node_modules` trusted, and
-    outside git a nested config dir is a root of its own), prettier runs neither
-    on save nor on `<leader>cf` (and only from `<root>/node_modules/.bin`, else
-    Mason's; prettierd runs only when the root has its own
-    `node_modules/prettier` and no nested one; prettier also needs every parent
-    below `$HOME` that holds a prettier config, `package.json`, `package.yaml`
-    or `node_modules` trusted), and `:CoverageRun` refuses (it also needs every
-    parent below `$HOME` that holds npm files trusted). neotest, nvim-dap and
-    kulala's request scripts are not gated. `trust.lua` asks itself (Allow /
-    Deny / Ignore) and keeps the answers in
+  - vtsls' workspace TypeScript, eslint, prettier's format on save,
+    `:CoverageRun`, neotest runs, nvim-dap sessions (`dap.run`) and kulala
+    requests run only when `core/trust.lua` trusts the directory whose code they
+    would load; outside a trusted project vtsls keeps its bundled TypeScript,
+    eslint does not start (it also needs
+    `<root>/node_modules/eslint/package.json` and every parent below `$HOME`
+    that holds an eslint config, `package.json` or `node_modules` trusted,
+    outside git a nested config dir is a root of its own, and a message that
+    makes it lint or load its config is sent only while those directories keep
+    their allowed fingerprints, else it is dropped and eslint restarted, which
+    asks again), prettier runs neither on save nor on `<leader>cf` (and only
+    from `<root>/node_modules/.bin`, else Mason's; prettierd runs only when the
+    root has its own `node_modules/prettier` and no nested one; prettier also
+    needs every parent below `$HOME` that holds a prettier config,
+    `package.json`, `package.yaml` or `node_modules` trusted), and
+    `:CoverageRun`, tests and the debugger refuse (they also need every parent
+    below `$HOME` that holds npm files trusted; the debugger checks the buffer's
+    root, the working directory's root, and the working directory when it holds
+    a `.vscode/launch.json`, which is in the fingerprint). kulala's
+    `kulala.ui.open`/`open_all`/`replay` (keys, commands and code actions) ask
+    about the `.http` file's directory (`kulala:<dir>`, fingerprint over its
+    `.http`/`.rest` files and `http-client.env.json`). `trust.lua` asks itself
+    (Allow / Deny / Ignore) and keeps the answers in
     `stdpath("state")/myconfig/trust.json`, not in Neovim's `:trust` database:
     Deny is permanent, Allow lasts while the fingerprint holds (the root's
     configs and `package.yaml`, `tsconfig.json`, lockfiles and `node_modules`
@@ -203,11 +212,22 @@ These look like mistakes or omissions and are not. Change them only on request.
     above any project `.luarc.json`: LuaLS 3.19.1 loads a plugin even on
     "Don't load this plugin", runs a third-party `config.lua` without asking,
     and empties whatever directory `runtime.meta` names.
+  - jsonls and yamlls hand http(s) schemas to `settings/lsp/schemas.lua`, which
+    fetches only SchemaStore catalog URLs; docker-language-server runs behind a
+    dead proxy (telemetry ignores its setting); nvim-coverage loads
+    `coverage/lcov.info` through its Lua lcov parser only (`:Coverage`,
+    `:CoverageLoad` and `coverage.load` replaced); codebook refuses every
+    project-dictionary command through a symlink; `init.lua` drops the relative
+    `./?.lua` and `./?.so` entries of `package.path` and `package.cpath`, so
+    `require` never loads from the working directory; `install.sh` runs under
+    `umask 077`.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by
-    SHA-256 in `user.http.kulala_core_sha256` (checked when kulala loads,
-    cached by stat), and dadbod-ui's table helpers never run on their own.
+    SHA-256 in `user.http.kulala_core_sha256` and blink.cmp's fuzzy library in
+    `user.completion.fuzzy_sha256` (both through `core/pin.lua`, checked on
+    load and cached by stat), and dadbod-ui's table helpers never run on their
+    own.
   - AI integration is left out by design, so nothing else draws ghost text.
   - Spelling is codebook, a language server; cspell.nvim is archived and
     cspell-lsp deprecated. `scripts/cspell-to-codebook.sh` migrates an old word

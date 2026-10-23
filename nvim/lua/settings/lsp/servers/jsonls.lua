@@ -1,8 +1,11 @@
+local schemas = require("settings.lsp.schemas")
+
 local M = {}
 
 M.config = {
   filetypes = { "json", "jsonc" },
-  init_options = { provideFormatter = false },
+  init_options = { provideFormatter = false, handledSchemaProtocols = { "file" } },
+  handlers = { ["vscode/content"] = schemas.content },
   settings = {
     json = {
       validate = { enable = true },

@@ -62,6 +62,8 @@ local fingerprint_files = {
 
 vim.list_extend(fingerprint_files, tool_configs)
 
+table.insert(fingerprint_files, ".vscode/launch.json")
+
 vim.list_extend(fingerprint_files, {
   "node_modules/typescript/lib/tsserver.js",
   "node_modules/typescript/lib/_tsserver.js",
@@ -142,15 +144,17 @@ local function content_hash(path, root)
 end
 
 local function tracked(root)
-  if git_dirs[root] == nil then
+  local marker = vim.fs.root(root, ".git") or false
+  local cached = git_dirs[root]
+  if not cached or cached.marker ~= marker then
     local dir, code = output({ "git", "-C", root, "rev-parse", "--absolute-git-dir" })
-    if code == 124 then
+    if code == 124 or marker and not dir then
       return nil
     end
-    dir = dir and dir:gsub("\n$", "")
-    git_dirs[root] = dir and not dir:find("\n", 1, true) and dir or false
+    cached = { marker = marker, dir = dir and dir:gsub("\n$", "") or false }
+    git_dirs[root] = cached
   end
-  local dir = git_dirs[root]
+  local dir = cached.dir
   if not dir then
     return ""
   end
@@ -282,20 +286,23 @@ local function holds_marker(dir)
   end)
 end
 
-function M.root(bufnr)
-  local git_root = vim.fs.root(bufnr, ".git")
-  local top = git_root or vim.fs.root(bufnr, root_markers)
+function M.root(source)
+  local git_root = vim.fs.root(source, ".git")
+  local top = git_root or vim.fs.root(source, root_markers)
   if not top then
     return nil
   end
-  local name = vim.api.nvim_buf_get_name(bufnr)
+  local name = type(source) == "string" and source or vim.api.nvim_buf_get_name(source)
   if
     not name:find("^/") or not git_root and ("/" .. top .. "/"):find("/node_modules/", 1, true)
   then
     return top
   end
   local nested = git_root and untracked or holds_marker
-  local dir = vim.fs.dirname(vim.fs.normalize(name))
+  local dir = vim.fs.normalize(name)
+  if type(source) ~= "string" or vim.fn.isdirectory(dir) == 0 then
+    dir = vim.fs.dirname(dir)
+  end
   while dir ~= top and vim.fs.relpath(top, dir) do
     local inside = vim.fs.relpath(top, dir)
     if not ("/" .. inside .. "/"):find("/node_modules/", 1, true) and nested(dir) then
@@ -356,8 +363,21 @@ function M.allowed(root)
     dir,
     current,
     "Project " .. dir,
-    "ships code that the workspace TypeScript, eslint, prettier or :CoverageRun would run."
+    "ships code that its TypeScript, eslint, prettier, tests, debugger or :CoverageRun would run."
   )
+end
+
+function M.trusted(root)
+  local dir = root and vim.uv.fs_realpath(root)
+  local current = dir and fingerprint(dir)
+  local entry = current and read_store()[dir]
+  return type(entry) == "table" and entry.decision == "allow" and entry.fingerprint == current
+end
+
+function M.allowed_with_parents(dir, names)
+  local dirs = M.parents(dir, names)
+  dirs[#dirs + 1] = dir
+  return vim.iter(dirs):all(M.allowed)
 end
 
 function M.approve(key, files, subject, what)
@@ -372,8 +392,12 @@ function M.approve(key, files, subject, what)
   return decide(key, vim.fn.sha256(table.concat(parts, "\n")), subject, what)
 end
 
+local function prefixed(dir)
+  return dir:match("^lazygit:") or dir:match("^kulala:")
+end
+
 local function key_of(dir)
-  return dir:match("^lazygit:") and dir or vim.uv.fs_realpath(dir)
+  return prefixed(dir) and dir or vim.uv.fs_realpath(dir)
 end
 
 local function forget(dir)
@@ -412,7 +436,7 @@ end
 vim.api.nvim_create_user_command("ProjectTrust", function(args)
   local action = args.fargs[1] or "list"
   local path = table.concat(args.fargs, " ", 2)
-  local dir = path:match("^lazygit:") and path
+  local dir = prefixed(path) and path
     or path ~= "" and vim.fn.fnamemodify(path, ":p")
     or M.root(0)
     or vim.fn.getcwd()

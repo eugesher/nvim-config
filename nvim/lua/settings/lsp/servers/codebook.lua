@@ -17,6 +17,27 @@ local function project_dictionary(root)
   return vim.fs.joinpath(root, path)
 end
 
+local function writable_dictionary(client)
+  local path = project_dictionary(client.root_dir)
+  local inside = path and client.root_dir and vim.fs.relpath(client.root_dir, path)
+  if not inside then
+    return path ~= nil
+  end
+  local dir = client.root_dir
+  for part in vim.gsplit(inside, "/", { plain = true }) do
+    dir = vim.fs.joinpath(dir, part)
+    local stat = vim.uv.fs_lstat(dir)
+    if stat and stat.type == "link" then
+      vim.notify(
+        ("codebook: words not added, %s is a symbolic link"):format(dir),
+        vim.log.levels.WARN
+      )
+      return false
+    end
+  end
+  return true
+end
+
 local function add_lowercase(command, ctx)
   local client = assert(vim.lsp.get_client_by_id(ctx.client_id))
   local arguments = {}
@@ -63,6 +84,21 @@ M.config = {
     ["codebook.addWord"] = add_lowercase,
     ["codebook.addWordGlobal"] = add_lowercase,
   },
+  on_init = function(client)
+    local request = client.request
+    ---@diagnostic disable-next-line: duplicate-set-field
+    client.request = function(self, method, params, ...)
+      local command = method == "workspace/executeCommand" and params and params.command or ""
+      if
+        vim.startswith(command, "codebook.")
+        and command ~= "codebook.addWordGlobal"
+        and not writable_dictionary(client)
+      then
+        return false
+      end
+      return request(self, method, params, ...)
+    end
+  end,
   before_init = function(params, config)
     local path = project_dictionary(config.root_dir)
     if path then
@@ -115,6 +151,9 @@ function M.add_buffer_words()
   local words = unknown_words(bufnr, client)
   if #words == 0 then
     vim.notify("codebook: no unknown words in this buffer")
+    return
+  end
+  if not writable_dictionary(client) then
     return
   end
   client:exec_cmd({

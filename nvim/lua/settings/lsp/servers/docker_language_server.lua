@@ -22,6 +22,15 @@ M.config = {
     "docker-bake.override.json",
     "docker-bake.override.hcl",
   },
+  cmd_env = {
+    DOCKER_LANGUAGE_SERVER_TELEMETRY = "false",
+    HTTPS_PROXY = "http://127.0.0.1:9",
+    HTTP_PROXY = "http://127.0.0.1:9",
+    https_proxy = "http://127.0.0.1:9",
+    http_proxy = "http://127.0.0.1:9",
+    NO_PROXY = "",
+    no_proxy = "",
+  },
   init_options = {
     telemetry = "off",
     dockercomposeExperimental = { composeSupport = true },

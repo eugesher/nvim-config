@@ -1,7 +1,10 @@
+local trust = require("core.trust")
 local user = require("user.settings")
 local icons = require("settings.icons")
 
 local M = {}
+
+local NPM_PARENTS = { "package.json", ".npmrc", "node_modules" }
 
 local JEST_CONFIGS = { "jest.config.ts", "jest.config.js", "jest.config.mjs", "jest.config.cjs" }
 local VITEST_CONFIGS =
@@ -16,8 +19,22 @@ local function nearest(names, start)
   return found
 end
 
+local function gated(adapter)
+  local build_spec = adapter.build_spec
+  adapter.build_spec = function(args)
+    local path = args.tree:data().path
+    require("nio").scheduler()
+    local root = trust.root(path)
+    if not root or not trust.allowed_with_parents(root, NPM_PARENTS) then
+      error(("tests not run: %s is not trusted (:ProjectTrust)"):format(root or path), 0)
+    end
+    return build_spec(args)
+  end
+  return adapter
+end
+
 local function jest_adapter()
-  return require("neotest-jest")({
+  return gated(require("neotest-jest")({
     jestCommand = "npx --no jest",
     jestConfigFile = function(file)
       return nearest(JEST_CONFIGS, file) or "jest.config.js"
@@ -28,11 +45,11 @@ local function jest_adapter()
     end,
     env = { CI = true },
     jest_test_discovery = false,
-  })
+  }))
 end
 
 local function vitest_adapter()
-  return require("neotest-vitest")({
+  return gated(require("neotest-vitest")({
     vitestCommand = "npx --no vitest",
     vitestConfigFile = function(file)
       return nearest(VITEST_CONFIGS, file)
@@ -40,7 +57,7 @@ local function vitest_adapter()
     filter_dir = function(name)
       return name ~= "node_modules" and name ~= "dist" and name ~= "coverage"
     end,
-  })
+  }))
 end
 
 local function run(method, ...)
