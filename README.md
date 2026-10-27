@@ -1175,7 +1175,9 @@ when "cleaned up".
     `.bin/prettierd`, the `package.json` of `eslint` and `prettier`), each by
     real path and SHA-256. Only a regular file inside the root, up to 64 MB, is
     read; a symlink out of the root, a FIFO or a device counts by its type and
-    target alone, so a repository cannot make the check hang;
+    target alone, so a repository cannot make the check hang; a file is opened
+    non-blocking and its type checked again on the open descriptor, so one
+    swapped for a FIFO after that check cannot hang it either;
   - in a git repository, the index entries (`git ls-files --stage`) of every
     tracked `package.json`, `package.yaml`, `.env`, `tsconfig*.json`,
     `jsconfig*.json`, eslint and prettier config and every tracked file under a
@@ -1302,7 +1304,10 @@ when "cleaned up".
     `replace_keycodes = false`: a word made of `<CR>` and `:!` cannot become
     keys.
   - The project scans skip files above `treesitter.max_filesize`
-    (`rg --max-filesize`).
+    (`rg --max-filesize`). They read each file through the trust check's
+    non-blocking reader and skip one that is no longer a regular file within
+    that size limit when it is opened, so a file swapped for a FIFO, a device or
+    a symbolic link during a scan cannot hang the editor or be read.
   - conform runs `node_modules/.bin/prettierd` or `prettier` only from the
     trusted root itself, whose fingerprint covers both, else the Mason binary.
     prettierd loads the `prettier` that Node resolves from the file, so it runs

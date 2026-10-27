@@ -113,6 +113,38 @@ local function output(cmd)
   return result.code == 0 and result.stdout or nil, result.code
 end
 
+local READ_FLAGS = bit.bor(vim.uv.constants.O_RDONLY, vim.uv.constants.O_NONBLOCK)
+
+local function read_file(path, limit, expect)
+  local fd = vim.uv.fs_open(path, READ_FLAGS, 0)
+  if not fd then
+    return nil
+  end
+  local stat = vim.uv.fs_fstat(fd)
+  local data
+  if
+    stat
+    and stat.type == "file"
+    and stat.size <= limit
+    and (not expect or stat.ino == expect.ino and stat.dev == expect.dev)
+  then
+    local chunks, offset = {}, 0
+    while offset < stat.size do
+      local chunk = vim.uv.fs_read(fd, stat.size - offset, offset)
+      if not chunk or chunk == "" then
+        break
+      end
+      chunks[#chunks + 1] = chunk
+      offset = offset + #chunk
+    end
+    data = offset == stat.size and table.concat(chunks) or nil
+  end
+  vim.uv.fs_close(fd)
+  return data
+end
+
+M.read_file = read_file
+
 local function content_hash(path, root)
   if not vim.uv.fs_lstat(path) then
     return "-"
@@ -133,12 +165,11 @@ local function content_hash(path, root)
   }, ":")
   local cached = hashes[real]
   if not cached or cached.key ~= key then
-    local file = io.open(real, "rb")
-    if not file then
+    local data = read_file(real, max_size, stat)
+    if not data then
       return "?"
     end
-    cached = { key = key, hash = vim.fn.sha256(file:read("*a") or "") }
-    file:close()
+    cached = { key = key, hash = vim.fn.sha256(data) }
     hashes[real] = cached
   end
   return real .. "@" .. cached.hash
@@ -153,12 +184,7 @@ local function git_marker(root)
   local parts = { top, vim.uv.fs_realpath(path) or "-" }
   local stat = vim.uv.fs_stat(path)
   if stat and stat.type == "file" then
-    local gitdir
-    local file = stat.size < 4096 and io.open(path, "r")
-    if file then
-      gitdir = (file:read("*l") or ""):match("^gitdir: (.+)$")
-      file:close()
-    end
+    local gitdir = (read_file(path, 4096, stat) or ""):match("^gitdir: ([^\n]+)")
     local target = gitdir and (gitdir:find("^/") and gitdir or vim.fs.joinpath(top, gitdir))
     vim.list_extend(parts, {
       stat.ino,
