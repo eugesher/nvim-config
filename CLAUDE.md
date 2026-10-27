@@ -219,8 +219,10 @@ These look like mistakes or omissions and are not. Change them only on request.
     `:CoverageLoad` and `coverage.load` replaced); codebook refuses every
     project-dictionary command through a symlink; `init.lua` drops the relative
     `./?.lua` and `./?.so` entries of `package.path` and `package.cpath`, so
-    `require` never loads from the working directory; `install.sh` runs under
-    `umask 077`.
+    `require` never loads from the working directory, and fzf-lua's `nvim -u
+    NONE -l spawn.lua` helper gets the filtered paths through
+    `LUA_PATH`/`LUA_CPATH` on its command line; `install.sh` runs under `umask
+    077`.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by

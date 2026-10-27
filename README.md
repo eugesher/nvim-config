@@ -1262,7 +1262,13 @@ when "cleaned up".
     `package.path` and `package.cpath`. Neovim starts with both, so a `require`
     of a module no plugin provides (blink.cmp's `blink_cmp_fuzzy` on the first
     insert, for one) loaded a file of that name from the working directory, the
-    root of a freshly cloned repository included.
+    root of a freshly cloned repository included. fzf-lua's helper process
+    (`nvim -u NONE -l spawn.lua`, started for files, grep and the other pickers
+    that build their list in the background) never reads `init.lua` and failed
+    the same way on `fzf-lua.previewer`, so `settings/finder/fzf.lua` starts it
+    with `LUA_PATH` and `LUA_CPATH` set to the filtered paths; the variables
+    reach that process and the commands it runs (`fd`, `rg`, `git`), not
+    terminals or other jobs.
   - `install.sh` runs under `umask 077`, so the installed `~/.config/nvim` and
     `codebook.toml` are readable and writable by the user alone.
   - The lazy.nvim bootstrap checks out the commit `lazy-lock.json` names right

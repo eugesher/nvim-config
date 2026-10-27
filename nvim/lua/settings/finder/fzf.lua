@@ -192,6 +192,16 @@ function M.opts()
 end
 
 function M.config(_, opts)
+  local shell = require("fzf-lua.shell")
+  local shellescape = require("fzf-lua.libuv").shellescape
+  local wrap_spawn_stdio = shell.wrap_spawn_stdio
+  shell.wrap_spawn_stdio = function(spawn_opts)
+    return ("LUA_PATH=%s LUA_CPATH=%s %s"):format(
+      shellescape(package.path),
+      shellescape(package.cpath),
+      wrap_spawn_stdio(spawn_opts)
+    )
+  end
   local fzf = require("fzf-lua")
   fzf.setup(opts)
   fzf.register_ui_select()
