@@ -45,6 +45,7 @@ Inside Neovim: `:Lazy` (`:Lazy sync` updates plugins), `:Mason`,
 | `lua/settings/lsp/` | `lspconfig.lua` (server list, `<leader>l` keys), `mason.lua`, `capabilities.lua`, `keymaps.lua` (the only LspAttach), `unused.lua` (reference counts behind the unused markers), `spelling.lua` (codebook's path check and project scan), `project.lua` (the project scan both share), `servers/<name>.lua` |
 | `lua/user/settings.lua` | The single source of user-tunable values — pure data, no `vim.*` calls |
 | `lua/myconfig/health.lua` | `:checkhealth myconfig` |
+| `lua/blink_cmp_fuzzy.lua` | Loads blink.cmp's fuzzy library by absolute path for blink's worker threads, which would otherwise find `./blink_cmp_fuzzy.lua` in the working directory first |
 | `after/ftplugin/*.lua` | Buffer-local keymaps and filetype specifics (http, sql, markdown wrapping) |
 
 A spec is built with `require("settings").spec(repo, name, extra)`, where `name`
@@ -59,6 +60,13 @@ lsp/mason).
 `:checkhealth myconfig` lives under `lua/myconfig/` because checkhealth finds
 `lua/<name>/health.lua`; a `core/health.lua` would add a second, duplicate
 `:checkhealth core` report.
+
+File names are kebab-case except where another program fixes the module name.
+`lua/blink_cmp_fuzzy.lua` is the module blink.cmp requires
+(`require("blink_cmp_fuzzy")`, entry point `luaopen_blink_cmp_fuzzy`), so the
+runtimepath finds it only under that exact name; renamed, the threads fall back
+to `./?.lua` again. `settings/lsp/servers/<name>.lua` follows nvim-lspconfig's
+server names (`docker_language_server.lua`) for the same reason.
 
 ### Writing settings
 
@@ -219,10 +227,11 @@ These look like mistakes or omissions and are not. Change them only on request.
     `:CoverageLoad` and `coverage.load` replaced); codebook refuses every
     project-dictionary command through a symlink; `init.lua` drops the relative
     `./?.lua` and `./?.so` entries of `package.path` and `package.cpath`, so
-    `require` never loads from the working directory, and fzf-lua's `nvim -u
-    NONE -l spawn.lua` helper gets the filtered paths through
-    `LUA_PATH`/`LUA_CPATH` on its command line; `install.sh` runs under `umask
-    077`.
+    `require` in the main Lua state never loads from the working directory,
+    `lua/blink_cmp_fuzzy.lua` answers blink.cmp's worker threads (fresh Lua
+    states with `./?.lua` first) before that entry, and fzf-lua's `nvim -u NONE
+    -l spawn.lua` helper gets the filtered paths through `LUA_PATH`/`LUA_CPATH`
+    on its command line; `install.sh` runs under `umask 077`.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by

@@ -119,6 +119,7 @@ nvim/
 ├── stylua.toml           # formatting of every Lua file (2 spaces, width 100)
 ├── lazygit.yml           # lazygit settings added on top of your own
 ├── lua/
+│   ├── blink_cmp_fuzzy.lua # blink.cmp's library by absolute path, for its worker threads
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
 │   │                     # autocmds, diagnostics, filetypes, lazy.nvim
 │   │                     # bootstrap, the lazygit float, project trust
@@ -1268,7 +1269,14 @@ when "cleaned up".
     the same way on `fzf-lua.previewer`, so `settings/finder/fzf.lua` starts it
     with `LUA_PATH` and `LUA_CPATH` set to the filtered paths; the variables
     reach that process and the commands it runs (`fd`, `rg`, `git`), not
-    terminals or other jobs.
+    terminals or other jobs. blink.cmp's worker thread (the frecency update on
+    every accepted item; blink's Rust buffer parser would use one too, but
+    1.10.2 never calls it) starts a fresh Lua state whose `package.path` begins
+    with `./?.lua` again and receives only the filtered `package.cpath`;
+    `lua/blink_cmp_fuzzy.lua` in this config is found on the runtimepath before
+    that entry and loads the library from an absolute path of that
+    `package.cpath`. In the main state `package.preload` still comes first, so
+    the pin decides there.
   - `install.sh` runs under `umask 077`, so the installed `~/.config/nvim` and
     `codebook.toml` are readable and writable by the user alone.
   - The lazy.nvim bootstrap checks out the commit `lazy-lock.json` names right
