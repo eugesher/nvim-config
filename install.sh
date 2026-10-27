@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -euo pipefail
+umask 077
 
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$REPO_DIR/nvim"

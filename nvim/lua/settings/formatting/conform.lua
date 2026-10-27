@@ -12,25 +12,58 @@ end
 
 local function project_bin(name)
   return function(_, ctx)
-    local stop = trust.root(ctx.buf)
-    for dir in vim.fs.parents(ctx.filename) do
-      local bin = vim.fs.joinpath(dir, "node_modules", ".bin", name)
-      if vim.fn.executable(bin) == 1 then
-        return bin
-      end
-      if dir == stop then
-        break
-      end
+    local root = trust.root(ctx.buf)
+    local bin = root and vim.fs.joinpath(root, "node_modules", ".bin", name)
+    if bin and vim.fn.executable(bin) == 1 then
+      return bin
     end
     return name
   end
+end
+
+local PRETTIER_FILES = { "prettier.js", "prettier.json", "prettier.node" }
+
+local PRETTIER_PARENTS =
+  vim.list_extend({ "package.json", "package.yaml", "node_modules" }, trust.prettier_configs)
+
+local function root_prettier(ctx)
+  local root = trust.root(ctx.buf)
+  if
+    not root
+    or not vim.uv.fs_stat(vim.fs.joinpath(root, "node_modules", "prettier", "package.json"))
+  then
+    return false
+  end
+  for dir in vim.fs.parents(ctx.filename) do
+    for _, name in ipairs(PRETTIER_FILES) do
+      if vim.uv.fs_lstat(vim.fs.joinpath(dir, "node_modules", name)) then
+        return false
+      end
+    end
+    if dir == root then
+      return true
+    end
+    if vim.uv.fs_lstat(vim.fs.joinpath(dir, "node_modules", "prettier")) then
+      return false
+    end
+  end
+  return false
 end
 
 local function prettier_allowed(bufnr)
   local runs_prettier = vim.iter(require("conform").list_formatters(bufnr)):any(function(info)
     return info.name == "prettierd" or info.name == "prettier"
   end)
-  return not runs_prettier or trust.allowed(trust.root(bufnr))
+  if not runs_prettier then
+    return true
+  end
+  local root = trust.root(bufnr)
+  if not root then
+    return false
+  end
+  local dirs = trust.parents(root, PRETTIER_PARENTS)
+  dirs[#dirs + 1] = root
+  return vim.iter(dirs):all(trust.allowed)
 end
 
 function M.init()
@@ -94,7 +127,13 @@ M.opts = {
     return {}
   end,
   formatters = {
-    prettierd = { inherit = true, command = project_bin("prettierd") },
+    prettierd = {
+      inherit = true,
+      command = project_bin("prettierd"),
+      condition = function(_, ctx)
+        return root_prettier(ctx)
+      end,
+    },
     prettier = { inherit = true, command = project_bin("prettier") },
     stylua = { inherit = true },
     sql_formatter = {

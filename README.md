@@ -119,6 +119,7 @@ nvim/
 ├── stylua.toml           # formatting of every Lua file (2 spaces, width 100)
 ├── lazygit.yml           # lazygit settings added on top of your own
 ├── lua/
+│   ├── blink_cmp_fuzzy.lua # blink.cmp's library by absolute path, for its worker threads
 │   ├── core/             # the editor itself, no plugins: options, keymaps,
 │   │                     # autocmds, diagnostics, filetypes, lazy.nvim
 │   │                     # bootstrap, the lazygit float, project trust
@@ -186,6 +187,8 @@ plain data the rest of the config reads:
 | `explorer.position`, `width`, `min_width`, `hide_gitignored` | neo-tree panel on the `"left"` or `"right"`; `width` is columns or a share of the editor width (`"25%"`) taken at each open, never below `min_width` columns; `.` shows gitignored files |
 | `explorer.group_empty_dirs`                                  | `true` merges a folder whose only child is a folder into one row (`src/app/modules`), so the first `l` on it merges instead of expanding; `false` keeps every folder on its own line     |
 | `git.lazygit_scale`                                          | size of the lazygit window, a fraction of the editor: `1` fills the screen without a border, `0.9` leaves a margin and keeps `ui.border`                                                 |
+| `finder.fullscreen`                                          | fzf-lua pickers (`<leader>f…`, `<leader>g…`, `vim.ui.select`) fill the whole editor; `false` gives them a centered float of 80 % × 85 %; `<F2>` toggles it inside a picker               |
+| `completion.fuzzy_sha256`                                    | SHA-256 of blink.cmp's Rust matcher allowed to load; another library falls back to the Lua matcher, `nil` turns the check off                                                            |
 | `http.default_env`                                           | kulala environment on startup, a key of `http/http-client.env.json` (`<leader>he` switches)                                                                                              |
 | `http.kulala_core_sha256`                                    | SHA-256 of the kulala-core binary allowed to run; `nil` lets kulala download a new one (then `sha256sum` it and pin again)                                                               |
 | `trust.git_timeout_ms`                                       | milliseconds the project trust check gives git; when git is slower, project code stays off and a notice names this setting                                                               |
@@ -195,7 +198,7 @@ plain data the rest of the config reads:
 | `spelling.check_paths`                                       | check the words of a string that holds a path (`src/usr/x`) — codebook skips such a string whole; `false` leaves spelling to the server alone                                            |
 | `spelling.scan_timeout`                                      | milliseconds `<leader>xs` waits for codebook to answer one file before it moves on without it                                                                                            |
 | `spelling.scan_parallel`                                     | files `<leader>xs` keeps open in codebook at once                                                                                                                                        |
-| `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun`; the report loads when it finishes                                                                                       |
+| `coverage.command`                                           | command that writes `coverage/lcov.info`, run by `:CoverageRun` from a trusted directory holding a `package.json` (see the trust section); shows only a rewritten report                 |
 | `database.position`, `width`                                 | vim-dadbod-ui drawer on the `"left"` or `"right"`, width in columns                                                                                                                      |
 | `lsp.inlay_hints`                                            | inlay hints on attach; `<leader>ui` toggles per buffer                                                                                                                                   |
 | `lsp.disable_watchers`                                       | stop advertising file watching: less CPU for ESLint and TypeScript servers in huge monorepos, but files changed outside the editor go unnoticed                                          |
@@ -566,6 +569,20 @@ when "cleaned up".
   `hcl.dockerbake`, in `core/filetypes.lua`) so the server is not handed every
   `.hcl` file, and Bake buffers go out with the `dockerbake` language id — with
   `hcl` the server parses them as Dockerfiles.
+- **docker-language-server has no network.** 0.20.1 ignores `telemetry = "off"`
+  and reports to `api.docker.com` and Bugsnag whenever a Docker file opens, so
+  `cmd_env` sets `DOCKER_LANGUAGE_SERVER_TELEMETRY=false` and points
+  `HTTPS_PROXY` / `HTTP_PROXY` at the closed port 9 on 127.0.0.1. Docker Hub
+  lookups for `FROM` images go with it; linting and Compose support are local.
+- **Schemas come only from the SchemaStore catalog.** jsonls
+  (`handledSchemaProtocols = { "file" }`) and yamlls
+  (`yaml/registerContentRequest`) hand every http(s) schema to Neovim, and
+  `settings/lsp/schemas.lua` downloads it with curl (HTTPS only, 15 seconds)
+  only when its URL is in SchemaStore.nvim's catalog or on json.schemastore.org
+  or www.schemastore.org, then keeps it for the session. A `$schema` or modeline
+  that points anywhere else gets an error the server shows as a diagnostic, so
+  opening a file never contacts a host the file chose. yamlls' Kubernetes CRD
+  store is off.
 - **yamlls** drops nvim-lspconfig's `yaml.gitlab` / `yaml.helm-values`, filetypes
   Neovim never produces, and hides rename in compose buffers: its empty
   `prepareRename` ended every service rename with "Nothing to rename".
@@ -700,6 +717,12 @@ when "cleaned up".
   diagnostics, since a disabled diagnostic namespace is still counted by
   `vim.diagnostic.count()` and the status line would keep showing it.
   `exit_timeout = 500`, because the server never exits on its own.
+- **Adding a word never writes through a link.** Every codebook command that
+  writes the project dictionary (`<leader>cw`, "Add to dictionary", "Add current
+  file to ignore list") is refused, with a notice, when `.codebook` or
+  `words.toml` under the project root is a symbolic link: codebook would write
+  `words = [...]` over whatever file it points at, `~/.bashrc` included. "Add to
+  global dictionary" writes the user's own file and is not checked.
 - **The project dictionary reaches codebook as an absolute path.** The server
   takes it in `initializationOptions.configPath`, and 0.3.42 resolves a relative
   value against its own working directory instead of the project root, so the
@@ -765,8 +788,12 @@ when "cleaned up".
   and after `--` Jest takes them as path patterns, never writes the results file
   and reports every test as failed. Jest and Vitest run from the package root of
   a monorepo.
-- **Coverage** is loaded with `:Coverage`, not `:CoverageLoad`, which reads the
-  report without placing the signs.
+- **Coverage** is read from `coverage/lcov.info` of the working directory by
+  nvim-coverage's Lua lcov parser: `:Coverage` and `<leader>tcl` load it and
+  place the signs, `:CoverageLoad` loads it without them. Both commands, and
+  `require("coverage").load`, which the summary window calls on `<CR>`, are
+  replaced after setup, so nvim-coverage's per-language loaders, which start
+  `pipenv`, `coverage`, `go` and the like through a shell, never run.
 - **Debugger:** attaching to a local `nest start --debug` has no
   `localRoot` / `remoteRoot` — with them js-debug treats the process as remote and
   breakpoints stay provisional — while the container configuration needs the
@@ -1007,8 +1034,9 @@ when "cleaned up".
   and the command runs there.
 - **kulala**'s `pathresolver` keeps its documented default although 6.x never
   calls it: kulala-core resolves request variables itself.
-- **blink.cmp** uses the prebuilt Rust matcher of the pinned tag; without network
-  access set its implementation to `"lua"`. `<Tab>` / `<S-Tab>` move the
+- **blink.cmp** uses the prebuilt Rust matcher of the pinned tag only while its
+  SHA-256 matches `completion.fuzzy_sha256` (below); without network access set
+  its implementation to `"lua"`. `<Tab>` / `<S-Tab>` move the
   selection while the menu is open and jump through snippet fields when it is
   closed: inside a snippet an open menu takes the key, and `<C-e>` hides the
   menu to free it for the next field. Neither key accepts a completion — `<CR>`
@@ -1033,29 +1061,89 @@ when "cleaned up".
   sends for the same position, so the word is never offered twice. The clause
   is read from the line in front of the cursor, which keeps
   `export const x = ` and `export default ` out of it.
-- **Code from a project runs only in a trusted root.** Three tools would run
-  JavaScript the repository ships: vtsls the `tsserver.js` under
-  `node_modules/typescript`, eslint its `eslint.config.*` and the eslint under
-  `node_modules`, prettier its config files and plugins. `core/trust.lua`
-  holds the check, `allowed()` on the directory whose code would run, and
-  `root()`, the `.git` directory above a buffer or else a `package.json` /
-  `tsconfig.json` / `jsconfig.json` one. A buffer in neither has no root and
-  is never trusted, so a stray directory such as `$HOME` is never asked about
-  on its behalf.
+- **Project code runs only in a trusted root.** vtsls would run the
+  `tsserver.js` under `node_modules/typescript`, eslint its `eslint.config.*`
+  and the eslint under `node_modules`, prettier its config files and plugins,
+  `:CoverageRun` the project's `test:cov` script, neotest and nvim-dap the
+  project's jest, vitest, ts-node or `npm run` script, and kulala the scripts of
+  a `.http` file. `core/trust.lua` holds the check, `allowed()` on the directory
+  whose code would run, and `root()`, the `.git` directory above a buffer or
+  path or else a `package.json` / `tsconfig.json` / `jsconfig.json` one, or a
+  nested directory inside it that holds a config of its own (below). A buffer in
+  neither has no root and is never trusted, so a stray directory such as `$HOME`
+  is never asked about on its behalf.
   - vtsls: `before_init` turns `autoUseWorkspaceTsdk` on only when
     `<root>/node_modules/typescript/lib/tsserver.js` exists and its root, the
     one vtsls runs in, is trusted; otherwise vtsls uses the TypeScript it
     bundles.
   - eslint: `root_dir` runs nvim-lspconfig's own and calls `on_dir` only when
-    the root that function found holds the buffer and is trusted. That root
-    is where lspconfig looks for
-    `node_modules/.bin/vscode-eslint-language-server`, so the directory asked
-    about is the one whose code runs; lspconfig's fallback to the working
-    directory never reaches a file outside it.
-  - prettier: format on save and `<leader>cf` skip a buffer in an untrusted
-    root (or none) when conform would run prettierd or prettier for it,
-    Compose files included; the key says so in a notification. Buffers
-    formatted by stylua or sql-formatter are not affected.
+    the root that function found holds the buffer and is trusted. That root is
+    where lspconfig looks for `node_modules/.bin/vscode-eslint-language-server`,
+    so the directory asked about is the one whose code runs; lspconfig's
+    fallback to the working directory never reaches a file outside it. The
+    server also loads `eslint` and a flat config from parent directories, so
+    every parent of the deeper of that root and the buffer's own root, below the
+    home directory (or below `/` outside it), that holds an eslint config,
+    `package.json` or `node_modules` must be trusted too, outermost first. The
+    server starts only when `<root>/node_modules/eslint/package.json` exists, so
+    the library comes from the root the fingerprint covers, never from a nested
+    package, `NODE_PATH` or the server's working directory; a project without it
+    (Yarn Plug'n'Play included) gets no eslint. While it runs, every message
+    that makes it lint or load its config (a file opened, changed or saved, a
+    watched-file change, a diagnostics pull, a code action, formatting, or a
+    command such as `:LspEslintFixAll`) is sent only while those directories
+    still match the fingerprints they were allowed with. Otherwise the message
+    is dropped and eslint is restarted (every eslint client, the others without
+    a prompt), so after a pull, a branch switch or `npm install` that changes
+    one of those files the prompt comes back before the server lints again. A
+    client with no stored directories (one still shutting down after such a
+    restart) gets nothing through.
+  - prettier: format on save and `<leader>cf` skip a buffer in an untrusted root
+    (or none) when conform would run prettierd or prettier for it, Compose files
+    included; the key says so in a notification. prettier looks for its config
+    and plugins above the root as well, so every parent below the home directory
+    (or below `/` outside it) that holds a prettier config, `package.json`,
+    `package.yaml` or `node_modules` must be trusted too, outermost first.
+    Buffers formatted by stylua or sql-formatter are not affected.
+  - `:CoverageRun`: runs only from a working directory that holds a
+    `package.json`. npm also reads the `.npmrc` and `node_modules/.bin` of
+    parent directories, so every parent below the home directory (or below `/`
+    outside it) that holds a `package.json`, `.npmrc` or `node_modules` must be
+    trusted too, outermost first. The report loads only when the run rewrote it,
+    no signal killed it and the working directory is unchanged; a failed run
+    that wrote one loads it with a warning.
+  - tests: the jest and vitest adapters build a run only after the test's root
+    and every parent below the home directory that holds a `package.json`,
+    `.npmrc` or `node_modules` are trusted, since npx reads them; otherwise the
+    run fails with a notice. Every way of running a test goes through it:
+    `<leader>t…`, the summary window and watch mode. neotest's helper Neovim is
+    never started (`neotest.lib.subprocess.init` is a no-op), so it parses test
+    files in the editor itself and opens no RPC listener on a TCP port of
+    127.0.0.1, which any local process could otherwise have used to run code in
+    the editor.
+  - nvim-dap: `dap.run`, behind every way of starting a session (`<F5>`,
+    `<leader>dl`, a configuration from a project's `.vscode/launch.json`,
+    `<leader>td`), first asks about the buffer's root and the working
+    directory's root, each with the same npm parents, and about the working
+    directory itself when it holds a `.vscode/launch.json`, a `.env` (whose
+    variables, `NODE_OPTIONS` included, reach the debugged program through
+    `envFile`) or a `node_modules`: `${workspaceFolder}` and that file come from
+    the working directory, and `.vscode/launch.json` is part of the fingerprint.
+    Outside any root and without those files, a session starts without a prompt.
+    A tracked `.env` is part of the fingerprint; an untracked one is not, so
+    changing it after Allow (your own edits, or an update outside git) does not
+    ask again. Attaching goes through it as well.
+  - kulala: every request kulala runs scripts for (`<leader>hh`, `<leader>ha`,
+    `<leader>hr`, its own commands and its LSP code actions) goes through
+    `kulala.ui`, whose `open`, `open_all` and `replay` are wrapped before setup:
+    they run only after the directory of the current `.http` file (the working
+    directory for the scratchpad) is allowed under its own key, `kulala:<dir>`.
+    That answer's fingerprint covers every `.http` and `.rest` file in the
+    directory, symbolic links included, and its `http-client.env.json`, so a
+    changed file asks again. A script a request loads from another file is not
+    covered, nor are two actions that send a request without running a script:
+    the GraphQL schema download and the Run of the OpenAPI panel, which go to
+    the URL the file names.
 
   The first time one of these tools needs a root, `trust.lua` asks: the
   prompt names the directory, says whether it is new or changed since it was
@@ -1067,35 +1155,37 @@ when "cleaned up".
   - Ignore is not written down; the same root is not asked again in that
     session while the fingerprint stays the same.
 
-  `:ProjectTrust` lists the decisions, `:ProjectTrust forget [dir]` removes
-  one, and `:ProjectTrust deny [dir]` denies a directory without waiting for a
-  prompt; `[dir]` defaults to the `.git` root of the current buffer (eslint
-  may use a nested lockfile root instead: `list` shows the exact keys), else
-  the working directory. The store is written to a temporary file and
-  renamed over the old one, so two instances never leave it half-written. An
-  answer
-  reaches a server that is already running at its next start or
-  `:lsp restart`. A headless run never asks and trusts nothing. Neovim's own
-  `:trust` database is not used for project roots.
+  `:ProjectTrust` lists the decisions, `:ProjectTrust forget [dir]` removes one,
+  and `:ProjectTrust deny [dir]` denies a directory without waiting for a
+  prompt; `[dir]` defaults to the root of the current buffer (the `.git` root or
+  a nested root, below; eslint may use a nested lockfile root instead: `list`
+  shows the exact keys), else the working directory, and a `lazygit:<dir>` or
+  `kulala:<dir>` key is taken as written. The store is written to a temporary
+  file and renamed over the old one, so two instances never leave it
+  half-written. An answer reaches a server that is already running at its next
+  start or `:lsp restart`. A headless run never asks and trusts nothing.
+  Neovim's own `:trust` database is not used for project roots.
 
   The fingerprint covers what decides the code that runs:
-  - the files at the root: `package.json`, `tsconfig.json`, `jsconfig.json`,
-    the lockfiles, every eslint and prettier config file name, and the entry
-    points started from `node_modules` (`typescript/lib/tsserver.js`,
-    `_tsserver.js` and `typescript.js`, `.bin/vscode-eslint-language-server`,
-    `.bin/prettier`, `.bin/prettierd`, the `package.json` of `eslint` and
-    `prettier`), each by real path and SHA-256. Only a regular file inside the
-    root, up to 64 MB, is read; a symlink out of the root, a FIFO or a device
-    counts by its type and target alone, so a repository cannot make the
-    check hang;
+  - the files at the root: `package.json`, `tsconfig.json`, `jsconfig.json`, the
+    lockfiles, `.vscode/launch.json`, every eslint and prettier config file name
+    (prettier also reads `package.yaml`), and the entry points started from
+    `node_modules` (`typescript/lib/tsserver.js`, `_tsserver.js` and
+    `typescript.js`, `.bin/vscode-eslint-language-server`, `.bin/prettier`,
+    `.bin/prettierd`, the `package.json` of `eslint` and `prettier`), each by
+    real path and SHA-256. Only a regular file inside the root, up to 64 MB, is
+    read; a symlink out of the root, a FIFO or a device counts by its type and
+    target alone, so a repository cannot make the check hang; a file is opened
+    non-blocking and its type checked again on the open descriptor, so one
+    swapped for a FIFO after that check cannot hang it either;
   - in a git repository, the index entries (`git ls-files --stage`) of every
-    tracked `package.json`, `tsconfig*.json`, `jsconfig*.json`, eslint and
-    prettier config and every tracked file under a `node_modules` directory,
-    at any depth. A pull request that adds a nested config, a TypeScript
-    plugin in `compilerOptions.plugins` of one of those files, or a commit
-    into `node_modules` changes them, while an ordinary commit does not. A
-    file a `tsconfig.json` reaches through `extends` under another name is
-    not covered.
+    tracked `package.json`, `package.yaml`, `.env`, `tsconfig*.json`,
+    `jsconfig*.json`, eslint and prettier config and every tracked file under a
+    `node_modules` directory, at any depth. A pull request that adds a nested
+    config, a TypeScript plugin in `compilerOptions.plugins` of one of those
+    files, or a commit into `node_modules` changes them, while an ordinary
+    commit does not. A file a `tsconfig.json` reaches through `extends` under
+    another name is not covered.
 
   So such a pull request, `npm install` replacing one of the entry points, or
   another repository cloned to an allowed path all ask again, while a fresh
@@ -1128,6 +1218,25 @@ when "cleaned up".
   `:mksession` writes a newline in a name as is, so a file named
   `a<newline>so.x` would turn into a `:source` of `.x` on the next restore. A
   save by hand (`:AutoSession save`, `:mksession`) is not checked.
+- **lua_ls runs no Lua from a project and writes only its own files.** LuaLS
+  executes Lua in two places a project's `.luarc.json` or `.luarc.jsonc`
+  controls: the plugin named in `runtime.plugin`, and the `config.lua` of
+  every third-party library under `workspace.userThirdParty` once
+  `workspace.checkThirdParty` is on. LuaLS 3.19.1 asks before a plugin, but
+  loads it on "Don't load this plugin" as well; it never asks before a
+  `config.lua`. `runtime.meta` names the directory LuaLS fills with its
+  generated stubs, deleting whatever else is there, and a `..` or absolute
+  value points it anywhere. Each time lua_ls starts,
+  `settings/lsp/servers/lua_ls.lua` writes
+  `stdpath("state")/myconfig/lua_ls.json` (through a temporary file, mode
+  600) with `runtime.plugin` and `workspace.userThirdParty` empty,
+  `workspace.checkThirdParty` off and `runtime.meta` at its default, and passes
+  it with `--configpath`. That file takes priority over the project's, key by
+  key, so none of these applies and no prompt appears, while the rest of a
+  `.luarc.json` still does. When the file cannot be written, lua_ls does not
+  start. The server may write settings a code action changes (a diagnostic
+  turned off for the workspace) into that file; the next start replaces it.
+  LuaLS reads client settings only at start while `--configpath` is set.
 - **Smaller hardening, one line each.**
   - Mason installs every server and tool at the version in `mason.servers` /
     `mason.tools` (`name@version`); `:checkhealth myconfig` shows the installed
@@ -1148,8 +1257,43 @@ when "cleaned up".
     on every `VimLeavePre` for its session hooks, so the check is cached in
     `stdpath("state")/myconfig/kulala-core.json` by the file's inode, size and
     times and hashes again only after the binary changed; it stays silent on
-    exit. The kulala cache and kulala-core data directories, and `db_ui`, are
-    made mode 700.
+    exit. The kulala cache and kulala-core data directories are created mode
+    700 before kulala writes to them, and `db_ui` is made mode 700.
+  - blink.cmp's Rust matcher (`libblink_cmp_fuzzy.so`) runs only when its
+    SHA-256 matches `completion.fuzzy_sha256`, checked when blink loads and
+    cached in `stdpath("state")/myconfig/blink-fuzzy.json` like kulala-core;
+    `require` then gets exactly that file through `package.preload`, and a
+    missing or different library falls back to the Lua matcher with a warning.
+    blink still checks the library against its release's checksum file, and
+    downloads a new one only while the pinned one loads. After a blink.cmp
+    update, the first start keeps the old library in use while blink downloads
+    the new tag's; then run `sha256sum
+    ~/.local/share/nvim/lazy/blink.cmp/target/release/libblink_cmp_fuzzy.so` and
+    pin the new value. On a fresh install, with no library yet, set the pin to
+    `nil` for one start.
+  - `init.lua` first drops every relative entry (`./?.lua`, `./?.so`) from
+    `package.path` and `package.cpath`. Neovim starts with both, so a `require`
+    of a module no plugin provides (blink.cmp's `blink_cmp_fuzzy` on the first
+    insert, for one) loaded a file of that name from the working directory, the
+    root of a freshly cloned repository included. fzf-lua's helper process
+    (`nvim -u NONE -l spawn.lua`, started for files, grep and the other pickers
+    that build their list in the background) never reads `init.lua` and failed
+    the same way on `fzf-lua.previewer`, so `settings/finder/fzf.lua` starts it
+    with `LUA_PATH` and `LUA_CPATH` set to the absolute entries of the current
+    paths, so an empty entry (`;;`) cannot bring LuaJIT's defaults back; the
+    variables reach that process and the commands it runs (`fd`, `rg`, `git`),
+    not terminals or other jobs. blink.cmp's worker thread (the frecency update
+    on every accepted item; blink's Rust buffer parser would use one too, but
+    1.10.2 never calls it) starts a fresh Lua state whose `package.path` begins
+    with `./?.lua` again and receives only the filtered `package.cpath`;
+    `lua/blink_cmp_fuzzy.lua` in this config is found on the runtimepath before
+    that entry and loads the library from an absolute path of that
+    `package.cpath`. In the main state `package.preload` still comes first, so
+    the pin decides there. Threads read a copy of the runtime file list that
+    Neovim refreshes only when the editor asks for runtime files, so blink's
+    `M.config` asks once before blink starts any thread.
+  - `install.sh` runs under `umask 077`, so the installed `~/.config/nvim` and
+    `codebook.toml` are readable and writable by the user alone.
   - The lazy.nvim bootstrap checks out the commit `lazy-lock.json` names right
     after cloning `stable`. `npx --no` runs jest, vitest and ts-node, so a
     missing package is refused instead of fetched.
@@ -1160,27 +1304,43 @@ when "cleaned up".
     `replace_keycodes = false`: a word made of `<CR>` and `:!` cannot become
     keys.
   - The project scans skip files above `treesitter.max_filesize`
-    (`rg --max-filesize`).
-  - conform looks for `node_modules/.bin/prettierd` and `prettier` no higher
-    than the trusted root, then falls back to the Mason binary.
+    (`rg --max-filesize`). They read each file through the trust check's
+    non-blocking reader and skip one that is no longer a regular file within
+    that size limit when it is opened, so a file swapped for a FIFO, a device or
+    a symbolic link during a scan cannot hang the editor or be read.
+  - conform runs `node_modules/.bin/prettierd` or `prettier` only from the
+    trusted root itself, whose fingerprint covers both, else the Mason binary.
+    prettierd loads the `prettier` that Node resolves from the file, so it runs
+    only when the root has its own `node_modules/prettier` and no
+    `node_modules/prettier` (or `prettier.js`, `.json`, `.node`) lies between
+    the file and the root; otherwise the `prettier` CLI, which uses its own
+    copy, formats the file.
   - `trust.lua` sets Neovim's own `trust` file (still used for the lazygit
     configs) to mode 600 when it finds it readable by others, writes its store
     through a temporary file only when the write succeeded, and treats a
-    directory inside a repository as a root of its own, asked about
-    separately, when it holds a `package.json`, `tsconfig.json`,
+    directory inside a repository as a root of its own, asked about separately,
+    when it holds a `package.json`, `package.yaml`, `tsconfig.json`,
     `jsconfig.json` or eslint or prettier config that git does not track (an
     archive unpacked into `tmp/`, or a `prettier.config.cjs` dropped next to a
     tracked `package.json`). Every directory from the file's up to the
-    repository root is checked, and the deepest such directory becomes the
-    root, so a config dropped a few levels above the file counts too; each
-    check is cached by the directory's modification time, so a file added
-    later is noticed. A buffer whose name is not an absolute path (`oil://`,
-    `diffview://`, `term://`) keeps the repository root. eslint then needs
-    both its root and that one. A directory under `node_modules` stays part of
-    the repository's root, so following a definition into a dependency starts
-    no new server and asks nothing. A git command slower than
-    `trust.git_timeout_ms` keeps project code off without a prompt and says so
-    once per session.
+    repository root is checked, and the deepest such directory becomes the root,
+    so a config dropped a few levels above the file counts too; each check is
+    cached by the directory's modification time, so a file added later is
+    noticed. A buffer whose name is not an absolute path (`oil://`,
+    `diffview://`, `term://`) keeps the repository root. Outside a repository
+    nothing is tracked, so the deepest directory between the file and its
+    `package.json` / `tsconfig.json` / `jsconfig.json` root that holds any of
+    the files above becomes the root: a config added to an allowed tree later is
+    asked about. eslint then needs both its root and that one. vtsls starts in
+    it as well. A directory under `node_modules` stays part of the root above
+    it, so following a definition into a dependency starts no new server and
+    asks nothing. A git command slower than `trust.git_timeout_ms` keeps project
+    code off without a prompt and says so once per session. A `.git` that
+    appears in a directory allowed without one, or a `.git` file or symbolic
+    link that is pointed at another repository, changes its fingerprint, so it
+    is asked about again, and a `.git` that git cannot read keeps project code
+    off with the notice above; a repository whose path holds a newline is
+    fingerprinted like any other.
   - gitsigns and diffview run git without lazygit's check, so a hostile
     `.git` directory (from an archive, not a clone) can still run a
     `filter.*` or `diff.*` command when a file opens.
@@ -1211,6 +1371,11 @@ when "cleaned up".
 - **No AI integration**, on purpose: no AI completion source, chat or ghost text.
 - **Redis has no browser**: one-off commands go through `:DB redis://…`, and
   interactive work happens in `redis-cli` outside the editor.
+- **js-debug listens on localhost TCP without authentication.** nvim-dap starts
+  it on a random port of 127.0.0.1, and Node's inspector of a debugged program
+  listens the same way; another local user could connect while a session runs. A
+  Unix socket would close it, but nvim-dap at the pinned commit cannot start
+  js-debug's child sessions over one, so debugging is for single-user machines.
 - **Trouble, the debugger panel and the test output share one bottom split.**
   Starting a debug session closes Trouble, the panels take each other's place
   instead of stacking, and all of them use `ui.panel_height`.

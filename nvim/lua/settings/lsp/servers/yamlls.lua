@@ -1,3 +1,5 @@
+local schemas = require("settings.lsp.schemas")
+
 local M = {}
 
 M.config = {
@@ -6,6 +8,7 @@ M.config = {
     redhat = { telemetry = { enabled = false } },
     yaml = {
       schemaStore = { enable = false, url = "" },
+      kubernetesCRDStore = { enable = false },
       validate = true,
       hover = true,
       completion = true,
@@ -13,10 +16,12 @@ M.config = {
       keyOrdering = false,
     },
   },
+  handlers = { ["vscode/content"] = schemas.content },
   before_init = function(_, config)
     config.settings.yaml.schemas = require("schemastore").yaml.schemas()
   end,
   on_init = function(client)
+    client:notify("yaml/registerContentRequest")
     client.server_capabilities.documentFormattingProvider = false
 
     local supports_method = client.supports_method

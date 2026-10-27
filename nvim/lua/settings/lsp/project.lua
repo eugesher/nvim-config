@@ -1,6 +1,29 @@
+local trust = require("core.trust")
 local user = require("user.settings")
 
 local M = {}
+
+function M.read_lines(path)
+  local stat = vim.uv.fs_lstat(path)
+  local data = stat
+    and stat.type == "file"
+    and trust.read_file(path, user.treesitter.max_filesize, stat)
+  if not data then
+    return nil
+  end
+  local lines = vim.split((data:gsub("\239\187\191", "")), "\n", { plain = true })
+  local open_end = lines[#lines] ~= ""
+  if not open_end then
+    lines[#lines] = nil
+  end
+  for i, line in ipairs(lines) do
+    if i < #lines or not open_end then
+      line = line:gsub("\r+$", "")
+    end
+    lines[i] = (line:gsub("%z", "\n"))
+  end
+  return lines
+end
 
 function M.attached_buffer(client, path)
   for bufnr in pairs(client.attached_buffers) do

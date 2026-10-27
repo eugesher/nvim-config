@@ -301,12 +301,11 @@ local function scan_file(job, file, done)
   if bufnr then
     lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
   else
-    local ok, read = pcall(vim.fn.readfile, file.path)
-    if not ok then
+    lines = project.read_lines(file.path)
+    if not lines then
       done({})
       return
     end
-    lines = read
     project.open(job, uri, file.filetype, lines)
   end
 

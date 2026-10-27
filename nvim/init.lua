@@ -1,3 +1,12 @@
+for _, key in ipairs({ "path", "cpath" }) do
+  package[key] = table.concat(
+    vim.tbl_filter(function(entry)
+      return entry:sub(1, 1) == "/"
+    end, vim.split(package[key], ";", { plain = true })),
+    ";"
+  )
+end
+
 vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 
