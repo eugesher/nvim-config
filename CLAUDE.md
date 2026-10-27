@@ -229,9 +229,11 @@ These look like mistakes or omissions and are not. Change them only on request.
     `./?.lua` and `./?.so` entries of `package.path` and `package.cpath`, so
     `require` in the main Lua state never loads from the working directory,
     `lua/blink_cmp_fuzzy.lua` answers blink.cmp's worker threads (fresh Lua
-    states with `./?.lua` first) before that entry, and fzf-lua's `nvim -u NONE
-    -l spawn.lua` helper gets the filtered paths through `LUA_PATH`/`LUA_CPATH`
-    on its command line; `install.sh` runs under `umask 077`.
+    states with `./?.lua` first; blink's `M.config` refreshes the runtime file
+    list they read) before that entry, fzf-lua's `nvim -u NONE -l spawn.lua`
+    helper gets the absolute path entries through `LUA_PATH`/`LUA_CPATH` on its
+    command line, and neotest's helper Neovim (and its TCP RPC listener) is
+    never started; `install.sh` runs under `umask 077`.
   - Mason packages and the Mason registry release are pinned in `user.mason`
     (the registry's `@<tag>` form comes from Mason's source, not its docs — a
     deliberate exception to the documented-options rule), kulala-core by

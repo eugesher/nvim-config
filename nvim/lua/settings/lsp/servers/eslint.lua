@@ -20,7 +20,8 @@ local VALIDATING = {
 local restarting = false
 
 local function changed(client)
-  return not vim.iter(trusted_dirs[client.root_dir] or {}):all(trust.trusted)
+  local dirs = trusted_dirs[client.root_dir]
+  return not dirs or not vim.iter(dirs):all(trust.trusted)
 end
 
 local function restart()
@@ -88,7 +89,9 @@ M.config = {
       local send = client[name]
       client[name] = function(self, method, ...)
         if VALIDATING[method] and changed(client) then
-          restart()
+          if trusted_dirs[client.root_dir] then
+            restart()
+          end
           return false
         end
         return send(self, method, ...)

@@ -84,6 +84,7 @@ local tracked_pathspecs = {
   ":(glob)**/.prettierrc*",
   ":(glob)**/prettier.config.*",
   ":(glob)**/package.yaml",
+  ":(glob)**/.env",
   ":(glob)**/node_modules/**",
 }
 
@@ -143,8 +144,35 @@ local function content_hash(path, root)
   return real .. "@" .. cached.hash
 end
 
+local function git_marker(root)
+  local top = vim.fs.root(root, ".git")
+  if not top then
+    return false
+  end
+  local path = vim.fs.joinpath(top, ".git")
+  local parts = { top, vim.uv.fs_realpath(path) or "-" }
+  local stat = vim.uv.fs_stat(path)
+  if stat and stat.type == "file" then
+    local gitdir
+    local file = stat.size < 4096 and io.open(path, "r")
+    if file then
+      gitdir = (file:read("*l") or ""):match("^gitdir: (.+)$")
+      file:close()
+    end
+    local target = gitdir and (gitdir:find("^/") and gitdir or vim.fs.joinpath(top, gitdir))
+    vim.list_extend(parts, {
+      stat.ino,
+      stat.size,
+      stat.mtime.sec,
+      stat.mtime.nsec,
+      target and vim.uv.fs_realpath(target) or "-",
+    })
+  end
+  return table.concat(parts, ":")
+end
+
 local function tracked(root)
-  local marker = vim.fs.root(root, ".git") or false
+  local marker = git_marker(root)
   local cached = git_dirs[root]
   if not cached or cached.marker ~= marker then
     local dir, code = output({ "git", "-C", root, "rev-parse", "--absolute-git-dir" })

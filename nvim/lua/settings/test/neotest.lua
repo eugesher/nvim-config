@@ -143,6 +143,11 @@ M.keys = {
   },
 }
 
+function M.config(_, opts)
+  require("neotest.lib.subprocess").init = function() end
+  require("neotest").setup(opts)
+end
+
 function M.opts()
   return {
     adapters = { jest_adapter(), vitest_adapter() },

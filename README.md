@@ -1095,7 +1095,9 @@ when "cleaned up".
     still match the fingerprints they were allowed with. Otherwise the message
     is dropped and eslint is restarted (every eslint client, the others without
     a prompt), so after a pull, a branch switch or `npm install` that changes
-    one of those files the prompt comes back before the server lints again.
+    one of those files the prompt comes back before the server lints again. A
+    client with no stored directories (one still shutting down after such a
+    restart) gets nothing through.
   - prettier: format on save and `<leader>cf` skip a buffer in an untrusted root
     (or none) when conform would run prettierd or prettier for it, Compose files
     included; the key says so in a notification. prettier looks for its config
@@ -1114,15 +1116,23 @@ when "cleaned up".
     and every parent below the home directory that holds a `package.json`,
     `.npmrc` or `node_modules` are trusted, since npx reads them; otherwise the
     run fails with a notice. Every way of running a test goes through it:
-    `<leader>t…`, the summary window and watch mode.
+    `<leader>t…`, the summary window and watch mode. neotest's helper Neovim is
+    never started (`neotest.lib.subprocess.init` is a no-op), so it parses test
+    files in the editor itself and opens no RPC listener on a TCP port of
+    127.0.0.1, which any local process could otherwise have used to run code in
+    the editor.
   - nvim-dap: `dap.run`, behind every way of starting a session (`<F5>`,
     `<leader>dl`, a configuration from a project's `.vscode/launch.json`,
     `<leader>td`), first asks about the buffer's root and the working
     directory's root, each with the same npm parents, and about the working
-    directory itself when it holds a `.vscode/launch.json`: `${workspaceFolder}`
-    and that file come from the working directory, and `.vscode/launch.json` is
-    part of the fingerprint. Outside any root and without a `launch.json`, a
-    session starts without a prompt. Attaching goes through it as well.
+    directory itself when it holds a `.vscode/launch.json`, a `.env` (whose
+    variables, `NODE_OPTIONS` included, reach the debugged program through
+    `envFile`) or a `node_modules`: `${workspaceFolder}` and that file come from
+    the working directory, and `.vscode/launch.json` is part of the fingerprint.
+    Outside any root and without those files, a session starts without a prompt.
+    A tracked `.env` is part of the fingerprint; an untracked one is not, so
+    changing it after Allow (your own edits, or an update outside git) does not
+    ask again. Attaching goes through it as well.
   - kulala: every request kulala runs scripts for (`<leader>hh`, `<leader>ha`,
     `<leader>hr`, its own commands and its LSP code actions) goes through
     `kulala.ui`, whose `open`, `open_all` and `replay` are wrapped before setup:
@@ -1167,13 +1177,13 @@ when "cleaned up".
     read; a symlink out of the root, a FIFO or a device counts by its type and
     target alone, so a repository cannot make the check hang;
   - in a git repository, the index entries (`git ls-files --stage`) of every
-    tracked `package.json`, `package.yaml`, `tsconfig*.json`, `jsconfig*.json`,
-    eslint and prettier config and every tracked file under a `node_modules`
-    directory, at any depth. A pull request that adds a nested config, a
-    TypeScript plugin in `compilerOptions.plugins` of one of those files, or a
-    commit into `node_modules` changes them, while an ordinary commit does not.
-    A file a `tsconfig.json` reaches through `extends` under another name is not
-    covered.
+    tracked `package.json`, `package.yaml`, `.env`, `tsconfig*.json`,
+    `jsconfig*.json`, eslint and prettier config and every tracked file under a
+    `node_modules` directory, at any depth. A pull request that adds a nested
+    config, a TypeScript plugin in `compilerOptions.plugins` of one of those
+    files, or a commit into `node_modules` changes them, while an ordinary
+    commit does not. A file a `tsconfig.json` reaches through `extends` under
+    another name is not covered.
 
   So such a pull request, `npm install` replacing one of the entry points, or
   another repository cloned to an allowed path all ask again, while a fresh
@@ -1267,16 +1277,19 @@ when "cleaned up".
     (`nvim -u NONE -l spawn.lua`, started for files, grep and the other pickers
     that build their list in the background) never reads `init.lua` and failed
     the same way on `fzf-lua.previewer`, so `settings/finder/fzf.lua` starts it
-    with `LUA_PATH` and `LUA_CPATH` set to the filtered paths; the variables
-    reach that process and the commands it runs (`fd`, `rg`, `git`), not
-    terminals or other jobs. blink.cmp's worker thread (the frecency update on
-    every accepted item; blink's Rust buffer parser would use one too, but
+    with `LUA_PATH` and `LUA_CPATH` set to the absolute entries of the current
+    paths, so an empty entry (`;;`) cannot bring LuaJIT's defaults back; the
+    variables reach that process and the commands it runs (`fd`, `rg`, `git`),
+    not terminals or other jobs. blink.cmp's worker thread (the frecency update
+    on every accepted item; blink's Rust buffer parser would use one too, but
     1.10.2 never calls it) starts a fresh Lua state whose `package.path` begins
     with `./?.lua` again and receives only the filtered `package.cpath`;
     `lua/blink_cmp_fuzzy.lua` in this config is found on the runtimepath before
     that entry and loads the library from an absolute path of that
     `package.cpath`. In the main state `package.preload` still comes first, so
-    the pin decides there.
+    the pin decides there. Threads read a copy of the runtime file list that
+    Neovim refreshes only when the editor asks for runtime files, so blink's
+    `M.config` asks once before blink starts any thread.
   - `install.sh` runs under `umask 077`, so the installed `~/.config/nvim` and
     `codebook.toml` are readable and writable by the user alone.
   - The lazy.nvim bootstrap checks out the commit `lazy-lock.json` names right
@@ -1318,9 +1331,10 @@ when "cleaned up".
     it, so following a definition into a dependency starts no new server and
     asks nothing. A git command slower than `trust.git_timeout_ms` keeps project
     code off without a prompt and says so once per session. A `.git` that
-    appears in a directory allowed without one changes its fingerprint, so it is
-    asked about again, and a `.git` that git cannot read keeps project code off
-    with the notice above; a repository whose path holds a newline is
+    appears in a directory allowed without one, or a `.git` file or symbolic
+    link that is pointed at another repository, changes its fingerprint, so it
+    is asked about again, and a `.git` that git cannot read keeps project code
+    off with the notice above; a repository whose path holds a newline is
     fingerprinted like any other.
   - gitsigns and diffview run git without lazygit's check, so a hostile
     `.git` directory (from an archive, not a clone) can still run a

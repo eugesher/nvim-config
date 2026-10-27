@@ -191,14 +191,23 @@ function M.opts()
   }
 end
 
+local function absolute(paths)
+  return table.concat(
+    vim.tbl_filter(function(entry)
+      return entry:sub(1, 1) == "/"
+    end, vim.split(paths, ";", { plain = true })),
+    ";"
+  )
+end
+
 function M.config(_, opts)
   local shell = require("fzf-lua.shell")
   local shellescape = require("fzf-lua.libuv").shellescape
   local wrap_spawn_stdio = shell.wrap_spawn_stdio
   shell.wrap_spawn_stdio = function(spawn_opts)
     return ("LUA_PATH=%s LUA_CPATH=%s %s"):format(
-      shellescape(package.path),
-      shellescape(package.cpath),
+      shellescape(absolute(package.path)),
+      shellescape(absolute(package.cpath)),
       wrap_spawn_stdio(spawn_opts)
     )
   end

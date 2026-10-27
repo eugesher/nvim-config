@@ -5,6 +5,8 @@ local M = {}
 
 local NPM_PARENTS = { "package.json", ".npmrc", "node_modules" }
 
+local CWD_FILES = { ".vscode/launch.json", ".env", "node_modules" }
+
 local function server_path()
   return vim.fn.stdpath("data") .. "/mason/packages/js-debug-adapter/js-debug/src/dapDebugServer.js"
 end
@@ -194,9 +196,11 @@ function M.config()
   local run = dap.run
   dap.run = function(config, opts)
     local cwd = vim.fn.getcwd()
-    local launch = vim.uv.fs_stat(vim.fs.joinpath(cwd, ".vscode", "launch.json")) and cwd
+    local own = vim.iter(CWD_FILES):any(function(name)
+      return vim.uv.fs_lstat(vim.fs.joinpath(cwd, name)) ~= nil
+    end) and cwd
     local dirs = {}
-    for _, dir in ipairs({ trust.root(0) or false, trust.root(cwd) or false, launch or false }) do
+    for _, dir in ipairs({ trust.root(0) or false, trust.root(cwd) or false, own or false }) do
       if dir and not vim.list_contains(dirs, dir) then
         table.insert(dirs, dir)
       end

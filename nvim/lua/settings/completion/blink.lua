@@ -42,6 +42,7 @@ function M.config(_, opts)
       )
     end
   end
+  vim.api.nvim_get_runtime_file("", true)
   require("blink.cmp").setup(opts)
 end
 
