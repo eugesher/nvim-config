@@ -544,8 +544,8 @@ when "cleaned up".
   pass repeats on dynamic capability registration: docker-language-server
   registers rename about three seconds after attaching.
 - **`grn`, `<leader>cr` and `<leader>rn` are one rename** with inc-rename's
-  preview; `gd`, `gri` and `grt` open fzf-lua pickers, while `grr` opens Trouble —
-  a list that stays open is easier to walk through than a picker.
+  preview; `gd`, `grr`, `gri` and `grt` open fzf-lua pickers, one window for
+  every LSP jump; `<leader>xr` keeps the references open in Trouble instead.
 - **`<leader>ca` and `gra` leave out disabled code actions.** Neovim lists them
   when the menu is invoked by hand, marked `(disabled)`, and choosing one only
   shows the reason. fzf-lua's preview sends `codeAction/resolve` for each action
@@ -562,6 +562,10 @@ when "cleaned up".
   here, as it treats the directory of the `tsconfig.json` as the project and
   drops the aliases of `libs/` with it. The value reaches completion,
   `<leader>cM` and the import rewrite on a file move as well.
+- **`<leader>co` sorts type-only named imports last**
+  (`organizeImports.typeOrder = "last"`): `import { B, Z, type A, type Y }`.
+  tsserver's default, `auto`, takes the order from the file and would keep a
+  list already sorted by name.
 - **Docker files get two servers.** docker-language-server lints Dockerfiles
   through BuildKit but answers completion and hover with nothing, so dockerls
   supplies those; `removeOverlappingIssues` keeps their diagnostics from
@@ -691,7 +695,7 @@ when "cleaned up".
   that queue meanwhile. The progress is a `progress-message` (`nvim_echo` with
   `kind = "progress"`); pressing the key again cancels the outstanding requests
   and closes the open document. The result becomes the quickfix list
-  "Unused symbols", opened in Trouble with the cursor in it, as `grr` does —
+  "Unused symbols", opened in Trouble with the cursor in it —
   unless the scan ends while you type in insert or command-line mode, where a
   jump would take the keys — and neo-tree's filesystem shows `○ N` in
   `UnusedSign` behind every file and every collapsed folder holding some. That
@@ -992,14 +996,7 @@ when "cleaned up".
   files opened later are folded.
 - **Trouble:** `<leader>xX` leaves out diagnostics from TypeScript's library
   sources (lib.dom.d.ts alone brings some eighty hints); the LSP lists report an
-  empty result, so `grr` on an unreferenced symbol is not silent. `grr` opens
-  the references folded to one line per file (`zo` / `zR` unfold them): it calls
-  trouble's `fold_close_all` and `fold_reduce`, which wait for the first render,
-  since trouble overrides a `foldlevel` given in `win.wo` with its own `99`. The
-  list does not refresh by itself (`auto_refresh = false` for `lsp_references`):
-  trouble would query the symbol under the cursor again after every jump, drop
-  the reference just opened and add files unfolded. `r` still refreshes it by
-  hand, and the files that brings in arrive unfolded.
+  empty result, so `<leader>xr` on an unreferenced symbol is not silent.
 - **refactoring.nvim** keys are operators (`expr` mappings), except the menu of
   all refactors: opening a window while an `expr` mapping is evaluated fails
   with E565.

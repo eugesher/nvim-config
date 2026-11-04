@@ -133,7 +133,6 @@ M.opts = {
   },
   modes = {
     lsp = { warn_no_results = true },
-    lsp_references = { warn_no_results = true, auto_refresh = false },
     diagnostics_buffer = vim.tbl_extend("error", {
       mode = "diagnostics",
       filter = { buf = 0 },

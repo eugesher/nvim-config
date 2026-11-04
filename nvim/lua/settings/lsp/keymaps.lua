@@ -26,16 +26,6 @@ local function picker(name, fallback)
   end
 end
 
-local function references()
-  local trouble = require("trouble")
-  if trouble.is_open("lsp_references") then
-    trouble.close("lsp_references")
-  else
-    trouble.fold_close_all({ mode = "lsp_references", focus = true })
-    trouble.fold_reduce("lsp_references")
-  end
-end
-
 local function code_action()
   vim.lsp.buf.code_action({
     filter = function(action)
@@ -65,7 +55,7 @@ local function on_attach(event)
     bmap("n", "gd", picker("lsp_definitions", vim.lsp.buf.definition), "Go to definition")
   end
   if supports("textDocument/references") then
-    bmap("n", "grr", references, "References (Trouble)")
+    bmap("n", "grr", picker("lsp_references", vim.lsp.buf.references), "References")
   end
   if supports("textDocument/implementation") then
     bmap("n", "gri", picker("lsp_implementations", vim.lsp.buf.implementation), "Implementations")
