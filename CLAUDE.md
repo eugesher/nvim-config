@@ -350,9 +350,9 @@ Further decisions, explained in README.md ("Implementation notes"):
   never refreshes by itself (`auto_refresh = false`).
 - `<leader>ca` and `gra` filter out disabled code actions: resolving one in
   fzf-lua's preview crashes an old tsserver.
-- `d` / `D` / `c` / `C` / `s` / `S` delete into the black hole register (`expr`
-  keymaps in `core/keymaps.lua` that keep an explicit named register); only
-  `x` / `X` cut to the clipboard.
+- In Normal mode `d` / `D` / `c` / `C` / `s` / `S` / `x` / `X` delete into the
+  black hole register (`expr` keymaps in `core/keymaps.lua` that keep an
+  explicit named register); only Visual mode cuts to the clipboard.
 - `<Tab>` / `<S-Tab>` in blink.cmp move through the completion menu first and
   jump through snippet fields only while the menu is closed; `<C-CR>` closes the
   menu without leaving insert mode, and `<Esc>` is unmapped, so it leaves insert

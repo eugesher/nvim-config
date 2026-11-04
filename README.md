@@ -380,15 +380,16 @@ when "cleaned up".
   the `getcwd()` in it follows the root of neo-tree: the tree's `cwd_target`
   points the tab's directory at the root it shows, so `.` on a folder renames
   the tab as well.
-- **Only `x` / `X` put deleted text on the clipboard.** `'clipboard'` is
+- **Only Visual mode puts deleted text on the clipboard.** `'clipboard'` is
   `unnamedplus`, so every delete would otherwise replace the system clipboard.
-  `d`, `D`, `c`, `C`, `s` and `S` (Normal and Visual mode) write to the black
-  hole register instead; `y` copies and `x` / `X` cut: `x` on a selection cuts
-  it, `Vx` cuts a line, and `xp` still swaps two characters. The keymaps are
-  `expr` mappings that add `"_` only when no register was given, so `"add` still
-  fills register `a`; an explicit `"+` or `"*` looks the same as no register and
-  goes to the black hole too. In oil a file is moved with `Vx` and `p`: after
-  `dd`, `p` would paste the clipboard as a new file name.
+  In Normal mode `d`, `D`, `c`, `C`, `s`, `S`, `x` and `X` write to the black
+  hole register instead, so `xp` no longer swaps two characters; in Visual mode
+  they keep Neovim's behavior and cut the selection: `Vd` cuts a line, `y`
+  copies. The keymaps are `expr` mappings that add `"_` only when no register
+  was given, so `"add` still fills register `a`; an explicit `"+` or `"*` looks
+  the same as no register and goes to the black hole too. In oil a file is
+  moved with `Vd` and `p`: after `dd`, `p` would paste the clipboard as a new
+  file name.
 - **`<leader>w` writes every named buffer.** `:wall` writes them as well, but it
   ends with `E141: No file name for buffer N` as soon as a buffer that was never
   saved is open. `write_all()` in `core/keymaps.lua` walks the buffer list

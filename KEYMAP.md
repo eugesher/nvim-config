@@ -38,44 +38,42 @@ buffer-local (LSP keys appear once a language server is attached)._
 
 ### General
 
-| Keys        | Mode | Description                                          | Buffer |
-| ----------- | ---- | ---------------------------------------------------- | ------ |
-| `<`         | x    | Indent left, keep selection                          |        |
-| `<Esc>`     | n    | Clear search highlight                               |        |
-| `<leader>?` | n    | Buffer keymaps (which-key)                           |        |
-| `<leader>a` | n    | Restart Neovim                                       |        |
-| `<leader>K` | n    | All keymaps (which-key)                              |        |
-| `<leader>Q` | n    | Quit all                                             |        |
-| `<leader>w` | n    | Write all buffers                                    |        |
-| `<M-j>`     | n    | Move line down                                       |        |
-| `<M-j>`     | x    | Move selection down                                  |        |
-| `<M-k>`     | n    | Move line up                                         |        |
-| `<M-k>`     | x    | Move selection up                                    |        |
-| `>`         | x    | Indent right, keep selection                         |        |
-| `a=`        | x o  | Around assignment                                    |        |
-| `aa`        | x o  | Around parameter                                     |        |
-| `ac`        | x o  | Around class                                         |        |
-| `af`        | x o  | Around function                                      |        |
-| `ai`        | x o  | Around conditional                                   |        |
-| `al`        | x o  | Around loop                                          |        |
-| `C`         | n    | Change to end of line (keeps clipboard)              |        |
-| `C`         | x    | Change lines, block to end of line (keeps clipboard) |        |
-| `c`         | n x  | Change (keeps clipboard)                             |        |
-| `D`         | n    | Delete to end of line (keeps clipboard)              |        |
-| `D`         | x    | Delete lines (keeps clipboard)                       |        |
-| `d`         | n x  | Delete (keeps clipboard)                             |        |
-| `i=`        | x o  | Inside assignment                                    |        |
-| `ia`        | x o  | Inside parameter                                     |        |
-| `ic`        | x o  | Inside class                                         |        |
-| `if`        | x o  | Inside function                                      |        |
-| `ii`        | x o  | Inside conditional                                   |        |
-| `il`        | x o  | Inside loop                                          |        |
-| `J`         | n    | Join lines (keep cursor)                             |        |
-| `p`         | x    | Paste without overwriting the register               |        |
-| `S`         | n    | Substitute line (keeps clipboard)                    |        |
-| `S`         | x    | Change lines (keeps clipboard)                       |        |
-| `s`         | n    | Substitute character (keeps clipboard)               |        |
-| `s`         | x    | Change selection (keeps clipboard)                   |        |
+| Keys        | Mode | Description                                      | Buffer |
+| ----------- | ---- | ------------------------------------------------ | ------ |
+| `<`         | x    | Indent left, keep selection                      |        |
+| `<Esc>`     | n    | Clear search highlight                           |        |
+| `<leader>?` | n    | Buffer keymaps (which-key)                       |        |
+| `<leader>a` | n    | Restart Neovim                                   |        |
+| `<leader>K` | n    | All keymaps (which-key)                          |        |
+| `<leader>Q` | n    | Quit all                                         |        |
+| `<leader>w` | n    | Write all buffers                                |        |
+| `<M-j>`     | n    | Move line down                                   |        |
+| `<M-j>`     | x    | Move selection down                              |        |
+| `<M-k>`     | n    | Move line up                                     |        |
+| `<M-k>`     | x    | Move selection up                                |        |
+| `>`         | x    | Indent right, keep selection                     |        |
+| `a=`        | x o  | Around assignment                                |        |
+| `aa`        | x o  | Around parameter                                 |        |
+| `ac`        | x o  | Around class                                     |        |
+| `af`        | x o  | Around function                                  |        |
+| `ai`        | x o  | Around conditional                               |        |
+| `al`        | x o  | Around loop                                      |        |
+| `C`         | n    | Change to end of line (keeps clipboard)          |        |
+| `c`         | n    | Change (keeps clipboard)                         |        |
+| `D`         | n    | Delete to end of line (keeps clipboard)          |        |
+| `d`         | n    | Delete (keeps clipboard)                         |        |
+| `i=`        | x o  | Inside assignment                                |        |
+| `ia`        | x o  | Inside parameter                                 |        |
+| `ic`        | x o  | Inside class                                     |        |
+| `if`        | x o  | Inside function                                  |        |
+| `ii`        | x o  | Inside conditional                               |        |
+| `il`        | x o  | Inside loop                                      |        |
+| `J`         | n    | Join lines (keep cursor)                         |        |
+| `p`         | x    | Paste without overwriting the register           |        |
+| `S`         | n    | Substitute line (keeps clipboard)                |        |
+| `s`         | n    | Substitute character (keeps clipboard)           |        |
+| `X`         | n    | Delete character before cursor (keeps clipboard) |        |
+| `x`         | n    | Delete character (keeps clipboard)               |        |
 
 ### Navigation
 
@@ -109,7 +107,8 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>bP` | n     | Toggle pin                         |        |
 | `<leader>bp` | n     | Pick buffer                        |        |
 | `<leader>bY` | n     | Yank buffer full path              |        |
-| `<leader>by` | n     | Yank buffer path                   |        |
+| `<leader>by` | n     | Yank buffer path:line              |        |
+| `<leader>by` | x     | Yank buffer path:lines             |        |
 | `<leader>q`  | n     | Delete buffer                      |        |
 | `[a`         | n x o | Previous parameter                 |        |
 | `[b`         | n     | Previous buffer                    |        |
