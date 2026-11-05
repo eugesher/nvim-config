@@ -567,6 +567,11 @@ when "cleaned up".
   (`organizeImports.typeOrder = "last"`): `import { B, Z, type A, type Y }`.
   tsserver's default, `auto`, takes the order from the file and would keep a
   list already sorted by name.
+- **Renaming an imported symbol renames its declaration**
+  (`useAliasesForRenames = false`). tsserver's default renames only the local
+  name, writing `import { foo as bar }`, and turns a shorthand property into
+  `{ foo: bar }`; now `<leader>rn` at a use site renames the export and every
+  reference to it, shorthand properties included.
 - **Docker files get two servers.** docker-language-server lints Dockerfiles
   through BuildKit but answers completion and hover with nothing, so dockerls
   supplies those; `removeOverlappingIssues` keeps their diagnostics from

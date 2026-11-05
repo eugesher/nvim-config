@@ -10,6 +10,7 @@ local function language(extra)
     preferences = {
       importModuleSpecifier = user.lsp.import_style,
       organizeImports = { typeOrder = "last" },
+      useAliasesForRenames = false,
     },
     inlayHints = {
       parameterNames = { enabled = "literals", suppressWhenArgumentMatchesName = true },
