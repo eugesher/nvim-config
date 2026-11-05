@@ -32,20 +32,25 @@ local function write_all()
   vim.notify(("%d buffer%s written"):format(written, written == 1 and "" or "s"))
 end
 
+local function yank_path_lines(modifier)
+  return function()
+    local first, last = vim.fn.line("v"), vim.fn.line(".")
+    if first > last then
+      first, last = last, first
+    end
+    local range = first == last and tostring(first) or first .. "-" .. last
+    vim.fn.setreg("+", vim.fn.expand("%" .. modifier) .. ":" .. range)
+    vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "n", false)
+  end
+end
+
 map("n", "<leader>w", write_all, "Write all buffers")
 map("n", "<leader>Q", "<cmd>qa<CR>", "Quit all")
 map("n", "<leader>a", "<cmd>restart!<CR>", "Restart Neovim")
-map("n", "<leader>by", '<cmd>let @+ = expand("%:.") .. ":" .. line(".")<CR>', "Yank buffer path:line")
-map("x", "<leader>by", function()
-  local first, last = vim.fn.line("v"), vim.fn.line(".")
-  if first > last then
-    first, last = last, first
-  end
-  local range = first == last and tostring(first) or first .. "-" .. last
-  vim.fn.setreg("+", vim.fn.expand("%:.") .. ":" .. range)
-  vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "n", false)
-end, "Yank buffer path:lines")
+map("n", "<leader>by", '<cmd>let @+ = expand("%:.")<CR>', "Yank buffer path")
+map("x", "<leader>by", yank_path_lines(":."), "Yank buffer path:lines")
 map("n", "<leader>bY", '<cmd>let @+ = expand("%:p:~")<CR>', "Yank buffer full path")
+map("x", "<leader>bY", yank_path_lines(":p:~"), "Yank buffer full path:lines")
 map("n", "<leader>gg", function()
   require("core.lazygit").open()
 end, "Lazygit")

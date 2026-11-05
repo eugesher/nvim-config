@@ -107,7 +107,8 @@ buffer-local (LSP keys appear once a language server is attached)._
 | `<leader>bP` | n     | Toggle pin                         |        |
 | `<leader>bp` | n     | Pick buffer                        |        |
 | `<leader>bY` | n     | Yank buffer full path              |        |
-| `<leader>by` | n     | Yank buffer path:line              |        |
+| `<leader>bY` | x     | Yank buffer full path:lines        |        |
+| `<leader>by` | n     | Yank buffer path                   |        |
 | `<leader>by` | x     | Yank buffer path:lines             |        |
 | `<leader>q`  | n     | Delete buffer                      |        |
 | `[a`         | n x o | Previous parameter                 |        |
