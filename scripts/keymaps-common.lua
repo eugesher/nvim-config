@@ -241,24 +241,21 @@ local SAMPLES = {
 }
 
 local function expected_servers(filetype)
-  local ok, lsp = pcall(require, "settings.lsp")
+  local ok, lsp = pcall(require, "settings.lsp.lspconfig")
   local names = {}
   for _, name in ipairs(ok and lsp.servers or {}) do
     local config = vim.lsp.config[name]
-    local cmd = config and type(config.cmd) == "table" and config.cmd[1]
-    if
-      config
-      and vim.tbl_contains(config.filetypes or {}, filetype)
-      and cmd
-      and vim.fn.executable(cmd) == 1
-    then
+    local cmd = config and config.cmd
+    local runnable = type(cmd) == "function"
+      or type(cmd) == "table" and vim.fn.executable(cmd[1]) == 1
+    if config and vim.tbl_contains(config.filetypes or {}, filetype) and runnable then
       names[#names + 1] = name
     end
   end
   return names
 end
 
-function M.open_samples(timeout_ms)
+function M.open_samples(timeout_ms, skip)
   local dir = vim.fn.tempname()
   vim.fn.mkdir(dir, "p")
   local opened = {}
@@ -277,7 +274,9 @@ function M.open_samples(timeout_ms)
     local buf = vim.api.nvim_get_current_buf()
     local filetype = vim.bo[buf].filetype
     M.labels[buf] = filetype
-    local servers = expected_servers(filetype)
+    local servers = vim.tbl_filter(function(name)
+      return not (skip or {})[name]
+    end, expected_servers(filetype))
     vim.wait(timeout_ms, function()
       for _, name in ipairs(servers) do
         if #vim.lsp.get_clients({ bufnr = buf, name = name }) == 0 then

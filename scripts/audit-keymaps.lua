@@ -50,6 +50,10 @@ local ALLOWED_PREFIXES = {
   { lhs = "[t", mode = "n" },
 }
 
+local ALLOWED_DETACHED = {
+  { server = "eslint" },
+}
+
 local function normalize_whitelists()
   for _, list in ipairs({ ALLOWED_DUPLICATES, ALLOWED_WITHOUT_DESC, ALLOWED_PREFIXES }) do
     for _, entry in ipairs(list) do
@@ -91,13 +95,21 @@ end
 local recording = common.start_recording()
 common.bootstrap()
 normalize_whitelists()
-local samples = common.open_samples(20000)
+local skip = {}
+for _, entry in ipairs(ALLOWED_DETACHED) do
+  skip[entry.server] = true
+end
+local samples = common.open_samples(20000, skip)
 
 out("Keymap audit of " .. common.config_dir)
+local detached = {}
 for _, sample in ipairs(samples) do
   local missing = vim.tbl_filter(function(name)
     return not vim.tbl_contains(sample.attached, name)
   end, sample.servers)
+  for _, name in ipairs(missing) do
+    detached[#detached + 1] = ("%s did not attach to %s"):format(name, sample.file)
+  end
   out(
     ("  %-12s %-22s LSP: %s%s"):format(
       sample.file,
@@ -220,6 +232,7 @@ aliases(global, "global", false)
 for _, buffer in ipairs(buffers) do
   aliases(effective(buffer.maps), buffer.label, true)
 end
+section("Language servers that did not attach", detached, true)
 section("Duplicates", duplicates, true)
 
 local groups = {}

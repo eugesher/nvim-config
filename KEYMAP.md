@@ -7,7 +7,8 @@ Both read the installed config (`~/.config/nvim`), so run `./install.sh` first:
 
 - **`nvim --headless -l scripts/audit-keymaps.lua`** loads every plugin, opens a
   `.ts`, `.lua`, `.sql`, `.http`, `.yml` and `Dockerfile` buffer with their
-  language servers attached, and checks every keymap: a key defined twice or
+  language servers attached, fails when a configured server does not attach to
+  its filetype, and checks every keymap: a key defined twice or
   hiding a global one, two keys sharing one description, a key that is also the
   start of longer ones without being a which-key group, a keymap without a
   description, and the key policy — nothing on Alt but `<A-j>` / `<A-k>`,
@@ -555,3 +556,9 @@ defining file:
 - `]t` / `[t` (neotest) and `]td` / `[td` (todo-comments): the short keys wait
   'timeoutlen' (400 ms) before jumping to a failed test, the long ones jump to a
   TODO at once.
+
+**Language servers that need not attach**
+
+- `eslint`: it attaches only in a trusted root that has its own
+  `node_modules/eslint`, and the audit's sample files sit in a temporary
+  directory with neither, so its absence there is the trust gate working.
