@@ -896,8 +896,13 @@ when "cleaned up".
   opens a node (a folder expands, a file opens), `h` closes it together with
   every node opened inside it (`close_all_subnodes`, not `close_node`, so a
   folder always reopens collapsed and `z` stays the way to fold the whole
-  tree), `.` toggles hidden files, `H` toggles the preview, `J` / `K` scroll
-  it and `L` focuses it. `d` moves a node to the trash and `D` removes it for
+  tree), `O` opens a folder with every folder below it, `.` toggles hidden
+  files, `H` toggles the preview, `J` / `K` scroll it and `L` focuses it.
+  In the file tree `O` does not use neo-tree's `expand_all_subnodes` as is:
+  that reads the whole subtree from disk, hidden `node_modules` and `.git`
+  included. It loads one level at a time and goes down only into folders the
+  tree shows, so a hidden folder stays unread until `.` shows it. `d` moves a
+  node to the trash and `D` removes it for
   good: the key that can be taken back is the lower-case one, and `u` (which
   undoes a trash and nothing else) and `U` (restore from the trash) follow
   `d`. On Linux the trash is `gio trash` or, without it, neo-tree's own

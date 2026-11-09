@@ -275,7 +275,10 @@ Further decisions, explained in README.md ("Implementation notes"):
   rendered order; its own `ordinal` is the position in the buffer list.
 - neo-tree's tree keys are `h` / `l` based (`l` open, `h` close, `.` hidden
   files, `H` / `J` / `K` / `L` preview). `h` is `close_all_subnodes`, not
-  `close_node`: it collapses the subtree it closes. `d` trashes a node and `D`
+  `close_node`: it collapses the subtree it closes. `O` expands the subtree; in
+  the filesystem source it is a function that scans only the folders the tree
+  shows, since neo-tree's `expand_all_subnodes` reads hidden `node_modules` and
+  `.git` from disk too. `d` trashes a node and `D`
   deletes it, so the reversible key is the lower-case one; neo-tree's own `T`
   is gone and the directory search moved from `D` to `F`. `<cr>` (a function:
   open a file, set the root on a folder) and `.` (toggle_hidden) sit in the

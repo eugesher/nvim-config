@@ -106,6 +106,7 @@ local window_mappings = {
   ["s"] = "open_vsplit",
   ["t"] = "open_tabnew",
   ["h"] = "close_all_subnodes",
+  ["O"] = "expand_all_subnodes",
   ["z"] = "close_all_nodes",
   ["R"] = "refresh",
   ["a"] = { "add", config = { show_path = "none" } },
@@ -180,6 +181,29 @@ local function open_or_set_root(source)
       commands.open(state)
     end
   end
+end
+
+local function load_visible_subtree(state, node)
+  if node.type ~= "directory" then
+    return
+  end
+  if not node.loaded then
+    require("neo-tree.sources.filesystem.lib.fs_scan").get_dir_items_async(state, node:get_id())
+  end
+  for _, child in ipairs(state.tree:get_nodes(node:get_id())) do
+    load_visible_subtree(state, child)
+  end
+end
+
+local VISIBLE_SUBTREE = {
+  prefetch = load_visible_subtree,
+  should_prefetch = function(node)
+    return not node.loaded
+  end,
+}
+
+local function expand_visible_subnodes(state)
+  require("neo-tree.sources.common.commands").expand_all_subnodes(state, nil, VISIBLE_SUBTREE)
 end
 
 local function count_component(module, glyph)
@@ -425,6 +449,7 @@ function M.opts()
           ["<C-x>"] = "clear_filter",
           ["<bs>"] = "navigate_up",
           ["<cr>"] = { open_or_set_root("filesystem"), desc = "Open, or set root on a folder" },
+          ["O"] = { expand_visible_subnodes, desc = "Expand all visible subnodes" },
           ["[g"] = "prev_git_modified",
           ["]g"] = "next_git_modified",
           ["i"] = "show_file_details",
